@@ -1,0 +1,67 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "pre-commit:checks": "lint-staged && npm run lint && npm run type-check",
+    "pre-push:checks": "npm run build && npm run test:run",
+    "prepare": "cd .. && husky client/.husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix --max-warnings=0"
+    ],
+    "*.{json,md,css}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@mantine/core": "^9.2.0",
+    "@mantine/form": "^9.2.0",
+    "@mantine/hooks": "^9.2.0",
+    "@tabler/icons-react": "^3.44.0",
+    "@tanstack/react-query": "^5.100.10",
+    "@tanstack/react-table": "^8.21.3",
+    "axios": "^1.16.0",
+    "date-fns": "^4.1.0",
+    "next": "16.2.6",
+    "next-intl": "^4.11.2",
+    "postcss-preset-mantine": "^1.18.0",
+    "postcss-simple-vars": "^7.0.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.13"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/ui": "^4.1.6",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "jsdom": "^29.1.1",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^4.1.6"
+  }
+}

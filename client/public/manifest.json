@@ -1,0 +1,11 @@
+{
+  "name": "Project Ours",
+  "short_name": "Ours",
+  "description": "Metas e atividades em família.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#228be6",
+  "lang": "pt-BR",
+  "icons": []
+}

@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+set -e
+cd "$(dirname "$0")/.." || exit 1
+echo "pre-push: build + tests"
+npm run pre-push:checks

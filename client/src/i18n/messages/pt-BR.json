@@ -1,0 +1,35 @@
+{
+  "devTheme": {
+    "title": "Ferramentas de tema (dev)",
+    "hint": "Rota oculta para testar claro / escuro / seguir o dispositivo. Preferência fica em localStorage (Mantine).",
+    "light": "Claro",
+    "dark": "Escuro",
+    "auto": "Dispositivo",
+    "resolved": "Esquema aplicado agora",
+    "toggleShortcut": "Alternar claro ↔ escuro",
+    "home": "Ir ao início"
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "O endereço pode estar incorreto ou a página foi movida.",
+    "homeLink": "Voltar ao início"
+  },
+  "home": {
+    "title": "Project Ours",
+    "subtitle": "Metas e atividades em família, com privacidade entre membros.",
+    "ctaGoogle": "Entrar com Google",
+    "apiHealth": {
+      "missingUrlTitle": "URL da API",
+      "missingUrl": "Defina NEXT_PUBLIC_API_URL no .env.local (ex.: http://localhost:5280, igual ao dotnet run da API).",
+      "checking": "Verificando conexão com a API…",
+      "errorTitle": "API indisponível",
+      "error": "Confira se o servidor está em execução e se a porta coincide com launchSettings (5280).",
+      "okTitle": "Conexão com a API",
+      "ok": "Resposta: {status}"
+    }
+  },
+  "metadata": {
+    "title": "Project Ours",
+    "description": "Colaboração familiar sem rankings."
+  }
+}
