@@ -2,9 +2,9 @@
 
 ## Project Ours - MVP
 
-**Versão:** 1.0  
+**Versão:** 1.1  
 **Data:** Maio 2026  
-**Status:** Rascunho para Desenvolvimento
+**Status:** Rascunho para Desenvolvimento (revisão: stack de testes, Next.js estável, múltiplas famílias por usuário)
 
 ---
 
@@ -26,28 +26,30 @@ Aumentar o engajamento de irmãos no cuidado dos pais através de:
 
 - **Privacidade nas contribuições:** Ninguém vê quanto cada irmão contribuiu individualmente
 - **Sem rankings:** Feed mostra atividades, não comparações
-- **Admin único:** Simplifica gestão da família
+- **Admin único por família:** Simplifica gestão da família
+- **Múltiplas famílias por usuário:** Um mesmo usuário pode criar e/ou participar de N famílias (ex.: família de origem e família do cônjuge); em cada família continua havendo exatamente um admin
 
 ---
 
 ## 2. Arquitetura Definida
 
 
-| Camada   | Tecnologia                                       |
-| -------- | ------------------------------------------------ |
-| Frontend | Next.js 14+ com PWA, TypeScript, TailwindCSS     |
-| Backend  | API REST em C# (.NET 8+)                         |
-| Database | PostgreSQL                                       |
-| Auth     | OAuth Google apenas                              |
-| Hosting  | Cloudflare (frontend), VPS Docker (backend + DB) |
-
+| Camada        | Tecnologia                                                                 |
+| ------------- | -------------------------------------------------------------------------- |
+| Frontend      | Next.js 16.x, PWA, TypeScript, TailwindCSS |
+| Testes (front)| Testes unitários e de componentes (ex.: Vitest + React Testing Library); E2E críticos (ex.: Playwright) no fluxo de autenticação e família |
+| Backend       | API REST em C# (.NET 8+)                                                   |
+| Testes (back) | Testes unitários e de integração (ex.: xUnit + WebApplicationFactory ou equivalente) cobrindo regras de negócio e contratos principais da API |
+| Database      | PostgreSQL                                                                 |
+| Auth          | OAuth Google apenas                                                        |
+| Hosting       | Cloudflare (frontend), VPS Docker (backend + DB)                           |
 
 ---
 
 ## 3. Funcionalidades MVP (P0)
 
 1. Sistema de Autenticação OAuth Google + Onboarding de Família
-2. Gestão de Família (admin único, convites com link 24h, aprovação de membros)
+2. Gestão de Família (admin único por família, usuário pode pertencer a N famílias, convites com link 24h, aprovação de membros, seletor de família ativa no app)
 3. Registro de Ligações (botão "Liguei agora", duração opcional)
 4. Feed Unificado (visualização cronológica de atividades identificadas)
 5. Metas Financeiras Coletivas (criação, contribuição anônima agregada, barra de progresso)
@@ -66,17 +68,17 @@ Aumentar o engajamento de irmãos no cuidado dos pais através de:
 - Given usuário faz login Google pela primeira vez, when autenticação sucede, then é redirecionado para onboarding
 - Given usuário no onboarding, when clica "Criar minha família", then família é criada e ele vira admin automaticamente
 - Given família criada, when redirecionado, then vê dashboard com mensagem de boas-vindas
+- Given usuário já pertence a outra(s) família(s), when cria nova família, then nova família é criada e ele é admin dela 
 
 **Regras de Negócio:**
 
-- Usuário só pode criar uma família se não pertencer a nenhuma
-- Primeiro usuário da família automaticamente se torna admin
+- Um usuário pode pertencer a N famílias (criadas por ele ou ingressadas por convite)
+- Criador da família automaticamente se torna admin daquela família
 - Nome da família é obrigatório (3-50 caracteres)
 
 **Mensagens:**
 
 - Sucesso: "Família criada com sucesso! Convite seus irmãos."
-- Erro: "Você já pertence a uma família."
 
 ---
 
@@ -117,7 +119,7 @@ Aumentar o engajamento de irmãos no cuidado dos pais através de:
 
 **Regras de Negócio:**
 
-- Usuário não pode estar em outra família
+- Usuário não pode solicitar entrada na mesma família se já for membro ativo dela
 - Convite deve estar com status "pending" e não expirado
 - Novo membro entra com role "Member" (não admin)
 - Admin deve aprovar explicitamente
@@ -126,7 +128,7 @@ Aumentar o engajamento de irmãos no cuidado dos pais através de:
 
 - Sucesso: "Solicitação enviada. Aguarde aprovação do administrador."
 - Erro (código inválido): "Código de convite inválido ou expirado."
-- Erro (já em família): "Você já pertence a uma família."
+- Erro (já membro desta família): "Você já faz parte desta família."
 
 ---
 
@@ -162,18 +164,18 @@ Aumentar o engajamento de irmãos no cuidado dos pais através de:
 
 ### US-005: Visualizar Feed de Atividades
 
-**Como** irmão, **quero** ver o feed de atividades da minha família, **para** acompanhar o cuidado aos pais.
+**Como** irmão, **quero** ver o feed de atividades da família ativa, **para** acompanhar o cuidado aos pais.
 
 **Critérios de Aceitação:**
 
-- Given usuário logado, when acessa dashboard, then vê feed com atividades da família
+- Given usuário logado com família ativa selecionada, when acessa dashboard, then vê feed com atividades dessa família
 - Given feed carregado, when visualiza, then itens ordenados cronologicamente (mais recente primeiro)
 - Given atividade no feed, when ligação, then mostra "Ana ligou hoje • Duração: 15min"
 - Given atividade no feed, when meta atingida, then mostra "Meta X atingiu 80%"
 
 **Regras de Negócio:**
 
-- Apenas atividades da própria família são visíveis
+- Apenas atividades da família ativa no contexto do app são visíveis (usuários com N famílias alternam o contexto antes de ver o feed)
 - Feed mostra: nome do irmão, tipo de atividade, timestamp relativo
 - Paginação: 20 itens por vez, scroll infinito ou "Carregar mais"
 - Atualização automática a cada 30 segundos ou pull-to-refresh
@@ -252,7 +254,7 @@ Aumentar o engajamento de irmãos no cuidado dos pais através de:
 
 **Critérios de Aceitação:**
 
-- Given usuário no dashboard, when acessa, then vê card com suas estatísticas
+- Given usuário no dashboard da família ativa, when acessa, then vê card com suas estatísticas **nessa** família
 - Given visualiza estatísticas, when olha dados, then vê: ligações este mês, total de minutos, streak
 - Given estatísticas carregadas, when compara com meta pessoal, then sistema mostra progresso individual
 
@@ -261,6 +263,7 @@ Aumentar o engajamento de irmãos no cuidado dos pais através de:
 - Estatísticas são PESSOAIS (apenas o próprio usuário vê)
 - Não há comparação com outros irmãos
 - Streak = dias consecutivos com pelo menos uma ligação
+- Números são sempre filtrados pela **família ativa** no contexto do app
 
 **Métricas:**
 
@@ -299,48 +302,22 @@ Aumentar o engajamento de irmãos no cuidado dos pais através de:
 ## 5. Diagrama de Entidades (ERD)
 
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│      User       │     │     Family      │     │     Parent      │
-├─────────────────┤     ├─────────────────┤     ├─────────────────┤
-│ PK id (uuid)    │     │ PK id (uuid)    │     │ PK id (uuid)    │
-│ email (string)  │────<│ FK adminId (uuid)│     │ FK familyId (uuid)│
-│ name (string)   │  N:1│ name (string)   │<────│ name (string)   │
-│ picture (string)│     │ createdAt (dt)  │  1:N│ birthDate (date)│
-│ role (enum)     │     │                 │     │ medicalInfo (json)│
-│ familyId (uuid) │>────┘                 │     │ emergencyBrief (text)│
-│ joinedAt (dt)   │    1:N                │     │                 │
-│ createdAt (dt)  │     │                 │     │                 │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-         │                       │
-         │                       │
-         │ 1:N                   │ 1:N
-         ▼                       ▼
-┌─────────────────┐     ┌─────────────────┐
-│  FamilyInvite   │     │    Activity     │
-├─────────────────┤     ├─────────────────┤
-│ PK id (uuid)    │     │ PK id (uuid)    │
-│ FK familyId (uuid)    │ FK familyId (uuid)│
-│ inviteCode (string 6) │ FK userId (uuid)│
-│ invitedEmail (string?)│ FK parentId (uuid?)│
-│ expiresAt (dt)  │     │ type (enum)     │
-│ status (enum)   │     │ metadata (jsonb)│
-│ createdAt (dt)  │     │ createdAt (dt)  │
-└─────────────────┘     └─────────────────┘
-
-┌─────────────────┐     ┌─────────────────┐
-│      Goal       │     │ GoalContribution│
-├─────────────────┤     ├─────────────────┤
-│ PK id (uuid)    │     │ PK id (uuid)    │
-│ FK familyId (uuid)    │ FK goalId (uuid)│
-│ title (string)  │<────│ FK userId (uuid)│
-│ targetAmount (dec)    │ amount (dec)    │
-│ currentAmount (dec)   │ createdAt (dt)  │
-│ status (enum)   │     │                 │
-│ createdBy (uuid)│     │                 │
-│ createdAt (dt)  │     │                 │
-│ completedAt (dt?)     │                 │
-└─────────────────┘     └─────────────────┘
+┌─────────────────┐         ┌──────────────────────────┐         ┌─────────────────┐
+│      User       │    N    │    FamilyMembership       │    N    │     Family      │
+├─────────────────┤ ◄──────►├──────────────────────────┤ ◄──────►├─────────────────┤
+│ PK id (uuid)    │         │ PK id (uuid)              │         │ PK id (uuid)    │
+│ email (string)  │         │ FK userId (uuid)          │         │ FK adminId (uuid)│
+│ name (string)   │         │ FK familyId (uuid)        │         │ name (string)   │
+│ picture (string)│         │ role (enum Admin/Member)  │         │ createdAt (dt)  │
+│ createdAt (dt)  │         │ joinedAt (dt)             │         │                 │
+└─────────────────┘         └──────────────────────────┘         └─────────────────┘
+                                      │                                    │
+                                      │                                    │ 1:N
+                                      │                                    ├──────────────► FamilyInvite, Parent, Activity, Goal...
+                                      │                                    │
 ```
+Detalhamento de `Activity`, `Goal` e `GoalContribution` permanece nas tabelas abaixo; todos mantêm `familyId` apontando para `Family`. Relacionamento **User ↔ Family** é **N:N** via `FamilyMembership` — cada linha representa um usuário em uma família, com `role` e `joinedAt`.
+
 
 ### 5.1 Detalhamento das Entidades
 
@@ -353,13 +330,23 @@ Aumentar o engajamento de irmãos no cuidado dos pais através de:
 | email     | string(255) | Sim         | Email do Google            |
 | name      | string(100) | Sim         | Nome do usuário            |
 | picture   | string(500) | Não         | URL da foto do Google      |
-| role      | enum        | Sim         | Admin, Member              |
-| familyId  | UUID        | Não         | Referência à família       |
-| joinedAt  | datetime    | Não         | Data de entrada na família |
 | createdAt | datetime    | Sim         | Data de criação            |
 
+Papel (**Admin** / **Member**) e vínculo com família ficam em `FamilyMembership`, não na entidade `User`.
 
-#### Family
+
+#### FamilyMembership
+
+
+| Campo     | Tipo     | Obrigatório | Descrição                                                |
+| --------- | -------- | ----------- | -------------------------------------------------------- |
+| id        | UUID     | Sim         | Identificador único                                     |
+| userId    | UUID     | Sim         | FK para `User`                                            |
+| familyId  | UUID     | Sim         | FK para `Family`                                          |
+| role      | enum     | Sim         | Admin ou Member **nessa** família                         |
+| joinedAt  | datetime | Sim         | Data em que o usuário passou a integrar a família        |
+
+**Restrição:** par único `(userId, familyId)` — um usuário não pode duplicar membership na mesma família.
 
 
 | Campo     | Tipo        | Obrigatório | Descrição           |
@@ -451,7 +438,11 @@ Aumentar o engajamento de irmãos no cuidado dos pais através de:
 
 ## 6. Endpoints API REST
 
-### 6.1 Autenticação
+### 6.0 Escopo multi-família
+
+Endpoints que leem ou alteram dados de uma família específica (feed, metas, convites, pais, etc.) exigem que o cliente informe a **família ativa** via header `X-Family-Id: {uuid}`. O servidor valida membership antes de responder. Se o usuário tiver apenas uma família, a implementação pode omitir o header e inferir a única família (comportamento opcional, a documentar no contrato OpenAPI).
+
+---
 
 #### POST /api/auth/google
 
@@ -475,13 +466,16 @@ Autenticação via Google OAuth.
     "email": "user@email.com",
     "name": "João Silva",
     "picture": "https://...",
-    "role": "Member",
-    "familyId": "uuid"
+    "families": [
+      { "id": "uuid", "name": "Família Silva", "role": "Admin" }
+    ]
   },
   "isNewUser": true,
-  "hasFamily": false
+  "familyCount": 1
 }
 ```
+
+`families` pode ser lista vazia para usuário novo; o cliente persiste a **família ativa** (ex.: `localStorage`) após seleção ou criação.
 
 **Erros:**
 
@@ -522,14 +516,40 @@ Cria nova família (usuário vira admin).
 
 **Erros:**
 
-- 400: Usuário já pertence a uma família
 - 400: Nome inválido (mín 3, máx 50 caracteres)
 
 ---
 
-#### GET /api/families/my-family
+#### GET /api/families
 
-Retorna família do usuário logado.
+Lista todas as famílias às quais o usuário autenticado pertence (via `FamilyMembership`).
+
+**Headers:** Authorization: Bearer {token}
+
+**Response (200):**
+
+```json
+{
+  "families": [
+    {
+      "id": "uuid",
+      "name": "Família Silva",
+      "role": "Admin",
+      "joinedAt": "2026-05-01T10:00:00Z"
+    }
+  ]
+}
+```
+
+**Erros:**
+
+- (nenhum erro específico; lista vazia `[]` indica usuário sem famílias)
+
+---
+
+#### GET /api/families/{familyId}
+
+Retorna detalhe completo de uma família (membros, pais, convite ativo) **somente** se o usuário for membro.
 
 **Headers:** Authorization: Bearer {token}
 
@@ -552,7 +572,14 @@ Retorna família do usuário logado.
 
 **Erros:**
 
-- 404: Usuário não pertence a nenhuma família
+- 403: Usuário não é membro desta família
+- 404: Família não encontrada
+
+---
+
+#### GET /api/families/my-family
+
+> **Deprecado no PRD v1.1:** substituído por `GET /api/families` + `GET /api/families/{familyId}`. Mantido apenas como referência de migração se código legado existir.
 
 ---
 
@@ -560,7 +587,7 @@ Retorna família do usuário logado.
 
 Gera convite para família (apenas admin).
 
-**Headers:** Authorization: Bearer {token}
+**Headers:** Authorization: Bearer {token}, `X-Family-Id: {uuid}` (obrigatório quando o usuário pertence a mais de uma família; ver §6.0)
 
 **Response (201):**
 
@@ -604,7 +631,7 @@ Solicita entrada em família via código.
 **Erros:**
 
 - 400: Código inválido ou expirado
-- 400: Usuário já pertence a uma família
+- 400: Usuário já é membro desta família
 - 400: Convite já foi usado ou rejeitado
 
 ---
@@ -613,7 +640,7 @@ Solicita entrada em família via código.
 
 Lista solicitações pendentes (apenas admin).
 
-**Headers:** Authorization: Bearer {token}
+**Headers:** Authorization: Bearer {token}, `X-Family-Id: {uuid}` (§6.0)
 
 **Response (200):**
 
@@ -637,7 +664,7 @@ Lista solicitações pendentes (apenas admin).
 
 Aprova entrada de membro (apenas admin).
 
-**Headers:** Authorization: Bearer {token}
+**Headers:** Authorization: Bearer {token}, `X-Family-Id: {uuid}` (§6.0)
 
 **Response (200):**
 
@@ -654,7 +681,7 @@ Aprova entrada de membro (apenas admin).
 
 Rejeita solicitação de entrada (apenas admin).
 
-**Headers:** Authorization: Bearer {token}
+**Headers:** Authorization: Bearer {token}, `X-Family-Id: {uuid}` (§6.0)
 
 **Response (200):**
 
@@ -1511,7 +1538,7 @@ Pending ──expiração 24h──> Expired
 **Validações:**
 
 - Código único por família ativo (novo convite invalida anterior)
-- Usuário não pode estar em outra família
+- Usuário não pode duplicar membership na mesma família (solicitar entrada quando já é membro)
 - Email do convidado é opcional
 
 ### 9.5 Restrições do MVP
@@ -1521,7 +1548,7 @@ Pending ──expiração 24h──> Expired
 | ------------------------------ | -------------------------- |
 | Notificações push              | ❌ Não incluso              |
 | Criptografia end-to-end        | ❌ Server-side apenas       |
-| Múltiplas famílias por usuário | ❌ Um usuário = uma família |
+| Múltiplas famílias por usuário | ✅ Usuário pode pertencer a N famílias |
 | Idiomas                        | ✅ Apenas PT-BR             |
 | App nativo                     | ❌ PWA apenas               |
 
@@ -1539,7 +1566,7 @@ Pending ──expiração 24h──> Expired
 | 1.2 | Usuário novo redirecionado para onboarding                   | Funcional |
 | 1.3 | Formulário de criação de família valida nome (3-50 chars)    | Funcional |
 | 1.4 | Após criação, usuário é admin e é redirecionado ao dashboard | Funcional |
-| 1.5 | Tentativa de criar segunda família retorna erro 400          | Funcional |
+| 1.5 | Usuário com famílias existentes pode criar nova família (novo admin nessa família) | Funcional |
 | 1.6 | JWT token é gerado e armazenado no client                    | Técnico   |
 
 
@@ -1566,7 +1593,7 @@ Pending ──expiração 24h──> Expired
 | 3.3 | Após login, retorna ao link automaticamente   | Funcional |
 | 3.4 | Solicitação cria registro com status pending  | Funcional |
 | 3.5 | Código expirado exibe mensagem específica     | Funcional |
-| 3.6 | Usuário em outra família vê erro específico   | Funcional |
+| 3.6 | Usuário que já é membro da família do convite vê erro específico (não bloqueia por ter outras famílias) | Funcional |
 
 
 ### US-004: Registrar Ligação
@@ -1587,7 +1614,7 @@ Pending ──expiração 24h──> Expired
 
 | #   | Critério                                            | Tipo        |
 | --- | --------------------------------------------------- | ----------- |
-| 5.1 | Feed mostra apenas atividades da família do usuário | Segurança   |
+| 5.1 | Feed mostra apenas atividades da família ativa (`X-Family-Id` ou contexto equivalente) | Segurança   |
 | 5.2 | Ordenação é cronológica decrescente                 | Funcional   |
 | 5.3 | Lazy loading funciona (20 itens por vez)            | Performance |
 | 5.4 | Timestamps são relativos (hoje, ontem, X dias)      | UX          |
@@ -1747,14 +1774,14 @@ enum GoalStatus {
 {
   "sub": "user_uuid",
   "email": "user@email.com",
-  "role": "Admin|Member",
-  "familyId": "family_uuid",
   "iat": 1714560000,
   "exp": 1714596000,
   "iss": "project-ours-api",
   "aud": "project-ours-app"
 }
 ```
+
+Papel (**Admin** / **Member**) e escopo de família **não** são claims permanentes no JWT: obtidos via `FamilyMembership` no banco e, nas requisições, pela família ativa (`X-Family-Id`, §6.0).
 
 ---
 
