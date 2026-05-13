@@ -9,6 +9,13 @@
 .env.local
 .env.*.local
 
+# .NET appsettings (proteger secrets)
+**/appsettings.Development.json
+**/appsettings.Testing.json
+**/appsettings.Local.json
+**/appsettings.*.local.json
+!**/appsettings.json
+
 # .NET / C#
 ## Build outputs
 bin/
