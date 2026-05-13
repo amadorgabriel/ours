@@ -1,8 +1,14 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using ProjectOurs.API.Auth;
+using ProjectOurs.API.Filters;
 using ProjectOurs.API.Options;
+using ProjectOurs.Application.Abstractions;
+using ProjectOurs.Application.Abstractions.Auth;
+using ProjectOurs.Application.Auth;
 using ProjectOurs.Infrastructure;
 
 namespace ProjectOurs.API;
@@ -13,7 +19,16 @@ public sealed class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddControllers();
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddAntiforgery(options =>
+        {
+            options.HeaderName = "RequestVerificationToken";
+        });
+
+        builder.Services.AddControllers(options =>
+        {
+            options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+        });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
@@ -25,7 +40,7 @@ public sealed class Program
             });
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Description = "JWT emitido pela API (após OAuth Google na etapa futura).",
+                Description = "JWT emitido pela API (cookie HttpOnly ou header Authorization).",
                 Name = "Authorization",
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.Http,
@@ -50,7 +65,7 @@ public sealed class Program
         });
 
         builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
-        builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection("Authentication:Google"));
+        builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection(GoogleAuthSettings.SectionName));
 
         var jwt = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
             ?? throw new InvalidOperationException("JwtSettings section is missing.");
@@ -73,10 +88,30 @@ public sealed class Program
                     ValidIssuer = jwt.Issuer,
                     ValidAudience = jwt.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
+                    NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier,
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var cookieName = jwt.AuthCookieName;
+                        if (context.Request.Cookies.TryGetValue(cookieName, out var tokenFromCookie) &&
+                            !string.IsNullOrWhiteSpace(tokenFromCookie))
+                        {
+                            context.Token = tokenFromCookie;
+                        }
+
+                        return Task.CompletedTask;
+                    },
                 };
             });
 
         builder.Services.AddAuthorization();
+        builder.Services.AddScoped<RequireFamilyFilter>();
+        builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+        builder.Services.AddScoped<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
+        builder.Services.AddScoped<IJwtTokenIssuer, JwtTokenIssuer>();
+        builder.Services.AddScoped<IAuthService, AuthService>();
 
         builder.Services.AddCors(options =>
         {
@@ -84,7 +119,8 @@ public sealed class Program
             {
                 policy.WithOrigins("http://localhost:3000")
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             });
         });
 

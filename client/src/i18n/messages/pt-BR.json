@@ -14,13 +14,25 @@
     "description": "O endereço pode estar incorreto ou a página foi movida.",
     "homeLink": "Voltar ao início"
   },
+  "login": {
+    "title": "Entrar",
+    "preparing": "Preparando sessão segura…",
+    "missingClientId": "Defina NEXT_PUBLIC_GOOGLE_CLIENT_ID no .env.local (Client ID Web da Google).",
+    "antiforgeryError": "Não foi possível obter o token antiforgery.",
+    "loginFailed": "Falha ao concluir o login.",
+    "googleUiError": "O fluxo do Google foi interrompido."
+  },
+  "welcome": {
+    "title": "Login concluído",
+    "message": "Você está autenticado. Esta é uma página inicial após o sucesso do login."
+  },
   "home": {
     "title": "Project Ours",
     "subtitle": "Metas e atividades em família, com privacidade entre membros.",
     "ctaGoogle": "Entrar com Google",
     "apiHealth": {
       "missingUrlTitle": "URL da API",
-      "missingUrl": "Defina NEXT_PUBLIC_API_URL no .env.local (ex.: http://localhost:5280, igual ao dotnet run da API).",
+      "missingUrl": "Para chamadas diretas ao host da API, defina NEXT_PUBLIC_API_URL. Com o proxy Next (`/api`), deixe vazio e use BACKEND_URL no .env.local para o rewrite.",
       "checking": "Verificando conexão com a API…",
       "errorTitle": "API indisponível",
       "error": "Confira se o servidor está em execução e se a porta coincide com launchSettings (5280).",

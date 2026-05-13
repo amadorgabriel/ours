@@ -26,7 +26,7 @@ dotnet run
 
 Swagger (Development): `http://localhost:5280/swagger`
 
-Health check: `GET http://localhost:5280/health`
+Health check: `GET http://localhost:5280/api/health`
 
 ## Configuração
 

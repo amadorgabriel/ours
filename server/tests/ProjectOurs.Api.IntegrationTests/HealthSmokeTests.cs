@@ -27,11 +27,11 @@ public sealed class HealthSmokeTests
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            await db.Database.EnsureCreatedAsync();
+            await db.Database.MigrateAsync();
         }
 
         var client = factory.CreateClient();
-        var response = await client.GetAsync("/health");
+        var response = await client.GetAsync("/api/health");
         response.EnsureSuccessStatusCode();
     }
 }

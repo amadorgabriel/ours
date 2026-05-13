@@ -3,6 +3,7 @@
 import { Button, Container, Stack, Text, Title } from '@mantine/core';
 import { IconBrandGoogle } from '@tabler/icons-react';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 
 export function HomePage() {
   const t = useTranslations('home');
@@ -15,6 +16,8 @@ export function HomePage() {
           {t('subtitle')}
         </Text>
         <Button
+          component={Link}
+          href="/login"
           leftSection={<IconBrandGoogle size={20} aria-hidden />}
           size="md"
           variant="filled"

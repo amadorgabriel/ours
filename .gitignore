@@ -90,3 +90,5 @@ yarn-error.log*
 # Docs (rascunhos locais)
 _docs/mvp.md
 _docs/mvp_copy.md
+frontend-setup-prompt.md
+client-standard.md
