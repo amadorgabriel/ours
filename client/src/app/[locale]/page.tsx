@@ -1,5 +1,5 @@
-import { setRequestLocale } from 'next-intl/server';
-import { HomePage } from '@/modules/home/presentation/HomePage';
+import { redirect } from 'next/navigation';
+import { routing } from '@/i18n/routing';
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -7,11 +7,7 @@ type PageProps = {
 
 export default async function Page({ params }: PageProps) {
   const { locale } = await params;
-  setRequestLocale(locale);
+  const loginPath = locale === routing.defaultLocale ? '/login' : `/${locale}/login`;
 
-  return (
-    <div className="flex flex-col flex-1 items-stretch bg-zinc-50 dark:bg-zinc-950">
-      <HomePage />
-    </div>
-  );
+  redirect(loginPath);
 }

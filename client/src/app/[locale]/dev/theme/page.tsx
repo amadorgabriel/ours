@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 
-import { ThemeSchemeTools } from '@/modules/dev-theme/presentation/ThemeSchemeTools';
+import { ThemeSchemeTools } from '@/presentation/modules/dev-theme';
 
 export const metadata: Metadata = {
   title: 'Dev — tema',

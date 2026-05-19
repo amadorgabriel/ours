@@ -3,8 +3,8 @@ import './globals.css';
 import { Geist, Geist_Mono } from 'next/font/google';
 import Link from 'next/link';
 
-import { MantineColorSchemeBootstrap } from '@/core/presentation/theme/MantineColorSchemeBootstrap';
 import messages from '@/i18n/messages/pt-BR.json';
+import { MantineColorSchemeBootstrap } from '@/presentation/theme/MantineColorSchemeBootstrap';
 
 const copy = messages.notFound;
 

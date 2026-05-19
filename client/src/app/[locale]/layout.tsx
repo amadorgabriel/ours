@@ -5,9 +5,9 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
-import { AppProviders } from '@/core/presentation/providers/AppProviders';
-import { MantineColorSchemeBootstrap } from '@/core/presentation/theme/MantineColorSchemeBootstrap';
 import { routing } from '@/i18n/routing';
+import { AppProviders } from '@/presentation/providers/AppProviders';
+import { MantineColorSchemeBootstrap } from '@/presentation/theme/MantineColorSchemeBootstrap';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

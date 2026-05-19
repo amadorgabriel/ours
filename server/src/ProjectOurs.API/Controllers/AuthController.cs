@@ -25,6 +25,13 @@ public sealed class AuthController(
         return Ok(new { requestToken = tokens.RequestToken });
     }
 
+    [Authorize]
+    [HttpGet("session")]
+    [IgnoreAntiforgeryToken]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public IActionResult Session() => NoContent();
+
     [HttpPost("google")]
     public async Task<ActionResult<AuthResponse>> Google([FromBody] GoogleLoginRequest body, CancellationToken cancellationToken)
     {

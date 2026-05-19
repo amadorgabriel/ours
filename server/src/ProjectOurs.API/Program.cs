@@ -25,7 +25,7 @@ public sealed class Program
             options.HeaderName = "RequestVerificationToken";
         });
 
-        builder.Services.AddControllers(options =>
+        builder.Services.AddControllersWithViews(options =>
         {
             options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
         });
