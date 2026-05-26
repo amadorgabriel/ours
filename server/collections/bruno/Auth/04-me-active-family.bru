@@ -1,0 +1,47 @@
+meta {
+  name: 04 - GET me active-family
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/me/active-family
+  body: none
+  auth: none
+}
+
+headers {
+  X-Family-Id: {{familyId}}
+}
+
+script:post-response {
+  if (res.status === 200) {
+    const json = res.getBody();
+    console.log("Família ativa:", json.familyName);
+    console.log("Role:", json.role);
+  } else if (res.status === 400) {
+    console.log("Header X-Family-Id ausente ou inválido");
+  } else if (res.status === 401) {
+    console.log("Não autenticado. Execute login primeiro.");
+  } else if (res.status === 403) {
+    console.log("Usuário não é membro desta família");
+  }
+}
+
+docs {
+  ## Pré-requisitos
+  
+  1. Execute login (02-google-login) primeiro
+  2. Defina a variável `familyId` com o GUID de uma família do qual o usuário é membro
+  
+  ## Header X-Family-Id
+  
+  Obrigatório para operações específicas de família quando o usuário tem múltiplas famílias.
+  
+  ## Possíveis respostas
+  
+  - `200`: Dados da família e role do usuário
+  - `400`: Header X-Family-Id ausente ou GUID inválido
+  - `401`: Sessão inválida
+  - `403`: Usuário não é membro da família especificada
+}

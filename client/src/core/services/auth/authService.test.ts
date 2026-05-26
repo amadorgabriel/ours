@@ -29,9 +29,31 @@ describe('authService', () => {
   });
 
   it('postGoogleLogin sends JSON body and antiforgery header', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => Promise.resolve(new Response('', { status: 200 }))));
+    const mockResponse = {
+      user: {
+        id: 'user-123',
+        email: 'test@example.com',
+        name: 'Test User',
+        picture: null,
+        families: [],
+      },
+      isNewUser: true,
+      familyCount: 0,
+    };
 
-    await postGoogleLogin('id-token-value', 'vf-token');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Promise.resolve(
+          new Response(JSON.stringify(mockResponse), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        ),
+      ),
+    );
+
+    const result = await postGoogleLogin('id-token-value', 'vf-token');
 
     expect(fetch).toHaveBeenCalledWith(
       '/api/auth/google',
@@ -45,5 +67,10 @@ describe('authService', () => {
         body: JSON.stringify({ idToken: 'id-token-value' }),
       }),
     );
+
+    // Verify it returns parsed AuthResponse
+    expect(result).toEqual(mockResponse);
+    expect(result.isNewUser).toBe(true);
+    expect(result.familyCount).toBe(0);
   });
 });

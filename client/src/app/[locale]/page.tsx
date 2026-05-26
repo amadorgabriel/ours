@@ -1,4 +1,6 @@
 import { redirect } from 'next/navigation';
+
+import { hasActiveSession } from '@/core/services/auth/authSession';
 import { routing } from '@/i18n/routing';
 
 type PageProps = {
@@ -7,7 +9,13 @@ type PageProps = {
 
 export default async function Page({ params }: PageProps) {
   const { locale } = await params;
-  const loginPath = locale === routing.defaultLocale ? '/login' : `/${locale}/login`;
+  const isDefaultLocale = locale === routing.defaultLocale;
 
+  if (await hasActiveSession()) {
+    const welcomePath = isDefaultLocale ? '/welcome' : `/${locale}/welcome`;
+    redirect(welcomePath);
+  }
+
+  const loginPath = isDefaultLocale ? '/login' : `/${locale}/login`;
   redirect(loginPath);
 }

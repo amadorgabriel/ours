@@ -1,0 +1,51 @@
+meta {
+  name: 02 - POST Google login
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/google
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  RequestVerificationToken: {{requestToken}}
+}
+
+body:json {
+  {
+    "idToken": "{{googleIdToken}}"
+  }
+}
+
+script:post-response {
+  // Cookie po_auth é setado automaticamente pelo servidor
+  // Bruno gerencia cookies na sessão automaticamente
+  if (res.status === 200) {
+    console.log("Login OK! Cookie po_auth armazenado.");
+  } else if (res.status === 401) {
+    console.log("Token Google inválido. Obtenha um novo idToken.");
+  } else if (res.status === 403) {
+    console.log("Email não verificado no Google.");
+  }
+}
+
+docs {
+  ## Pré-requisito
+  
+  1. Execute o request 01-antiforgery primeiro para obter o token
+  2. Obtenha um `idToken` válido do Google OAuth:
+     - Abra o app em localhost:3000
+     - Abra DevTools > Console
+     - Execute: `gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token`
+     - Ou use o fluxo de login e capture na aba Network
+  3. Defina a variável `googleIdToken` no ambiente ou coleção
+  
+  ## Notas
+  
+  - Este request requer um token Google real (não pode ser mockado)
+  - Para CI/testes automatizados, use os testes de integração .NET com `FakeGoogleIdTokenValidator`
+}

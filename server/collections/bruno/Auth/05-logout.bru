@@ -1,0 +1,41 @@
+meta {
+  name: 05 - POST logout
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/auth/logout
+  body: none
+  auth: none
+}
+
+headers {
+  RequestVerificationToken: {{requestToken}}
+}
+
+script:pre-request {
+  // Renova o token antiforgery antes de logout (se necessário)
+  // Ou execute 01-antiforgery novamente e copie o token manualmente
+}
+
+script:post-response {
+  if (res.status === 204) {
+    console.log("Logout OK! Cookie po_auth removido.");
+  } else if (res.status === 400) {
+    console.log("Token antiforgery inválido ou ausente. Execute 01-antiforgery novamente.");
+  }
+}
+
+docs {
+  ## Pré-requisitos
+  
+  1. Execute 01-antiforgery para obter um token antiforgery fresco
+  2. Certifique-se de que o cookie po_auth está na sessão (já logado)
+  
+  ## Notas
+  
+  O logout requer um antiforgery token válido para prevenir CSRF.
+  
+  Após logout, o cookie po_auth é invalidado no servidor.
+}

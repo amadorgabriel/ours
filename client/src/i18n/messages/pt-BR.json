@@ -16,15 +16,48 @@
   },
   "login": {
     "title": "Entrar",
+    "tagline": "Cuide dos seus pais junto com seus irmãos",
     "preparing": "Preparando sessão segura…",
     "missingClientId": "Defina NEXT_PUBLIC_GOOGLE_CLIENT_ID no .env.local (Client ID Web da Google).",
     "antiforgeryError": "Não foi possível obter o token antiforgery.",
     "loginFailed": "Falha ao concluir o login.",
-    "googleUiError": "O fluxo do Google foi interrompido."
+    "googleUiError": "O fluxo do Google foi interrompido.",
+    "ctaGoogle": "Entrar com Google",
+    "footer": {
+      "terms": "Termos de uso",
+      "privacy": "Privacidade",
+      "separator": "•"
+    }
   },
   "welcome": {
     "title": "Login concluído",
     "message": "Você está autenticado. Esta é uma página inicial após o sucesso do login."
+  },
+  "onboarding": {
+    "title": "Bem-vindo!",
+    "description": "Para começar, crie sua família:",
+    "familyNameLabel": "Nome da Família",
+    "familyNamePlaceholder": "Família Silva",
+    "createFamily": "Criar Família",
+    "adminNote": "Ao criar, você será o administrador e poderá convidar seus irmãos."
+  },
+  "dashboard": {
+    "title": "Início",
+    "callNow": {
+      "button": "LIGUEI AGORA",
+      "hint": "Toque para registrar"
+    },
+    "weeklySummary": "Resumo da Semana",
+    "activityFeed": "Atividades",
+    "placeholder": "Em breve...",
+    "logout": "Sair"
+  },
+  "families": {
+    "select": {
+      "title": "Selecionar Família",
+      "description": "Escolha qual família deseja acessar:",
+      "createNew": "Criar nova família"
+    }
   },
   "home": {
     "title": "Project Ours",

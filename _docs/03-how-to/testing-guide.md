@@ -681,12 +681,30 @@ test.describe('Financial Privacy', () => {
 
 ## Checklist de Testes por Feature
 
-### US-001: Autenticação
-- [ ] Login com Google retorna JWT válido
-- [ ] Token inválido retorna 401
-- [ ] Email não verificado retorna 403
-- [ ] Novo usuário redirecionado para onboarding
-- [ ] Usuário existente redirecionado para dashboard
+### US-001: Autenticação (Cookie HttpOnly)
+
+#### Backend (xUnit)
+- [x] `GET /auth/antiforgery` retorna requestToken
+- [x] `POST /auth/google` com antiforgery retorna AuthResponse + cookie `po_auth`
+- [x] `POST /auth/google` sem antiforgery retorna 400
+- [x] Token Google inválido retorna 401
+- [x] Email não verificado retorna 403
+- [x] `GET /auth/session` com cookie válido retorna 204
+- [x] `GET /auth/session` sem cookie retorna 401
+- [x] `POST /auth/logout` limpa cookie
+
+#### Frontend (Vitest)
+- [x] `resolvePostLoginRoute` — newUser+0 families → /onboarding
+- [x] `resolvePostLoginRoute` — existing+1 family → /dashboard
+- [x] `resolvePostLoginRoute` — existing+2 families → /families/select
+- [x] `authGateway` — parseia AuthResponse corretamente
+- [x] `authGateway` — lança erro em status não-OK
+
+#### Manual (Bruno)
+- [ ] Coleção: antiforgery → login → session → active-family → logout
+- [ ] Browser: novo usuário vai para /onboarding
+- [ ] Browser: usuário com 1 família vai para /dashboard
+- [ ] Browser: logout bloqueia acesso a /dashboard
 
 ### US-002/003: Convites
 - [ ] Apenas admin pode gerar convite
@@ -710,6 +728,21 @@ test.describe('Financial Privacy', () => {
 - [ ] Meta atingida muda status
 - [ ] **PRIVACIDADE**: NINGUÉM vê contribuições individuais
 - [ ] Usuário vê próprio total
+
+---
+
+## Testes Manuais com Bruno
+
+Para smoke tests e exploração de API, use a [coleção Bruno](../server/collections/bruno/):
+
+```bash
+cd server/collections/bruno
+bruno .
+```
+
+Fluxo recomendado: `01-antiforgery` → `02-google-login` → `03-session` → `04-me-active-family` → `05-logout`
+
+Ver [guia completo](./bruno-api-testing.md).
 
 ---
 
@@ -741,7 +774,7 @@ npm run test:ui
 # Executar com cobertura
 npm run test:coverage
 
-# Executar E2E
+# Executar E2E (quando implementados)
 npm run test:e2e
 
 # Executar E2E com UI

@@ -1,0 +1,29 @@
+meta {
+  name: 03 - GET session (check auth)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/auth/session
+  body: none
+  auth: none
+}
+
+script:post-response {
+  if (res.status === 204) {
+    console.log("Sessão válida! Usuário autenticado.");
+  } else if (res.status === 401) {
+    console.log("Sessão inválida ou expirada. Execute login novamente.");
+  }
+}
+
+docs {
+  ## Propósito
+  
+  Verifica se o cookie `po_auth` é válido sem expor dados do usuário.
+  
+  Usado pelo frontend para:
+  - Decidir se redireciona para /login ou /dashboard
+  - Verificar sessão antes de operações sensíveis
+}

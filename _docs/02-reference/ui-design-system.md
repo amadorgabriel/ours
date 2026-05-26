@@ -617,11 +617,54 @@
 
 ---
 
+## Implementação
+
+### Stack Técnica
+- **Mantine**: Componentes base e tema
+- **Tailwind**: Utilitários para layouts customizados
+- **next-intl**: Internacionalização de strings
+
+### Tokens → Código
+
+Ver [Design Tokens](./design-tokens.md) para mapeamento completo:
+- Cores do tema Mantine
+- Classes Tailwind equivalentes
+- Componentes canônicos (`AuthLayout`, `PrimaryButton`, `PageShell`)
+
+### i18n (next-intl)
+
+Todas as strings de UI devem usar chaves next-intl:
+
+```typescript
+// Client
+const t = useTranslations('login');
+<Button>{t('ctaGoogle')}</Button>
+
+// Server
+const t = await getTranslations('login');
+```
+
+### Checklist por PR (UI/UX)
+
+- [ ] Mobile-first: testado em 375px
+- [ ] Touch targets ≥ 44px
+- [ ] Labels/aria-label em controles
+- [ ] Estados loading implementados
+- [ ] Estados error implementados
+- [ ] Empty state (se aplicável)
+- [ ] i18n: strings em `pt-BR.json`
+- [ ] Sem rankings ou comparações
+- [ ] Privacidade: dados agregados apenas
+- [ ] Contraste validado
+
+---
+
 ## Próximos Passos
 
-1. **[Fluxos de Tela no PRD](../prd-summary.md)** — User Stories detalhadas
-2. **[Testing Guide](../03-how-to/testing-guide.md)** — Testes de UI/UX
-3. **[Agent Context](../04-agent/agent-context.md)** — Contexto visual para IA
+1. **[Design Tokens](./design-tokens.md)** — Tokens técnicos para implementação
+2. **[Fluxos de Tela no PRD](../prd-summary.md)** — User Stories detalhadas
+3. **[Testing Guide](../03-how-to/testing-guide.md)** — Testes de UI/UX
+4. **[Agent Context](../04-agent/agent-context.md)** — Contexto visual para IA
 
 ---
 

@@ -1,3 +1,5 @@
+import type { AuthResponse } from '@/core/domain/auth/types';
+
 const antiforgeryPath = '/api/auth/antiforgery';
 const googleLoginPath = '/api/auth/google';
 
@@ -16,7 +18,7 @@ export async function fetchAntiforgeryTokenFromApi(): Promise<string> {
 export async function postGoogleLoginToApi(
   idToken: string,
   requestVerificationToken: string,
-): Promise<void> {
+): Promise<AuthResponse> {
   const res = await fetch(googleLoginPath, {
     method: 'POST',
     credentials: 'include',
@@ -26,8 +28,13 @@ export async function postGoogleLoginToApi(
     },
     body: JSON.stringify({ idToken }),
   });
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Google login failed: ${res.status} ${text}`);
   }
+
+  // Parse e retorna o AuthResponse
+  const data = (await res.json()) as AuthResponse;
+  return data;
 }

@@ -13,10 +13,24 @@ Produção: https://api.ours.app/api
 ```
 
 ### Headers Padrão
+
 ```
 Content-Type: application/json
-Authorization: Bearer {jwt_token}
-X-Family-Id: {uuid}  # Quando operação é específica de família
+X-Family-Id: {uuid}              # Quando operação é específica de família
+RequestVerificationToken: {token}  # Obrigatório em POST/PUT/DELETE
+```
+
+**Autenticação:** Sessão via cookie HttpOnly `po_auth`. **Não** enviar `Authorization: Bearer`.
+
+**Antiforgery:** Obter token em `GET /auth/antiforgery` antes de qualquer mutação.
+
+**Exemplo completo:**
+```bash
+curl -H "RequestVerificationToken: <token>" \
+     -H "X-Family-Id: <family-uuid>" \
+     -b cookies.txt \
+     -X POST \
+     /api/families/invite
 ```
 
 ### Respostas
@@ -31,8 +45,30 @@ X-Family-Id: {uuid}  # Quando operação é específica de família
 
 ## Autenticação
 
+### GET /auth/antiforgery
+
+Obtém token antiforgery para uso em mutações (POST/PUT/DELETE).
+
+**Response (200):**
+```json
+{
+  "requestToken": "string"
+}
+```
+
+**Cookies set:** Cookie antiforgery (`.AspNetCore.Antiforgery.*`)
+
+---
+
 ### POST /auth/google
-Autenticação via Google OAuth.
+
+Autenticação via Google OAuth. Cookie `po_auth` é setado na resposta.
+
+**Headers:**
+```
+RequestVerificationToken: {token_do_antiforgery}
+Content-Type: application/json
+```
 
 **Request:**
 ```json
@@ -44,7 +80,6 @@ Autenticação via Google OAuth.
 **Response (200):**
 ```json
 {
-  "token": "jwt_token_string",
   "user": {
     "id": "uuid",
     "email": "user@email.com",
@@ -59,9 +94,39 @@ Autenticação via Google OAuth.
 }
 ```
 
+**Cookies set:** `po_auth` (JWT HttpOnly, 24h)
+
 **Erros:**
+- `400`: Missing antiforgery token
 - `401`: Token Google inválido ou expirado
 - `403`: Email não verificado no Google
+
+---
+
+### GET /auth/session
+
+Verifica validade da sessão atual (para SSR/redirects).
+
+**Cookies enviados:** `po_auth`
+
+**Response:**
+- `204` — Sessão válida
+- `401` — Sessão inválida ou expirada
+
+---
+
+### POST /auth/logout
+
+Encerra sessão atual. Requer novo antiforgery token.
+
+**Headers:**
+```
+RequestVerificationToken: {token_renovado}
+```
+
+**Response:**
+- `204` — Logout OK (cookie `po_auth` removido)
+- `400` — Missing antiforgery token
 
 ---
 
@@ -70,7 +135,7 @@ Autenticação via Google OAuth.
 ### POST /families
 Cria nova família. Usuário vira admin automaticamente.
 
-**Headers:** `Authorization: Bearer {token}`
+**Headers:** `X-Family-Id: {uuid}` (se aplicável) — autenticação via cookie `po_auth`
 
 **Request:**
 ```json
@@ -100,7 +165,7 @@ Cria nova família. Usuário vira admin automaticamente.
 ### GET /families
 Lista todas as famílias do usuário autenticado.
 
-**Headers:** `Authorization: Bearer {token}`
+**Headers:** `X-Family-Id: {uuid}` (se aplicável) — autenticação via cookie `po_auth`
 
 **Response (200):**
 ```json
@@ -121,7 +186,7 @@ Lista todas as famílias do usuário autenticado.
 ### GET /families/{familyId}
 Detalhe completo de uma família (membros, pais, convite ativo).
 
-**Headers:** `Authorization: Bearer {token}`
+**Headers:** `X-Family-Id: {uuid}` (se aplicável) — autenticação via cookie `po_auth`
 
 **Response (200):**
 ```json
@@ -184,7 +249,7 @@ Gera convite para família (apenas admin).
 ### POST /families/join
 Solicita entrada em família via código.
 
-**Headers:** `Authorization: Bearer {token}`
+**Headers:** `X-Family-Id: {uuid}` (se aplicável) — autenticação via cookie `po_auth`
 
 **Request:**
 ```json
@@ -268,7 +333,7 @@ Rejeita solicitação de entrada (apenas admin).
 ### PUT /families/parents/{parentId}
 Atualiza dados do pai/mãe (apenas admin).
 
-**Headers:** `Authorization: Bearer {token}`
+**Headers:** `X-Family-Id: {uuid}` (se aplicável) — autenticação via cookie `po_auth`
 
 **Request:**
 ```json
@@ -302,7 +367,7 @@ Atualiza dados do pai/mãe (apenas admin).
 ### POST /activities/call
 Registra ligação realizada.
 
-**Headers:** `Authorization: Bearer {token}`
+**Headers:** `X-Family-Id: {uuid}` (se aplicável) — autenticação via cookie `po_auth`
 
 **Request:**
 ```json
@@ -465,7 +530,7 @@ Lista metas da família.
 ### GET /goals/{goalId}
 Detalhes da meta.
 
-**Headers:** `Authorization: Bearer {token}`
+**Headers:** `X-Family-Id: {uuid}` (se aplicável) — autenticação via cookie `po_auth`
 
 **Response (200):**
 ```json
@@ -498,7 +563,7 @@ Detalhes da meta.
 ### POST /goals/{goalId}/contribute
 Contribui para meta.
 
-**Headers:** `Authorization: Bearer {token}`
+**Headers:** `X-Family-Id: {uuid}` (se aplicável) — autenticação via cookie `po_auth`
 
 **Request:**
 ```json
@@ -537,7 +602,7 @@ Contribui para meta.
 ### GET /goals/my-contributions
 Histórico de contribuições do usuário logado.
 
-**Headers:** `Authorization: Bearer {token}`
+**Headers:** `X-Family-Id: {uuid}` (se aplicável) — autenticação via cookie `po_auth`
 
 **Response (200):**
 ```json
@@ -560,7 +625,7 @@ Histórico de contribuições do usuário logado.
 ### POST /goals/{goalId}/cancel
 Cancela meta (apenas admin ou criador).
 
-**Headers:** `Authorization: Bearer {token}`
+**Headers:** `X-Family-Id: {uuid}` (se aplicável) — autenticação via cookie `po_auth`
 
 **Response (200):**
 ```json
@@ -577,29 +642,34 @@ Cancela meta (apenas admin ou criador).
 
 ## Códigos HTTP por Endpoint
 
-| Endpoint | 200 | 201 | 400 | 401 | 403 | 404 |
-|----------|-----|-----|-----|-----|-----|-----|
-| POST /auth/google | - | - | ✅ | ✅ | ✅ | - |
-| POST /families | - | ✅ | ✅ | ✅ | - | - |
-| GET /families | ✅ | - | - | ✅ | - | - |
-| GET /families/{id} | ✅ | - | - | ✅ | ✅ | ✅ |
-| POST /families/invite | - | ✅ | ✅ | ✅ | ✅ | - |
-| POST /families/join | ✅ | - | ✅ | ✅ | - | - |
-| GET /families/pending-approvals | ✅ | - | - | ✅ | ✅ | - |
-| POST /families/approve/{id} | ✅ | - | - | ✅ | ✅ | ✅ |
-| PUT /families/parents/{id} | ✅ | - | ✅ | ✅ | ✅ | ✅ |
-| POST /activities/call | - | ✅ | ✅ | ✅ | - | - |
-| GET /activities/feed | ✅ | - | - | ✅ | - | - |
-| GET /activities/my-stats | ✅ | - | - | ✅ | - | - |
-| POST /goals | - | ✅ | ✅ | ✅ | - | - |
-| GET /goals | ✅ | - | - | ✅ | - | - |
-| GET /goals/{id} | ✅ | - | - | ✅ | - | ✅ |
-| POST /goals/{id}/contribute | ✅ | - | ✅ | ✅ | - | ✅ |
-| POST /goals/{id}/cancel | ✅ | - | ✅ | ✅ | ✅ | ✅ |
+| Endpoint | 200 | 201 | 204 | 400 | 401 | 403 | 404 |
+|----------|-----|-----|-----|-----|-----|-----|-----|
+| GET /auth/antiforgery | ✅ | - | - | - | - | - | - |
+| POST /auth/google | - | - | - | ✅ | ✅ | ✅ | - |
+| GET /auth/session | - | - | ✅ | - | ✅ | - | - |
+| POST /auth/logout | - | - | ✅ | ✅ | - | - | - |
+| POST /families | - | ✅ | - | ✅ | ✅ | ✅ | - |
+| GET /families | ✅ | - | - | - | ✅ | - | - |
+| GET /families/{id} | ✅ | - | - | - | ✅ | ✅ | ✅ |
+| POST /families/invite | - | ✅ | - | ✅ | ✅ | ✅ | - |
+| POST /families/join | ✅ | - | - | ✅ | ✅ | - | - |
+| GET /families/pending-approvals | ✅ | - | - | - | ✅ | ✅ | - |
+| POST /families/approve/{id} | ✅ | - | - | - | ✅ | ✅ | ✅ |
+| PUT /families/parents/{id} | ✅ | - | - | - | ✅ | ✅ | ✅ |
+| POST /activities/call | - | ✅ | - | ✅ | ✅ | - | - |
+| GET /activities/feed | ✅ | - | - | - | ✅ | - | - |
+| GET /activities/my-stats | ✅ | - | - | - | ✅ | - | - |
+| POST /goals | - | ✅ | - | ✅ | ✅ | - | - |
+| GET /goals | ✅ | - | - | - | ✅ | - | - |
+| GET /goals/{id} | ✅ | - | - | - | ✅ | - | ✅ |
+| POST /goals/{id}/contribute | ✅ | - | - | ✅ | ✅ | - | ✅ |
+| POST /goals/{id}/cancel | ✅ | - | - | ✅ | ✅ | ✅ | ✅ |
 
 ---
 
-## Estrutura JWT
+## Estrutura JWT (Cookie HttpOnly)
+
+O JWT é emitido pelo servidor e armazenado em cookie HttpOnly `po_auth`. **Nunca** exposto no corpo da resposta.
 
 ```json
 {
@@ -612,8 +682,18 @@ Cancela meta (apenas admin ou criador).
 }
 ```
 
-**Nota:** Role (Admin/Member) e família NÃO estão no JWT — obtidos via `FamilyMembership` no banco.
+**Notas:**
+- Role (Admin/Member) e família NÃO estão no JWT — obtidos via `FamilyMembership` no banco
+- Cookie: HttpOnly, Secure, SameSite=Strict
+- Antiforgery token obrigatório em mutações
 
 ---
 
-*Versão API: 1.0 | Última atualização: Maio 2026*
+## Referências
+
+- [Login Flow](./login-flow.md) — Fluxo completo de autenticação
+- [Security Model](../01-explanation/03-security-model.md) — Privacidade e proteções
+
+---
+
+*Versão API: 1.1 | Auth: Cookie HttpOnly + Antiforgery | Última atualização: Maio 2026*

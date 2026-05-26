@@ -217,16 +217,18 @@ USING (
 
 ### Autenticação
 
-#### Fluxo JWT
+#### Fluxo JWT + Cookie HttpOnly
+
 ```
 1. Google OAuth → Validação Google → Gera JWT próprio
-2. JWT contém: sub (userId), email, iat, exp, iss, aud
-3. NÃO contém: role, familyId (isso vem do banco)
-4. Expiração: 24 horas
-5. Refresh: Não implementado no MVP (re-login após expirar)
+2. JWT emitido pelo servidor, armazenado em cookie HttpOnly `po_auth`
+3. NÃO expõe JWT no localStorage/sessionStorage
+4. Antiforgery token em mutações (POST/PUT/DELETE) para CSRF protection
+5. Expiração: 24 horas (cookie)
+6. Refresh: Não implementado no MVP (re-login após expirar)
 ```
 
-#### Configuração JWT
+#### Configuração JWT (Backend)
 ```csharp
 // appsettings.json
 {
@@ -238,6 +240,33 @@ USING (
   }
 }
 ```
+
+#### Cookie HttpOnly (Segurança)
+
+| Atributo | Valor | Proteção |
+|----------|-------|----------|
+| `HttpOnly` | `true` | JavaScript não acessa o token |
+| `Secure` | `true` (prod) | Só HTTPS |
+| `SameSite` | `Strict` | CSRF via links externos |
+| `Max-Age` | 24 horas | Expiração automática |
+
+#### Antiforgery Token
+
+Toda mutação (POST/PUT/DELETE) requer antiforgery token no header:
+
+```
+POST /api/auth/google
+RequestVerificationToken: <token_obtido_em_GET_/api/auth/antiforgery>
+```
+
+```
+POST /api/auth/logout
+RequestVerificationToken: <token_renovado>
+```
+
+**Por que antiforgery + cookie?**
+- Cookie HttpOnly previne XSS no token JWT
+- Antiforgery previne CSRF (ataques cross-site forjados)
 
 ### Autorização
 
@@ -314,11 +343,12 @@ const createGoalSchema = z.object({
 |--------|-----------|---------------|
 | **SQL Injection** | EF Core ORM | Parameterized queries |
 | **XSS** | React escaping, CSP | `Content-Security-Policy` headers |
-| **CSRF** | JWT em header | Não usar cookies para auth |
+| **CSRF** | Antiforgery token + SameSite cookie | `RequestVerificationToken` header em mutações |
 | **IDOR** | Validação de ownership | Verificar userId em toda requisição |
 | **Data Leak** | Anonimização | Repository pattern com filtro |
 | **Brute Force** | Rate limiting | Nginx limit_req ou middleware |
 | **Information Disclosure** | Headers de segurança | `X-Content-Type-Options`, `X-Frame-Options` |
+| **Session Hijacking** | HttpOnly cookie + HTTPS | Cookie não acessível via JS |
 
 ---
 
@@ -360,10 +390,11 @@ const createGoalSchema = z.object({
 
 ## Próximos Passos
 
-1. **[API Reference](../02-reference/api-reference.md)** — Ver segurança em endpoints
-2. **[Testing Guide](../03-how-to/testing-guide.md)** — Testes de segurança
-3. **[Database Schema](../02-reference/database-schema.md)** — Modelo de dados seguro
+1. **[Login Flow](../03-how-to/login-flow.md)** — Diagrama completo de autenticação
+2. **[API Reference](../02-reference/api-reference.md)** — Ver segurança em endpoints
+3. **[Testing Guide](../03-how-to/testing-guide.md)** — Testes de segurança
+4. **[Database Schema](../02-reference/database-schema.md)** — Modelo de dados seguro
 
 ---
 
-*Última atualização: Maio 2026 | Security Model v1.0*
+*Última atualização: Maio 2026 | Security Model v1.1*

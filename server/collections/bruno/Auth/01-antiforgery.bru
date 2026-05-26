@@ -1,0 +1,17 @@
+meta {
+  name: 01 - GET antiforgery
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/auth/antiforgery
+  body: none
+  auth: none
+}
+
+script:post-response {
+  // Guarda o requestToken para uso nos próximos requests
+  const json = res.getBody();
+  bru.setVar("requestToken", json.requestToken);
+}

@@ -60,10 +60,13 @@ Use [Agent Context](../04-agent/agent-context.md) — contém todo o contexto do
 
 ### How-to (Prático)
 
+- [Login Flow](../03-how-to/login-flow.md) — Fluxo completo de autenticação
+- [Bruno Testing](../03-how-to/bruno-api-testing.md) — Testes manuais de API
 - [Testing Guide](../03-how-to/testing-guide.md) — Testes unit, integration, E2E
 - [DevOps & Deployment](../03-how-to/devops-deployment.md) — Infra, CI/CD, ambientes
 - [Observability & Ops](../03-how-to/observability-ops.md) — Logs, métricas, troubleshooting
 - [Release Plan](../03-how-to/release-plan.md) — Estratégia de release, versionamento
+- [Changelog](../03-how-to/changelog.md) — Histórico de mudanças
 
 ### Agent (IA)
 
