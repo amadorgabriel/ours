@@ -3,7 +3,6 @@
 ## Status
 
 - **Bruno** (`bruno/`) — ✅ **Ativo** — Use este para testes manuais
-- **Postman** (`ProjectOurs.Auth.postman_collection.json`) — ⚠️ **Depreciado** — Mantido para referência apenas
 
 ## Recomendado: Bruno
 

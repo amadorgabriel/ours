@@ -20,22 +20,12 @@ export interface AuthResponse {
   familyCount: number;
 }
 
-export type PostLoginRoute = '/onboarding' | '/dashboard' | '/families/select';
+export type PostLoginRoute = '/dashboard';
 
 /**
- * Determina a rota de destino após login baseado no estado do usuário
+ * Sempre redireciona para /dashboard
+ * O estado do usuário (onboarding/family picker) é tratado na própria página do dashboard
  */
-export function resolvePostLoginRoute(response: AuthResponse): PostLoginRoute {
-  // Novo usuário ou sem família → onboarding
-  if (response.isNewUser || response.familyCount === 0) {
-    return '/onboarding';
-  }
-
-  // Uma família → dashboard direto
-  if (response.familyCount === 1) {
-    return '/dashboard';
-  }
-
-  // Múltiplas famílias → seletor
-  return '/families/select';
+export function resolvePostLoginRoute(): PostLoginRoute {
+  return '/dashboard';
 }

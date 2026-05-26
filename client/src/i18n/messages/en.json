@@ -1,0 +1,92 @@
+{
+  "devTheme": {
+    "title": "Theme tools (dev)",
+    "hint": "Hidden route to test light / dark / follow device. Preference stored in localStorage (Mantine).",
+    "light": "Light",
+    "dark": "Dark",
+    "auto": "Device",
+    "resolved": "Scheme applied now",
+    "toggleShortcut": "Toggle light ↔ dark",
+    "home": "Go home"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The address may be incorrect or the page has been moved.",
+    "homeLink": "Back to home"
+  },
+  "login": {
+    "title": "Sign in",
+    "tagline": "Take care of your parents together with your siblings",
+    "preparing": "Preparing secure session…",
+    "missingClientId": "Define NEXT_PUBLIC_GOOGLE_CLIENT_ID in .env.local (Google Web Client ID).",
+    "googleLoading": "Loading Google login…",
+    "googleNotReady": "Google login hasn't loaded yet. Please wait or refresh the page.",
+    "antiforgeryError": "Could not obtain antiforgery token.",
+    "loginFailed": "Failed to complete login.",
+    "googleUiError": "Google flow was interrupted.",
+    "ctaGoogle": "Sign in with Google",
+    "footer": {
+      "terms": "Terms of use",
+      "privacy": "Privacy",
+      "separator": "•"
+    }
+  },
+  "onboarding": {
+    "title": "Welcome!",
+    "description": "To get started, create your family:",
+    "familyNameLabel": "Family Name",
+    "familyNamePlaceholder": "Smith Family",
+    "createFamily": "Create Family",
+    "adminNote": "By creating, you will be the administrator and can invite your siblings."
+  },
+  "dashboard": {
+    "title": "Home",
+    "greeting": "Hi, {{name}}!",
+    "nav": {
+      "home": "Home",
+      "family": "Family",
+      "goals": "Goals"
+    },
+    "notifications": "Notifications",
+    "menu": "Menu",
+    "callNow": {
+      "button": "I CALLED NOW",
+      "hint": "Tap to register"
+    },
+    "summary": {
+      "totalCalls": "total calls",
+      "yourCalls": "your calls",
+      "goalProgress": "goal"
+    },
+    "weeklySummary": "Weekly Summary",
+    "activityFeed": "Activities",
+    "placeholder": "Coming soon...",
+    "logout": "Sign out",
+    "familyPicker": {
+      "title": "Select Family",
+      "description": "Choose which family to access:",
+      "admin": "Admin",
+      "member": "Member",
+      "members": "members",
+      "createNew": "Create new family"
+    }
+  },
+  "home": {
+    "title": "Project Ours",
+    "subtitle": "Family goals and activities, with privacy between members.",
+    "ctaGoogle": "Sign in with Google",
+    "apiHealth": {
+      "missingUrlTitle": "API URL",
+      "missingUrl": "For direct API host calls, set NEXT_PUBLIC_API_URL. With Next proxy (`/api`), leave empty and use BACKEND_URL in .env.local for the rewrite.",
+      "checking": "Checking API connection…",
+      "errorTitle": "API unavailable",
+      "error": "Check if the server is running and if the port matches launchSettings (5280).",
+      "okTitle": "API connection",
+      "ok": "Response: {status}"
+    }
+  },
+  "metadata": {
+    "title": "Project Ours",
+    "description": "Family collaboration without rankings."
+  }
+}

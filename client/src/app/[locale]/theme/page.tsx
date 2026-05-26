@@ -4,7 +4,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { ThemeSchemeTools } from '@/presentation/modules/dev-theme';
 
 export const metadata: Metadata = {
-  title: 'Dev — tema',
+  title: 'Theme',
   robots: { index: false, follow: false },
 };
 

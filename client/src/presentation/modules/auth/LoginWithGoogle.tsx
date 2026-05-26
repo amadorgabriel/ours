@@ -3,7 +3,8 @@
 import { Button, Center, Loader, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import { IconBrandGoogleFilled, IconHeartHandshake } from '@tabler/icons-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import Script from 'next/script';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { resolvePostLoginRoute } from '@/core/domain/auth/types';
 import { fetchAntiforgeryToken, postGoogleLogin } from '@/core/services/auth/authService';
@@ -55,7 +56,16 @@ export function LoginWithGoogle() {
   const [antiforgeryToken, setAntiforgeryToken] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [gsiReady, setGsiReady] = useState(false);
+  const [googleButtonReady, setGoogleButtonReady] = useState(false);
+  const hiddenGoogleButtonRef = useRef<HTMLDivElement>(null);
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '';
+
+  const markGsiReady = useCallback(() => {
+    if (typeof window !== 'undefined' && window.google?.accounts?.id) {
+      setGsiReady(true);
+    }
+  }, []);
 
   // Busca token antiforgery ao montar
   useEffect(() => {
@@ -90,8 +100,8 @@ export function LoginWithGoogle() {
 
       setIsLoggingIn(true);
       try {
-        const authResponse = await postGoogleLogin(credential, antiforgeryToken);
-        const destination = resolvePostLoginRoute(authResponse);
+        await postGoogleLogin(credential, antiforgeryToken);
+        const destination = resolvePostLoginRoute();
         router.push(destination);
       } catch (e) {
         setLoadError(e instanceof Error ? e.message : t('loginFailed'));
@@ -102,7 +112,12 @@ export function LoginWithGoogle() {
   );
 
   useEffect(() => {
-    if (!clientId || typeof window === 'undefined' || !window.google) return;
+    const container = hiddenGoogleButtonRef.current;
+    if (!clientId || !gsiReady || !container || !window.google?.accounts?.id) {
+      return;
+    }
+
+    container.replaceChildren();
 
     window.google.accounts.id.initialize({
       client_id: clientId,
@@ -112,11 +127,22 @@ export function LoginWithGoogle() {
       auto_select: false,
       cancel_on_tap_outside: false,
     });
-  }, [clientId, handleGoogleCredential]);
 
-  // Trigger login Google
+    window.google.accounts.id.renderButton(container, {
+      type: 'standard',
+      theme: 'outline',
+      size: 'large',
+      text: 'continue_with',
+      width: String(container.offsetWidth || 400),
+    });
+
+    setGoogleButtonReady(true);
+  }, [clientId, gsiReady, handleGoogleCredential]);
+
   const handleLoginClick = () => {
-    if (!window.google || !clientId) {
+    setLoadError(null);
+
+    if (!clientId) {
       setLoadError(t('missingClientId'));
       return;
     }
@@ -124,12 +150,22 @@ export function LoginWithGoogle() {
       setLoadError(t('antiforgeryError'));
       return;
     }
+    if (!window.google?.accounts?.id || !googleButtonReady) {
+      setLoadError(t('googleNotReady'));
+      return;
+    }
 
-    window.google.accounts.id.prompt();
+    const googleBtn = hiddenGoogleButtonRef.current?.querySelector('[role="button"]');
+    if (googleBtn instanceof HTMLElement) {
+      googleBtn.click();
+      return;
+    }
+
+    setLoadError(t('googleNotReady'));
   };
 
-  const isLoading = !antiforgeryToken && !loadError;
-  const isReady = !!antiforgeryToken && !!clientId && !isLoggingIn;
+  const isLoading = (!antiforgeryToken || !gsiReady || !googleButtonReady) && !loadError;
+  const isReady = !!antiforgeryToken && !!clientId && gsiReady && googleButtonReady && !isLoggingIn;
 
   if (!clientId) {
     return (
@@ -143,7 +179,14 @@ export function LoginWithGoogle() {
   }
 
   return (
-    <Stack gap="xl" align="center" w="100%">
+    <>
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={markGsiReady}
+        onReady={markGsiReady}
+      />
+      <Stack gap="xl" align="center" w="100%" className="relative max-w-sm">
       {/* Logo e ícone */}
       <Center>
         <ThemeIcon size="xl" radius="md" variant="gradient" gradient={{ from: 'blue', to: 'cyan' }}>
@@ -166,7 +209,7 @@ export function LoginWithGoogle() {
         <Center py="md">
           <Loader size="sm" />
           <Text size="sm" c="dimmed" ml="xs">
-            {t('preparing')}
+            {!antiforgeryToken ? t('preparing') : t('googleLoading')}
           </Text>
         </Center>
       )}
@@ -177,7 +220,13 @@ export function LoginWithGoogle() {
         </Text>
       )}
 
-      {/* Botão Google Custom - full-width, 48px height */}
+      {/* Botão oficial GIS (oculto) — o clique no Mantine dispara este botão */}
+      <div
+        ref={hiddenGoogleButtonRef}
+        className="pointer-events-none absolute h-12 w-full max-w-sm opacity-0"
+        aria-hidden
+      />
+
       <Button
         size="lg"
         fullWidth
@@ -208,5 +257,6 @@ export function LoginWithGoogle() {
         </a>
       </Text>
     </Stack>
+    </>
   );
 }

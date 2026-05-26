@@ -19,6 +19,8 @@
     "tagline": "Cuide dos seus pais junto com seus irmãos",
     "preparing": "Preparando sessão segura…",
     "missingClientId": "Defina NEXT_PUBLIC_GOOGLE_CLIENT_ID no .env.local (Client ID Web da Google).",
+    "googleLoading": "Carregando login do Google…",
+    "googleNotReady": "O login do Google ainda não carregou. Aguarde ou recarregue a página.",
     "antiforgeryError": "Não foi possível obter o token antiforgery.",
     "loginFailed": "Falha ao concluir o login.",
     "googleUiError": "O fluxo do Google foi interrompido.",
@@ -28,10 +30,6 @@
       "privacy": "Privacidade",
       "separator": "•"
     }
-  },
-  "welcome": {
-    "title": "Login concluído",
-    "message": "Você está autenticado. Esta é uma página inicial após o sucesso do login."
   },
   "onboarding": {
     "title": "Bem-vindo!",
@@ -43,19 +41,33 @@
   },
   "dashboard": {
     "title": "Início",
+    "greeting": "Olá, {{name}}!",
+    "nav": {
+      "home": "Início",
+      "family": "Família",
+      "goals": "Metas"
+    },
+    "notifications": "Notificações",
+    "menu": "Menu",
     "callNow": {
       "button": "LIGUEI AGORA",
       "hint": "Toque para registrar"
     },
+    "summary": {
+      "totalCalls": "ligações totais",
+      "yourCalls": "suas ligações",
+      "goalProgress": "meta"
+    },
     "weeklySummary": "Resumo da Semana",
     "activityFeed": "Atividades",
     "placeholder": "Em breve...",
-    "logout": "Sair"
-  },
-  "families": {
-    "select": {
+    "logout": "Sair",
+    "familyPicker": {
       "title": "Selecionar Família",
       "description": "Escolha qual família deseja acessar:",
+      "admin": "Admin",
+      "member": "Membro",
+      "members": "membros",
       "createNew": "Criar nova família"
     }
   },
