@@ -24,6 +24,8 @@ export function SessionBootstrap({ children }: SessionBootstrapProps) {
   useEffect(() => {
     if (data) {
       applyActiveFamilyFromSession(data, setFamilyId);
+    } else {
+      setFamilyId(null);
     }
   }, [data, setFamilyId]);
 

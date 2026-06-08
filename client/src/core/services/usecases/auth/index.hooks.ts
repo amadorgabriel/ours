@@ -34,6 +34,7 @@ export function useAntiforgeryToken(enabled = false) {
 
 export function useSession(enabled = true) {
   const { setSession, clearSession } = useAuth();
+  const { setFamilyId } = useFamily();
   const httpClient = HttpClientFactory.create();
   const useCase = new AuthGetSessionUseCase(httpClient);
 
@@ -48,6 +49,7 @@ export function useSession(enabled = true) {
         if (error instanceof HttpClientError && error.statusCode === 401) {
           setCachedAntiforgeryToken(null);
           clearSession();
+          setFamilyId(null);
           return null;
         }
         throw error;

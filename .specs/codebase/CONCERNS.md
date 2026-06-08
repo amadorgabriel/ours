@@ -6,25 +6,25 @@
 
 | Área | Risco | Detalhe |
 |------|-------|---------|
-| HTTP client | Alto | `client.ts` usa `NEXT_PUBLIC_API_URL` sem `withCredentials`, antiforgery ou `X-Family-Id` |
-| Módulo auth | Médio | Só exporta tipos; camadas application/infrastructure/presentation ausentes |
 | Módulos family/goals/activities | Baixo | Stubs sem implementação — esperado pré-MVP |
-| PRD vs client-standard | Médio | PRD antigo menciona JWT Bearer; padrão atual é cookie HttpOnly |
-| Referências quebradas | Baixo | `client-standard.md` apontava `_docs/02-reference/*` inexistentes |
+| E2E | Médio | Playwright planejado; fluxos auth cobertos só por unit + manual |
+| Google OAuth em dev | Baixo | Sem `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, login mostra erro amigável; mock no server só em Development/Testing |
 
 ## Server
 
 | Área | Risco | Detalhe |
 |------|-------|---------|
-| OAuth Google | Médio | Estrutura pronta; validação id_token em evolução |
+| JWT signing key | Médio | `appsettings.json` traz chave de dev; produção deve usar secret/env |
 | Migrations | Baixo | Schema em código; migrations EF pendentes de versionar |
+| Deploy | Médio | Sem Dockerfile/compose no repo ainda; VPS Docker planejado (ver STACK.md) |
 
 ## Documentação (resolvido 2026-06-08)
 
-- PRD duplicado em `_docs/` e `_docs/_draft/`
-- Prompts de setup duplicando client-standard
+- PRD duplicado em `_docs/` — removido; canonical em `.specs/`
 - `_docs/` deprecado em favor de `.specs/`
+- HTTP client legado (`client.ts` sem credentials/antiforgery) — substituído por `core/infra/http/`
+- Módulo auth stub — implementado em `core/domain/auth` + use cases + guards
 
 ## ec-v3-ui
 
-Repositório de referência não localizado. Padrão derivado de `client-standard` + estrutura atual até path ser fornecido.
+Referência documentada em `.specs/codebase/CONVENTIONS.md` (skill `ours-client-standard`). Client alinhado ao padrão domain/infra/presentation.
