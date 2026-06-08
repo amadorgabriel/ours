@@ -22,7 +22,7 @@ public sealed class GoogleIdTokenValidator(
             throw new InvalidOperationException("Google id token is required.");
         }
 
-        if (environment.IsDevelopment() && idToken == DevMockToken)
+        if ((environment.IsDevelopment() || environment.IsEnvironment("Testing")) && idToken == DevMockToken)
         {
             return new GoogleUserPayload(
                 "dev@projectours.local",
