@@ -1,4 +1,5 @@
 import type { HttpMethod, HttpRequest, HttpResponse, IHttpClient } from './index.types';
+import { HttpClientError } from './http-error';
 
 type MockEntry = {
   method: HttpMethod;
@@ -44,6 +45,13 @@ export class HttpClientMock implements IHttpClient {
           statusCode: 200,
           data: {} as TResponse,
         };
+
+    if (payload.statusCode >= 400) {
+      throw new HttpClientError(`Request failed with status ${payload.statusCode}`, {
+        statusCode: payload.statusCode,
+        data: payload.data,
+      });
+    }
 
     if (this.delayMs <= 0) return payload;
 

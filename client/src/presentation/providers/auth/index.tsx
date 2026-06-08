@@ -10,6 +10,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSessionState] = useState<AuthSessionModel | null>(null);
+  const [isSessionLoading, setIsSessionLoadingState] = useState(true);
 
   const setSession = useCallback((value: AuthSessionModel | null) => {
     setSessionState(value);
@@ -19,14 +20,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSessionState(null);
   }, []);
 
+  const setIsSessionLoading = useCallback((loading: boolean) => {
+    setIsSessionLoadingState(loading);
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       session,
       isAuthenticated: session !== null,
+      isSessionLoading,
       setSession,
       clearSession,
+      setIsSessionLoading,
     }),
-    [session, setSession, clearSession]
+    [session, isSessionLoading, setSession, clearSession, setIsSessionLoading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

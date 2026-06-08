@@ -1,6 +1,6 @@
-namespace ProjectOurs.API.Options;
+namespace ProjectOurs.Infrastructure.Options;
 
-public sealed class JwtSettings
+public sealed class JwtOptions
 {
     public const string SectionName = "JwtSettings";
 

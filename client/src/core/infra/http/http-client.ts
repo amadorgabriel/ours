@@ -27,7 +27,7 @@ export class HttpClient implements IHttpClient {
     this.client.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
-        if (error.response?.status === 401) {
+        if (error.response?.status === 401 && !error.config?.skipUnauthorizedRedirect) {
           handleUnauthorized();
         }
         return Promise.reject(error);
@@ -48,7 +48,7 @@ export class HttpClient implements IHttpClient {
   async request<TResponse = unknown, TBody = unknown>(
     config: HttpRequest<TBody>
   ): Promise<HttpResponse<TResponse>> {
-    const { url, method, body, headers = {}, queryParams, skipFamilyHeader, skipAntiforgery } =
+    const { url, method, body, headers = {}, queryParams, skipFamilyHeader, skipAntiforgery, skipUnauthorizedRedirect } =
       config;
 
     const requestHeaders: Record<string, string> = { ...headers };
@@ -72,6 +72,7 @@ export class HttpClient implements IHttpClient {
         params: queryParams,
         data: body,
         headers: requestHeaders,
+        skipUnauthorizedRedirect,
       });
 
       const responseHeaders: Record<string, string> = {};

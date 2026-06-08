@@ -8,6 +8,7 @@ export interface HttpRequest<TBody = unknown> {
   queryParams?: Record<string, string | number | boolean>;
   skipFamilyHeader?: boolean;
   skipAntiforgery?: boolean;
+  skipUnauthorizedRedirect?: boolean;
 }
 
 export interface HttpResponse<TData = unknown> {

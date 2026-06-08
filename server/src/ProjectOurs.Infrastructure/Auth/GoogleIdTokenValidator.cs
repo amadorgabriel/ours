@@ -1,0 +1,50 @@
+using Google.Apis.Auth;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using ProjectOurs.Application.Abstractions.Auth;
+using ProjectOurs.Application.Auth;
+using ProjectOurs.Infrastructure.Options;
+
+namespace ProjectOurs.Infrastructure.Auth;
+
+public sealed class GoogleIdTokenValidator(
+    IOptions<GoogleAuthOptions> googleOptions,
+    IHostEnvironment environment) : IGoogleIdTokenValidator
+{
+    public const string DevMockToken = "dev-mock-id-token";
+
+    public async Task<GoogleUserPayload> ValidateAsync(
+        string idToken,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(idToken))
+        {
+            throw new InvalidOperationException("Google id token is required.");
+        }
+
+        if (environment.IsDevelopment() && idToken == DevMockToken)
+        {
+            return new GoogleUserPayload(
+                "dev@projectours.local",
+                "Dev User",
+                null);
+        }
+
+        var settings = new GoogleJsonWebSignature.ValidationSettings
+        {
+            Audience = [googleOptions.Value.ClientId],
+        };
+
+        var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+
+        if (string.IsNullOrWhiteSpace(payload.Email))
+        {
+            throw new InvalidOperationException("Google account email is required.");
+        }
+
+        return new GoogleUserPayload(
+            payload.Email,
+            payload.Name ?? payload.Email,
+            payload.Picture);
+    }
+}

@@ -25,6 +25,16 @@ export function setupAuthMocks(): void {
     statusCode: 200,
     data: mockSession,
   });
+
+  mock.setMockResponse('/auth/me', 'get', {
+    statusCode: 200,
+    data: mockSession,
+  });
+
+  mock.setMockResponse('/auth/logout', 'post', {
+    statusCode: 200,
+    data: {},
+  });
 }
 
 export { mockSession };

@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { Link } from '@/i18n/navigation';
 import { Button } from '@/ui/DataDisplay/Button';
 import { Text } from '@/ui/DataDisplay/Text';
 import { Title } from '@/ui/DataDisplay/Title';
@@ -20,10 +21,11 @@ export function HomePage() {
           {t('subtitle')}
         </Text>
         <Button
+          component={Link}
+          href="/login"
           leftSection={<IconBrandGoogle size={20} aria-hidden />}
           size="md"
           variant="filled"
-          type="button"
         >
           {t('ctaGoogle')}
         </Button>

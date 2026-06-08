@@ -6,6 +6,7 @@ Memória persistente entre sessões. Atualizar ao registrar decisões, bloqueios
 
 | Data | Decisão | Motivo |
 |------|---------|--------|
+| 2026-06-08 | Change 003: `@react-oauth/google`, `/login` dedicado, guards client-side | Ver `003-login-logout-flow/context.md` |
 | 2026-06-08 | Specs consolidadas em `.specs/` (híbrido Open Spec + TLC) | `_docs/` tinha PRD duplicado e prompts soltos |
 | 2026-06-08 | `_docs/` deprecado; conteúdo canônico em `.specs/` | Uma fonte da verdade para agentes e humanos |
 | 2026-05 | Auth via cookie HttpOnly `po_auth`, não Bearer no browser | Segurança + CSRF com antiforgery |

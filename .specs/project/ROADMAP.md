@@ -23,12 +23,11 @@
 
 ## Em andamento
 
-- [ ] **001-client-standards** — alinhar `client/` ao padrão documentado (primeira task)
-- [ ] Auth: testes E2E manuais pendentes
-- [ ] HTTP client: cookie HttpOnly + antiforgery (gap vs spec)
+- [ ] **003-login-logout-flow** — login Google, logout, session restore, route guards (`.specs/changes/003-login-logout-flow/`)
+- [ ] Auth server: cookie `po_auth` (JWT-only hoje)
 
 ## Próximo
 
-1. Executar tasks de `001-client-standards`
-2. Completar auth (cookie flow end-to-end)
+1. Executar tasks T1–T16 de `003-login-logout-flow`
+2. Smoke test manual auth end-to-end
 3. Especificar e implementar família (US-002, US-003)

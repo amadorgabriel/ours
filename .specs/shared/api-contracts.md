@@ -12,7 +12,9 @@ Contrato completo: `_docs/product-requirements-document.md` §6.
 
 | Método | Rota | Escopo |
 |--------|------|--------|
-| POST | `/auth/google` | Público |
+| POST | `/auth/google` | Público — body `{ idToken }`, response session + Set-Cookie `po_auth` |
+| GET | `/auth/me` | Autenticado — restaura `AuthSessionModel` |
+| POST | `/auth/logout` | Autenticado — expira cookie |
 | GET | `/auth/antiforgery` | Autenticado |
 | POST | `/families` | User |
 | GET | `/families/my` | User |

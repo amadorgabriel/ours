@@ -18,6 +18,33 @@
       "ok": "Resposta: {status}"
     }
   },
+  "auth": {
+    "login": {
+      "title": "Entrar no Project Ours",
+      "subtitle": "Use sua conta Google para acessar metas e atividades da família.",
+      "ctaGoogle": "Entrar com Google",
+      "error": "Não foi possível entrar. Tente novamente.",
+      "missingClientId": "Defina NEXT_PUBLIC_GOOGLE_CLIENT_ID no .env.local para habilitar o login."
+    },
+    "logout": {
+      "cta": "Sair",
+      "error": "Não foi possível sair. Tente novamente."
+    },
+    "session": {
+      "loading": "Carregando sessão…"
+    }
+  },
+  "app": {
+    "dashboard": {
+      "title": "Dashboard"
+    },
+    "onboarding": {
+      "title": "Onboarding"
+    },
+    "familySelect": {
+      "title": "Selecionar família"
+    }
+  },
   "metadata": {
     "title": "Project Ours",
     "description": "Colaboração familiar sem rankings."
