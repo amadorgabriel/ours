@@ -4,7 +4,7 @@ Diagrama completo e campos: `.specs/archive/prd-v1.1.md` §5.
 
 ## Entidades principais
 
-```
+```text
 User ←N:N→ FamilyMembership ←N:N→ Family
 Family → Parent, FamilyInvite, Activity, Goal
 Goal → GoalContribution

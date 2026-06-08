@@ -1,6 +1,6 @@
 # Conventions — Client (ec-v3-ui aligned)
 
-Referência: `c:\_git\job\ec\ec-v3-ui` · Skill: `.cursor/skills/ours-client-standard/`
+Referência: ec-v3-ui repository · Skill: `.cursor/skills/ours-client-standard/`
 
 ## Stack
 

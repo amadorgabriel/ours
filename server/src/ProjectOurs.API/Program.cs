@@ -85,7 +85,14 @@ public sealed class Program
 
         var allowedOrigins = builder.Configuration
             .GetSection("Cors:AllowedOrigins")
-            .Get<string[]>() ?? ["http://localhost:3000"];
+            .Get<string[]>();
+
+        if ((allowedOrigins is null || allowedOrigins.Length == 0) && !builder.Environment.IsDevelopment())
+        {
+            throw new InvalidOperationException("Cors:AllowedOrigins must be configured outside Development.");
+        }
+
+        allowedOrigins ??= ["http://localhost:3000"];
 
         builder.Services.AddCors(options =>
         {

@@ -6,7 +6,7 @@ Fonte da verdade para desenvolvimento spec-driven (SDD).
 
 Combina **Open Spec** (changes numerados, constitution, templates) com **TLC Spec-Driven** (project, codebase brownfield, features).
 
-```
+```text
 .specs/
 ├── project/          # PROJECT, ROADMAP, STATE
 ├── memory/           # constitution (princípios fixos)

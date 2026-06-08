@@ -1,6 +1,6 @@
 'use client';
 
-import { Box } from '@mantine/core';
+import { Box } from '@/ui/Layout/Box';
 
 import { Button } from '@/ui/DataDisplay/Button';
 import { Text } from '@/ui/DataDisplay/Text';

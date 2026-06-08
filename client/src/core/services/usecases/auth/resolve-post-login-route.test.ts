@@ -15,4 +15,8 @@ describe('resolvePostLoginRoute', () => {
     expect(resolvePostLoginRoute(2)).toBe('/families/select');
     expect(resolvePostLoginRoute(5)).toBe('/families/select');
   });
+
+  it('WHEN familyCount is negative THEN SHALL throw', () => {
+    expect(() => resolvePostLoginRoute(-1)).toThrow('familyCount must be non-negative');
+  });
 });

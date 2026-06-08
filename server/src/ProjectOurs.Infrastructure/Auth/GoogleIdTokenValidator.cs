@@ -42,6 +42,11 @@ public sealed class GoogleIdTokenValidator(
             throw new InvalidOperationException("Google account email is required.");
         }
 
+        if (!payload.EmailVerified)
+        {
+            throw new InvalidOperationException("Google account email is not verified.");
+        }
+
         return new GoogleUserPayload(
             payload.Email,
             payload.Name ?? payload.Email,

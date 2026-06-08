@@ -1,14 +1,7 @@
-'use client';
-
 import type { ReactNode } from 'react';
 
-import { AppShell } from '@/presentation/modules/app-shell';
-import { AuthGuard } from '@/presentation/modules/auth/auth-guard';
+import { AppClientWrapper } from '@/presentation/modules/app-shell/app-client-wrapper';
 
 export default function AppGroupLayout({ children }: { children: ReactNode }) {
-  return (
-    <AuthGuard>
-      <AppShell>{children}</AppShell>
-    </AuthGuard>
-  );
+  return <AppClientWrapper>{children}</AppClientWrapper>;
 }

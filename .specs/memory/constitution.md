@@ -25,7 +25,7 @@ Princípios não negociáveis. Todo change em `.specs/changes/` e feature em `.s
 
 ## Processo (SDD)
 
-```
+```text
 changes/NNN-slug/  →  proposta ativa (Open Spec)
 features/slug/     →  especificação de produto (TLC)
 codebase/          →  mapa brownfield

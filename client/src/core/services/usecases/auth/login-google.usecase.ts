@@ -11,7 +11,6 @@ export class AuthLoginGoogleUseCase implements Pick<IAuth, 'loginWithGoogle'> {
       url: '/auth/google',
       body: params,
       skipFamilyHeader: true,
-      skipAntiforgery: true,
     });
 
     return response.data;

@@ -31,7 +31,8 @@
       "error": "Não foi possível sair. Tente novamente."
     },
     "session": {
-      "loading": "Carregando sessão…"
+      "loading": "Carregando sessão…",
+      "navigationError": "Não foi possível redirecionar. Recarregue a página."
     }
   },
   "app": {

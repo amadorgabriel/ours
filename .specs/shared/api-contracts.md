@@ -1,6 +1,6 @@
 # API Contracts (índice)
 
-Contrato completo: `_docs/product-requirements-document.md` §6.
+Contrato completo: `.specs/shared/domain-model.md` · endpoints auth: `.specs/features/auth/spec.md`
 
 ## Convenções
 
@@ -15,7 +15,7 @@ Contrato completo: `_docs/product-requirements-document.md` §6.
 | POST | `/auth/google` | Público — body `{ idToken }`, response session + Set-Cookie `po_auth` |
 | GET | `/auth/me` | Autenticado — restaura `AuthSessionModel` |
 | POST | `/auth/logout` | Autenticado — expira cookie |
-| GET | `/auth/antiforgery` | Autenticado |
+| GET | `/auth/antiforgery` | Público — token CSRF para mutações |
 | POST | `/families` | User |
 | GET | `/families/my` | User |
 | POST | `/invite` | Admin + family |

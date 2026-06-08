@@ -46,6 +46,7 @@ export function useSession(enabled = true) {
         return session;
       } catch (error) {
         if (error instanceof HttpClientError && error.statusCode === 401) {
+          setCachedAntiforgeryToken(null);
           clearSession();
           return null;
         }
@@ -68,6 +69,7 @@ export function useLoginWithGoogle() {
   return useMutation({
     mutationFn: (data: GoogleAuthRequest) => useCase.loginWithGoogle(data),
     onSuccess: (session) => {
+      setCachedAntiforgeryToken(null);
       setSession(session);
       applyActiveFamilyFromSession(session, setFamilyId);
       queryClient.setQueryData(queryKeys.auth.session(), session);

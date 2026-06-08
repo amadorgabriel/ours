@@ -16,7 +16,8 @@ public sealed class AuthController(
     IUserRepository users,
     IJwtTokenFactory jwtTokenFactory,
     AuthCookieService cookieService,
-    IAntiforgery antiforgery) : ControllerBase
+    IAntiforgery antiforgery,
+    ILogger<AuthController> logger) : ControllerBase
 {
     [HttpPost("google")]
     [AllowAnonymous]
@@ -33,9 +34,24 @@ public sealed class AuthController(
 
         try
         {
+            await antiforgery.ValidateRequestAsync(HttpContext);
+        }
+        catch (AntiforgeryValidationException)
+        {
+            return BadRequest(new { message = "Invalid antiforgery token." });
+        }
+
+        try
+        {
             var session = await authService.LoginWithGoogleAsync(request.IdToken, cancellationToken);
+            if (!Guid.TryParse(session.User.Id, out var userId))
+            {
+                logger.LogError("Login succeeded but user id is not a valid GUID: {UserId}", session.User.Id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Invalid user ID format." });
+            }
+
             var token = jwtTokenFactory.CreateToken(
-                Guid.Parse(session.User.Id),
+                userId,
                 session.User.Email,
                 session.User.Name);
             cookieService.Append(Response, token);
@@ -43,7 +59,8 @@ public sealed class AuthController(
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            logger.LogWarning(ex, "Google login failed.");
+            return BadRequest(new { message = "Authentication failed. Please try again." });
         }
     }
 
@@ -71,8 +88,10 @@ public sealed class AuthController(
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Logout()
+    public async Task<IActionResult> Logout(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         try
         {
             await antiforgery.ValidateRequestAsync(HttpContext);
@@ -87,7 +106,7 @@ public sealed class AuthController(
     }
 
     [HttpGet("antiforgery")]
-    [Authorize]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(AntiforgeryResponse), StatusCodes.Status200OK)]
     public IActionResult GetAntiforgeryToken()
     {

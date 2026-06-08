@@ -12,6 +12,7 @@ public sealed class AuthCookieService(IHostEnvironment environment)
         response.Cookies.Append(AuthCookie.Name, jwt, new CookieOptions
         {
             HttpOnly = true,
+            // Disabled in Development so cookies work over local HTTP; avoid exposing dev servers on public interfaces.
             Secure = !environment.IsDevelopment(),
             SameSite = SameSiteMode.Lax,
             Path = "/",
@@ -23,6 +24,7 @@ public sealed class AuthCookieService(IHostEnvironment environment)
     {
         response.Cookies.Delete(AuthCookie.Name, new CookieOptions
         {
+            HttpOnly = true,
             Path = "/",
             Secure = !environment.IsDevelopment(),
             SameSite = SameSiteMode.Lax,

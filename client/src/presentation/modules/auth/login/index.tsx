@@ -4,9 +4,10 @@ import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { isGoogleOAuthConfigured } from '@/core/infra/auth/google-oauth-config';
 import { applyActiveFamilyFromSession } from '@/core/services/usecases/auth/apply-active-family';
-import { resolvePostLoginRoute } from '@/core/services/usecases/auth/resolve-post-login-route';
 import { useLoginWithGoogle } from '@/core/services/usecases/auth/index.hooks';
+import { resolvePostLoginRoute } from '@/core/services/usecases/auth/resolve-post-login-route';
 import { useRouter } from '@/i18n/navigation';
 import { useFamily } from '@/presentation/providers/family';
 import { Text } from '@/ui/DataDisplay/Text';
@@ -20,8 +21,7 @@ export function LoginPage() {
   const { setFamilyId } = useFamily();
   const loginMutation = useLoginWithGoogle();
   const [hasError, setHasError] = useState(false);
-
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const isOAuthConfigured = isGoogleOAuthConfigured();
 
   function handleGoogleSuccess(response: CredentialResponse) {
     if (!response.credential) {
@@ -52,7 +52,7 @@ export function LoginPage() {
           {t('subtitle')}
         </Text>
 
-        {!clientId ? (
+        {!isOAuthConfigured ? (
           <Text c="red" size="sm">
             {t('missingClientId')}
           </Text>

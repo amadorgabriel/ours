@@ -7,5 +7,7 @@ export function applyActiveFamilyFromSession(
 ): void {
   if (session.familyCount === 1 && session.families[0]) {
     setFamilyId(session.families[0].id);
+  } else {
+    setFamilyId(null);
   }
 }
