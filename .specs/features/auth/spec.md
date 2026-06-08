@@ -6,11 +6,11 @@ Irmãos precisam entrar com Google de forma segura, permanecer autenticados entr
 
 ## Goals
 
-- [ ] Login Google com cookie HttpOnly e antiforgery em mutações
-- [ ] Smart routing pós-login baseado em `familyCount` e onboarding
-- [ ] Restauração de sessão via `GET /auth/me`
-- [ ] Logout com invalidação de cookie e limpeza de estado client
-- [ ] Route guards em `(app)` e `(auth)`
+- [x] Login Google com cookie HttpOnly e antiforgery em mutações
+- [x] Smart routing pós-login baseado em `familyCount` e onboarding
+- [x] Restauração de sessão via `GET /auth/me`
+- [x] Logout com invalidação de cookie e limpeza de estado client
+- [x] Route guards em `(app)` e `(auth)`
 
 ## User Stories
 
@@ -53,17 +53,17 @@ Irmãos precisam entrar com Google de forma segura, permanecer autenticados entr
 
 | ID | Story | Status |
 |----|-------|--------|
-| AUTH-01 | P1 login UI | Pending → change 003 |
-| AUTH-02 | P1 smart routing | Verified (fn) / Pending (wired) |
-| AUTH-03 | P1 cookie + antiforgery HTTP | Partial (client ok, server pending) |
-| AUTH-04 | P1 session restore | Pending |
-| AUTH-05 | P1 logout | Pending |
-| AUTH-06 | P1 route guards | Pending |
-| AUTH-07 | P1 E2E manual | Pending |
+| AUTH-01 | P1 login UI | Verified |
+| AUTH-02 | P1 smart routing | Verified |
+| AUTH-03 | P1 cookie + antiforgery HTTP | Verified |
+| AUTH-04 | P1 session restore | Verified |
+| AUTH-05 | P1 logout | Verified |
+| AUTH-06 | P1 route guards | Verified |
+| AUTH-07 | P1 E2E manual | Deferred (Playwright) |
 
-## Active Change
+## Archived Change
 
-Implementação detalhada: `.specs/changes/003-login-logout-flow/`
+Implementação: `.specs/archive/003-login-logout-flow/`
 
 ## Out of Scope
 

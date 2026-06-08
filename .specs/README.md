@@ -13,7 +13,7 @@ Combina **Open Spec** (changes numerados, constitution, templates) com **TLC Spe
 ├── shared/           # glossário, domínio, API índice
 ├── codebase/         # STACK, ARCHITECTURE, CONVENTIONS, TESTING, CONCERNS
 ├── features/         # specs de produto por domínio
-├── changes/          # propostas ativas (001-client-standards, …)
+├── changes/          # propostas ativas (004-family-management, …)
 ├── template/         # spec, plan, tasks
 └── archive/          # histórico e PRD longo
 ```
@@ -25,11 +25,11 @@ Combina **Open Spec** (changes numerados, constitution, templates) com **TLC Spe
 3. Feature nova: `features/<slug>/spec.md` → (design) → tasks → implementar
 4. Atualizar `project/STATE.md` ao fechar change
 
-## Primeira task
+## Change ativo
 
-**[001-client-standards](changes/001-client-standards/tasks.md)** — assert padrões do `client/`.
+**[004-family-management](changes/004-family-management/tasks.md)** — M2: criar família, convites, join, seletor multi-família.
 
-Skill: `.cursor/skills/ours-client-standard/`
+Skill client: `.cursor/skills/ours-client-standard/`
 
 ## `_docs/` deprecado
 
