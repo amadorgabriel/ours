@@ -1,14 +1,4 @@
 {
-  "devTheme": {
-    "title": "Ferramentas de tema (dev)",
-    "hint": "Rota oculta para testar claro / escuro / seguir o dispositivo. Preferência fica em localStorage (Mantine).",
-    "light": "Claro",
-    "dark": "Escuro",
-    "auto": "Dispositivo",
-    "resolved": "Esquema aplicado agora",
-    "toggleShortcut": "Alternar claro ↔ escuro",
-    "home": "Ir ao início"
-  },
   "notFound": {
     "title": "Página não encontrada",
     "description": "O endereço pode estar incorreto ou a página foi movida.",
