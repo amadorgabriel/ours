@@ -1,0 +1,136 @@
+using ProjectOurs.Application.Abstractions.Persistence;
+using ProjectOurs.Domain.Entities;
+using ProjectOurs.Domain.Enums;
+
+namespace ProjectOurs.Application.Family;
+
+public sealed class FamilyService(IFamilyRepository families, IInviteCodeGenerator inviteCodeGenerator)
+{
+    private const int MaxInviteCodeAttempts = 10;
+
+    public async Task<FamilyDto> CreateFamilyAsync(
+        Guid userId,
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        if (!FamilyRules.IsValidName(name))
+        {
+            throw new FamilyValidationException("Family name must be between 1 and 100 characters.");
+        }
+
+        var normalizedName = FamilyRules.NormalizeName(name);
+        var family = await families.CreateWithAdminMembershipAsync(userId, normalizedName, cancellationToken);
+
+        return new FamilyDto(family.Id.ToString(), family.Name);
+    }
+
+    public async Task<IReadOnlyList<FamilyWithRoleDto>> ListMineAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var memberships = await families.ListMembershipsByUserIdAsync(userId, cancellationToken);
+
+        return memberships
+            .Select(m => new FamilyWithRoleDto(
+                m.FamilyId.ToString(),
+                m.Family.Name,
+                m.Role == FamilyRole.Admin ? "Admin" : "Member"))
+            .ToList();
+    }
+
+    public async Task<InviteDto> CreateInviteAsync(
+        Guid userId,
+        Guid familyId,
+        string? invitedEmail,
+        CancellationToken cancellationToken = default)
+    {
+        var membership = await families.GetMembershipAsync(userId, familyId, cancellationToken);
+        if (membership is null || membership.Role != FamilyRole.Admin)
+        {
+            throw new FamilyForbiddenException("Only the family admin can create invites.");
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var expiresAt = now.Add(FamilyRules.InviteValidity);
+
+        for (var attempt = 0; attempt < MaxInviteCodeAttempts; attempt++)
+        {
+            var code = inviteCodeGenerator.Generate();
+            if (await families.InviteCodeExistsAsync(code, cancellationToken))
+            {
+                continue;
+            }
+
+            var invite = new FamilyInvite
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = familyId,
+                InviteCode = code,
+                InvitedEmail = invitedEmail,
+                ExpiresAt = expiresAt,
+                Status = InviteStatus.Pending,
+                CreatedAt = now,
+            };
+
+            await families.AddInviteAsync(invite, cancellationToken);
+            return new InviteDto(code, expiresAt);
+        }
+
+        throw new InvalidOperationException("Failed to generate a unique invite code.");
+    }
+
+    public async Task<JoinResponse> JoinWithCodeAsync(
+        Guid userId,
+        string inviteCode,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(inviteCode))
+        {
+            throw new FamilyNotFoundException("Invite code not found.");
+        }
+
+        var normalizedCode = FamilyRules.NormalizeInviteCode(inviteCode);
+        var invite = await families.GetInviteByCodeWithFamilyAsync(normalizedCode, cancellationToken);
+        if (invite is null)
+        {
+            throw new FamilyNotFoundException("Invite code not found.");
+        }
+
+        if (DateTimeOffset.UtcNow > invite.ExpiresAt)
+        {
+            if (invite.Status == InviteStatus.Pending)
+            {
+                invite.Status = InviteStatus.Expired;
+                await families.UpdateInviteAsync(invite, cancellationToken);
+            }
+
+            throw new FamilyValidationException("This invite has expired.");
+        }
+
+        if (invite.Status != InviteStatus.Pending)
+        {
+            throw new FamilyValidationException("This invite is no longer valid.");
+        }
+
+        if (await families.MembershipExistsAsync(userId, invite.FamilyId, cancellationToken))
+        {
+            throw new FamilyConflictException("You are already a member of this family.");
+        }
+
+        var membership = new FamilyMembership
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            FamilyId = invite.FamilyId,
+            Role = FamilyRole.Member,
+            JoinedAt = DateTimeOffset.UtcNow,
+        };
+
+        await families.AcceptInviteAndAddMembershipAsync(invite, membership, cancellationToken);
+
+        return new JoinResponse(
+            invite.FamilyId.ToString(),
+            invite.Family.Name,
+            "Member");
+    }
+}

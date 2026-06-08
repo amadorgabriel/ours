@@ -7,7 +7,7 @@ namespace ProjectOurs.Infrastructure.Persistence;
 
 public sealed class FamilyRepository(ApplicationDbContext db) : IFamilyRepository
 {
-    public async Task<Family> CreateWithAdminMembershipAsync(
+    public async Task<Domain.Entities.Family> CreateWithAdminMembershipAsync(
         Guid userId,
         string name,
         CancellationToken cancellationToken = default)
@@ -15,7 +15,7 @@ public sealed class FamilyRepository(ApplicationDbContext db) : IFamilyRepositor
         var now = DateTimeOffset.UtcNow;
         var familyId = Guid.NewGuid();
 
-        var family = new Family
+        var family = new Domain.Entities.Family
         {
             Id = familyId,
             Name = name,

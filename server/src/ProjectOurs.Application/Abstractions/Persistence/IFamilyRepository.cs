@@ -4,7 +4,7 @@ namespace ProjectOurs.Application.Abstractions.Persistence;
 
 public interface IFamilyRepository
 {
-    Task<Family> CreateWithAdminMembershipAsync(
+    Task<Domain.Entities.Family> CreateWithAdminMembershipAsync(
         Guid userId,
         string name,
         CancellationToken cancellationToken = default);
