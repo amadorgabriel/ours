@@ -25,6 +25,7 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IFamilyRepository, FamilyRepository>();
         services.AddScoped<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
         services.AddScoped<IJwtTokenFactory, JwtTokenFactory>();
         services.AddScoped<AuthService>();

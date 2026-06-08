@@ -46,6 +46,67 @@
       "title": "Selecionar família"
     }
   },
+  "family": {
+    "onboarding": {
+      "title": "Comece pela sua família",
+      "subtitle": "Crie um grupo para coordenar o cuidado com seus irmãos ou entre com um código de convite.",
+      "divider": "ou",
+      "create": {
+        "title": "Criar família",
+        "description": "Você será o admin do grupo e poderá convidar irmãos depois.",
+        "nameLabel": "Nome da família",
+        "namePlaceholder": "Ex.: Família Silva",
+        "submit": "Criar família",
+        "loading": "Criando família…"
+      },
+      "join": {
+        "title": "Tenho um código",
+        "description": "Use o código de 6 caracteres que o admin da família compartilhou com você.",
+        "codeLabel": "Código de convite",
+        "codePlaceholder": "ABC123",
+        "submit": "Entrar na família",
+        "loading": "Entrando na família…"
+      }
+    },
+    "select": {
+      "title": "Selecionar família",
+      "subtitle": "Escolha com qual família você quer trabalhar agora.",
+      "roleAdmin": "Admin",
+      "roleMember": "Membro",
+      "selectButton": "Selecionar",
+      "loading": "Carregando famílias…",
+      "empty": "Nenhuma família encontrada."
+    },
+    "invite": {
+      "dashboardCta": "Convidar irmão",
+      "modalTitle": "Convidar irmão",
+      "description": "Gere um código válido por 24 horas e compartilhe com quem você quer adicionar à família.",
+      "generate": "Gerar código",
+      "codeLabel": "Código de convite",
+      "expiresAt": "Válido até {expiresAt}",
+      "copy": "Copiar código",
+      "copied": "Código copiado!",
+      "loading": "Gerando convite…"
+    },
+    "validation": {
+      "nameRequired": "Informe o nome da família",
+      "nameMaxLength": "O nome deve ter no máximo 100 caracteres",
+      "codeRequired": "Informe o código de convite",
+      "codeLength": "O código deve ter 6 caracteres"
+    },
+    "errors": {
+      "invalidName": "Nome deve ter entre 1 e 100 caracteres",
+      "codeNotFound": "Código não encontrado",
+      "inviteExpired": "Este convite expirou",
+      "alreadyMember": "Você já faz parte desta família",
+      "notAdmin": "Apenas o admin pode convidar",
+      "missingFamilyId": "Família ativa não informada",
+      "createFailed": "Não foi possível criar a família. Tente novamente.",
+      "joinFailed": "Não foi possível entrar na família. Tente novamente.",
+      "inviteFailed": "Não foi possível gerar o convite. Tente novamente.",
+      "generic": "Algo deu errado. Tente novamente."
+    }
+  },
   "metadata": {
     "title": "Project Ours",
     "description": "Colaboração familiar sem rankings."

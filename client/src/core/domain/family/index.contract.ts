@@ -1,6 +1,16 @@
-import type { CreateFamilyRequest, CreateFamilyResponse, FamilyModel } from './index';
+import type {
+  CreateFamilyRequest,
+  CreateFamilyResponse,
+  CreateInviteRequest,
+  CreateInviteResponse,
+  FamilyWithRoleModel,
+  JoinFamilyRequest,
+  JoinFamilyResponse,
+} from './index';
 
 export interface IFamily {
   create(params: CreateFamilyRequest): Promise<CreateFamilyResponse>;
-  listMine(): Promise<FamilyModel[]>;
+  listMine(): Promise<FamilyWithRoleModel[]>;
+  createInvite(params: CreateInviteRequest): Promise<CreateInviteResponse>;
+  join(params: JoinFamilyRequest): Promise<JoinFamilyResponse>;
 }
