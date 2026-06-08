@@ -1,6 +1,6 @@
 # Project Ours — frontend (`client/`)
 
-Next.js (App Router) + TypeScript, **next-intl** (`pt-BR`), Mantine, Tailwind, TanStack Query, Zustand, Axios, Zod, date-fns. Arquitetura em camadas em `src/` conforme `_docs/client-standard.md`.
+Next.js (App Router) + TypeScript, **next-intl** (`pt-BR`), Mantine, Tailwind, TanStack Query, Axios, Zod, date-fns. Arquitetura em camadas conforme [`.specs/codebase/CONVENTIONS.md`](../.specs/codebase/CONVENTIONS.md).
 
 ## Requisitos
 
@@ -32,11 +32,12 @@ O repositório Git está na pasta pai. Após `npm install` em `client/`, o scrip
 ## Estrutura
 
 - `src/app/[locale]/` — rotas com locale (next-intl)
-- `src/core/` — domínio/aplicação/infraestrutura/presentation compartilhados
-- `src/modules/*` — features (clean architecture por módulo)
+- `src/core/` — domain, infra (http/query), services/usecases
+- `src/presentation/` — modules, providers (Context), styles
+- `src/ui/` — wrappers Mantine por categoria
 - `src/i18n/` — routing, request config, mensagens `pt-BR.json`
 
 ## Documentação
 
-- `_docs/client-standard.md`
-- `_docs/frontend-setup-prompt.md`
+- `.specs/codebase/CONVENTIONS.md`
+- Skill: `.cursor/skills/ours-client-standard/`

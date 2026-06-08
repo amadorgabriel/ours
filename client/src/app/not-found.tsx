@@ -1,9 +1,8 @@
-import './globals.css';
+import '@/presentation/styles/globals.css';
 
 import { Geist, Geist_Mono } from 'next/font/google';
 import Link from 'next/link';
 
-import { MantineColorSchemeBootstrap } from '@/core/presentation/theme/MantineColorSchemeBootstrap';
 import messages from '@/i18n/messages/pt-BR.json';
 
 const copy = messages.notFound;
@@ -26,14 +25,13 @@ export default function GlobalNotFound() {
       suppressHydrationWarning
     >
       <body
-        className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100"
+        className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900"
         suppressHydrationWarning
       >
-        <MantineColorSchemeBootstrap />
         <main className="mx-auto flex min-h-screen max-w-md flex-1 flex-col justify-center px-6 py-16">
-          <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">404</p>
+          <p className="text-sm font-semibold text-zinc-500">404</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">{copy.title}</h1>
-          <p className="mt-3 text-lg text-zinc-600 dark:text-zinc-400">{copy.description}</p>
+          <p className="mt-3 text-lg text-zinc-600">{copy.description}</p>
           <p className="mt-8">
             <Link
               href="/"

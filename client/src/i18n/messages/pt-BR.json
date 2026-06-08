@@ -1,14 +1,4 @@
 {
-  "devTheme": {
-    "title": "Ferramentas de tema (dev)",
-    "hint": "Rota oculta para testar claro / escuro / seguir o dispositivo. Preferência fica em localStorage (Mantine).",
-    "light": "Claro",
-    "dark": "Escuro",
-    "auto": "Dispositivo",
-    "resolved": "Esquema aplicado agora",
-    "toggleShortcut": "Alternar claro ↔ escuro",
-    "home": "Ir ao início"
-  },
   "notFound": {
     "title": "Página não encontrada",
     "description": "O endereço pode estar incorreto ou a página foi movida.",
@@ -26,6 +16,34 @@
       "error": "Confira se o servidor está em execução e se a porta coincide com launchSettings (5280).",
       "okTitle": "Conexão com a API",
       "ok": "Resposta: {status}"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Entrar no Project Ours",
+      "subtitle": "Use sua conta Google para acessar metas e atividades da família.",
+      "ctaGoogle": "Entrar com Google",
+      "error": "Não foi possível entrar. Tente novamente.",
+      "missingClientId": "Defina NEXT_PUBLIC_GOOGLE_CLIENT_ID no .env.local para habilitar o login."
+    },
+    "logout": {
+      "cta": "Sair",
+      "error": "Não foi possível sair. Tente novamente."
+    },
+    "session": {
+      "loading": "Carregando sessão…",
+      "navigationError": "Não foi possível redirecionar. Recarregue a página."
+    }
+  },
+  "app": {
+    "dashboard": {
+      "title": "Dashboard"
+    },
+    "onboarding": {
+      "title": "Onboarding"
+    },
+    "familySelect": {
+      "title": "Selecionar família"
     }
   },
   "metadata": {

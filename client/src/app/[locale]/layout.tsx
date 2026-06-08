@@ -5,8 +5,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
-import { AppProviders } from '@/core/presentation/providers/AppProviders';
-import { MantineColorSchemeBootstrap } from '@/core/presentation/theme/MantineColorSchemeBootstrap';
+import { RootProvider } from '@/presentation/providers';
 import { routing } from '@/i18n/routing';
 
 const geistSans = Geist({
@@ -66,9 +65,8 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   return (
     <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <MantineColorSchemeBootstrap />
         <NextIntlClientProvider messages={messages}>
-          <AppProviders>{children}</AppProviders>
+          <RootProvider>{children}</RootProvider>
         </NextIntlClientProvider>
       </body>
     </html>

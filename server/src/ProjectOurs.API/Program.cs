@@ -2,8 +2,9 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using ProjectOurs.API.Options;
+using ProjectOurs.API.Auth;
 using ProjectOurs.Infrastructure;
+using ProjectOurs.Infrastructure.Options;
 
 namespace ProjectOurs.API;
 
@@ -23,24 +24,12 @@ public sealed class Program
                 Version = "v1",
                 Description = "API REST do MVP Project Ours (Maio 2026).",
             });
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            options.AddSecurityDefinition("Cookie", new OpenApiSecurityScheme
             {
-                Description = "JWT emitido pela API (após OAuth Google na etapa futura).",
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
-            });
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" },
-                    },
-                    Array.Empty<string>()
-                },
+                Description = "Cookie HttpOnly `po_auth` emitido após login Google.",
+                Name = AuthCookie.Name,
+                In = ParameterLocation.Cookie,
+                Type = SecuritySchemeType.ApiKey,
             });
             var xml = Path.Combine(AppContext.BaseDirectory, $"{typeof(Program).Assembly.GetName().Name}.xml");
             if (File.Exists(xml))
@@ -49,10 +38,7 @@ public sealed class Program
             }
         });
 
-        builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
-        builder.Services.Configure<GoogleAuthSettings>(builder.Configuration.GetSection("Authentication:Google"));
-
-        var jwt = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
+        var jwt = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
             ?? throw new InvalidOperationException("JwtSettings section is missing.");
 
         if (string.IsNullOrWhiteSpace(jwt.SigningKey) || jwt.SigningKey.Length < 32)
@@ -64,6 +50,7 @@ public sealed class Program
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -74,15 +61,45 @@ public sealed class Program
                     ValidAudience = jwt.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
                 };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        if (context.Request.Cookies.TryGetValue(AuthCookie.Name, out var token))
+                        {
+                            context.Token = token;
+                        }
+
+                        return Task.CompletedTask;
+                    },
+                };
             });
 
         builder.Services.AddAuthorization();
+        builder.Services.AddAntiforgery(options =>
+        {
+            options.HeaderName = "RequestVerificationToken";
+            options.Cookie.Name = "po_af";
+        });
+        builder.Services.AddSingleton<AuthCookieService>();
+
+        var allowedOrigins = builder.Configuration
+            .GetSection("Cors:AllowedOrigins")
+            .Get<string[]>();
+
+        if ((allowedOrigins is null || allowedOrigins.Length == 0) && !builder.Environment.IsDevelopment())
+        {
+            throw new InvalidOperationException("Cors:AllowedOrigins must be configured outside Development.");
+        }
+
+        allowedOrigins ??= ["http://localhost:3000"];
 
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("NextJsDev", policy =>
             {
-                policy.WithOrigins("http://localhost:3000")
+                policy.WithOrigins(allowedOrigins)
+                    .AllowCredentials()
                     .AllowAnyHeader()
                     .AllowAnyMethod();
             });

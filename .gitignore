@@ -9,6 +9,13 @@
 .env.local
 .env.*.local
 
+# .NET appsettings (proteger secrets)
+**/appsettings.Development.json
+**/appsettings.Testing.json
+**/appsettings.Local.json
+**/appsettings.*.local.json
+!**/appsettings.json
+
 # .NET / C#
 ## Build outputs
 bin/
@@ -90,3 +97,6 @@ yarn-error.log*
 # Docs (rascunhos locais)
 _docs/mvp.md
 _docs/mvp_copy.md
+frontend-setup-prompt.md
+client-standard.md
+_docs/_draft

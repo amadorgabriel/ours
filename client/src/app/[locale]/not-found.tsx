@@ -1,6 +1,12 @@
 'use client';
 
-import { Box, Button, Container, Stack, Text, Title } from '@mantine/core';
+import { Box } from '@/ui/Layout/Box';
+
+import { Button } from '@/ui/DataDisplay/Button';
+import { Text } from '@/ui/DataDisplay/Text';
+import { Title } from '@/ui/DataDisplay/Title';
+import { Container } from '@/ui/Layout/Container';
+import { Stack } from '@/ui/Layout/Stack';
 import { useTranslations } from 'next-intl';
 
 import { Link } from '@/i18n/navigation';
