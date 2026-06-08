@@ -1,0 +1,29 @@
+meta {
+  name: Join Family
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/join
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  RequestVerificationToken: {{antiforgeryToken}}
+  Cookie: {{authCookie}}
+}
+
+body:json {
+  {
+    "inviteCode": "{{inviteCode}}"
+  }
+}
+
+docs {
+  Entra na família com código de 6 caracteres (case insensitive).
+  Resposta 200: `{ "familyId": "...", "familyName": "...", "role": "Member" }`.
+  Erros: 404 código inválido, 400 expirado, 409 já membro.
+}

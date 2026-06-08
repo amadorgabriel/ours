@@ -1,0 +1,30 @@
+meta {
+  name: Create Invite
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/invite
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Family-Id: {{familyId}}
+  RequestVerificationToken: {{antiforgeryToken}}
+  Cookie: {{authCookie}}
+}
+
+body:json {
+  {
+    "invitedEmail": null
+  }
+}
+
+docs {
+  Requer header `X-Family-Id` da família ativa e role Admin.
+  Resposta 200: `{ "inviteCode": "ABC123", "expiresAt": "2026-..." }` (válido 24h).
+  Erros: 400 sem família ativa, 403 se não for Admin.
+}
