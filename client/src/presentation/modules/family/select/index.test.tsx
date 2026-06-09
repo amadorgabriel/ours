@@ -9,6 +9,9 @@ import { FamilySelectPage } from './index';
 const replace = vi.fn();
 
 vi.mock('@/i18n/navigation', () => ({
+  Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
   useRouter: () => ({ replace }),
 }));
 

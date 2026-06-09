@@ -37,7 +37,9 @@
   },
   "app": {
     "dashboard": {
-      "title": "Dashboard"
+      "title": "Dashboard",
+      "addFamily": "Adicionar família",
+      "switchFamily": "Trocar família"
     },
     "onboarding": {
       "title": "Onboarding"
@@ -74,8 +76,31 @@
       "roleAdmin": "Admin",
       "roleMember": "Membro",
       "selectButton": "Selecionar",
+      "addFamilyLink": "Criar ou entrar em outra família",
       "loading": "Carregando famílias…",
       "empty": "Nenhuma família encontrada."
+    },
+    "add": {
+      "title": "Adicionar família",
+      "subtitle": "Crie um novo grupo ou entre em outra família com um código de convite.",
+      "backToDashboard": "Voltar ao dashboard",
+      "divider": "ou",
+      "create": {
+        "title": "Criar nova família",
+        "description": "Você continuará nas famílias atuais e passará a ser admin do novo grupo.",
+        "nameLabel": "Nome da família",
+        "namePlaceholder": "Ex.: Família Costa",
+        "submit": "Criar família",
+        "loading": "Criando família…"
+      },
+      "join": {
+        "title": "Entrar com código",
+        "description": "Use um código de convite para participar de outra família.",
+        "codeLabel": "Código de convite",
+        "codePlaceholder": "ABC123",
+        "submit": "Entrar na família",
+        "loading": "Entrando na família…"
+      }
     },
     "invite": {
       "dashboardCta": "Convidar irmão",

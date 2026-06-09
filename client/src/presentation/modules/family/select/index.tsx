@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { useMyFamilies } from '@/core/services/usecases/family/index.hooks';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
 import { Alert } from '@/ui/Feedback/Alert';
@@ -71,6 +71,10 @@ export function FamilySelectPage() {
             <Button onClick={() => handleSelect(family.id)}>{t('selectButton')}</Button>
           </Stack>
         ))}
+
+        <Button component={Link} href="/families/add" variant="light">
+          {t('addFamilyLink')}
+        </Button>
       </Stack>
     </Container>
   );
