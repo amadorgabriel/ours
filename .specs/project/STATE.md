@@ -6,6 +6,9 @@ Memória persistente entre sessões. Atualizar ao registrar decisões, bloqueios
 
 | Data | Decisão | Motivo |
 |------|---------|--------|
+| 2026-06-10 | Change 005: DESIGN.md v1.0.0 em `.specs/design/` | Fonte única para UI; ref Freud.ai adaptada para Ours |
+| 2026-06-10 | Paleta orgânica brown/green/orange/cream; Urbanist | Alinha empatia do produto; substitui tema blue/Geist |
+| 2026-06-10 | Wave Tab Bar spec-only até M3+ | Bottom nav ainda não existe |
 | 2026-06-08 | Change 004: onboarding só nome da família; pais em M5 | Reduz escopo M2 |
 | 2026-06-08 | Change 004: convite 6 chars A-Z0-9, 24h, múltiplos pendentes | Alinhado entidade `FamilyInvite` + PROJECT.md |
 | 2026-06-08 | Change 004: refresh sessão auth após create/join | `familyCount` vem de `/auth/me` |
@@ -37,6 +40,7 @@ Memória persistente entre sessões. Atualizar ao registrar decisões, bloqueios
 ## Todos (sessão)
 
 - [ ] Implementar T1–T20 em `feat/004-family-management`
+- [x] Implementar T1–T10 em change 005 (design tokens + retema)
 
 ## Preferences
 

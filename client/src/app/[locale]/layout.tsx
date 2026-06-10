@@ -1,21 +1,18 @@
 import '@mantine/core/styles.css';
 
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Urbanist } from 'next/font/google';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import { RootProvider } from '@/presentation/providers';
 import { routing } from '@/i18n/routing';
+import { designTokens } from '@/presentation/styles/design-tokens';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const urbanist = Urbanist({
   subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+  variable: '--font-urbanist',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export function generateStaticParams() {
@@ -26,7 +23,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: '#228be6',
+  themeColor: designTokens.colors.serenityGreen,
 };
 
 export async function generateMetadata({
@@ -63,7 +60,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang={locale} className={`${urbanist.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
           <RootProvider>{children}</RootProvider>

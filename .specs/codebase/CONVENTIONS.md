@@ -64,9 +64,24 @@ Colocados ao lado do código: `*.test.ts`, `*.test.tsx`
 
 Gate: `npm run pre-push:checks`
 
+## Design system
+
+Fonte única: [`.specs/design/DESIGN.md`](../design/DESIGN.md)
+
+| Camada | Arquivo |
+|--------|---------|
+| Tokens (spec) | `.specs/design/DESIGN.md` |
+| Tokens (runtime) | `presentation/styles/design-tokens.ts` |
+| Mantine theme | `presentation/styles/mantine-theme.ts` |
+| CSS / Tailwind | `presentation/styles/globals.css` |
+| Componentes | `ui/*` wrappers — modules nunca declaram hex |
+
+Toda change de UI em `.specs/changes/` deve referenciar `DESIGN.md` nas tasks.
+
 ## Anti-padrões
 
 - `middleware.ts` para i18n (usar `proxy.ts`)
 - Importar `@mantine/core` direto em modules (usar `ui/`)
+- Hex ou cores arbitrárias em modules (usar tema / CSS vars)
 - Zustand/Redux para sessão (usar Context em `presentation/providers`)
 - axios/fetch em `page.tsx`
