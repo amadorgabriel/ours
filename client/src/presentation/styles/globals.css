@@ -1,20 +1,48 @@
 @import 'tailwindcss';
 
 :root {
+  /* Fundos */
   --color-bg-cream: #fcf8f4;
+  --color-bg-deep: #1e2433;
+  --color-bg-deep-alt: #1c1c1e;
+  --color-bg-surface-dark: #2a3142;
+  --color-bg-dark-green: #2d3e26;
+
+  /* Texto */
   --color-text-primary: #2e1e12;
-  --color-text-secondary: #6b6b6b;
+  --color-text-secondary: #928d86;
   --color-text-light: #ffffff;
+  --color-text-on-deep: #f5f5f5;
+
+  /* Paleta semântica */
   --color-mindful-brown: #6b5843;
   --color-serenity-green: #5a6838;
-  --color-empathy-orange: #c86900;
-  --color-bg-dark-green: #2d3e26;
-  --color-bg-orange: #f6852d;
+  --color-trust-blue: #2b5f8a;
+  --color-kind-purple: #5349a5;
+  --color-action-orange: #e87a2d;
+  --color-action-orange-vivid: #ed7e1c;
+
+  /* Semânticas */
+  --color-success: #9bb06b;
+  --color-warning: #d7a300;
+  --color-error: #e87a2d;
+  --color-info: #2b5f8a;
+
+  /* Glass */
+  --glass-light-bg: rgba(252, 248, 244, 0.72);
+  --glass-light-blur: 12px;
+  --glass-light-border: 1px solid rgba(107, 88, 67, 0.08);
+  --glass-dark-bg: rgba(42, 49, 66, 0.75);
+  --glass-dark-blur: 16px;
+  --glass-dark-border: 1px solid rgba(255, 255, 255, 0.08);
+
+  /* Radius & shadow */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
   --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 @theme inline {
@@ -22,7 +50,9 @@
   --color-foreground: var(--color-text-primary);
   --color-primary: var(--color-serenity-green);
   --color-secondary: var(--color-mindful-brown);
-  --color-accent: var(--color-empathy-orange);
+  --color-accent: var(--color-action-orange);
+  --color-trust: var(--color-trust-blue);
+  --color-support: var(--color-kind-purple);
   --font-sans: var(--font-urbanist);
 }
 
@@ -30,4 +60,16 @@ body {
   background: var(--color-bg-cream);
   color: var(--color-text-primary);
   font-family: var(--font-urbanist), Outfit, Poppins, ui-sans-serif, system-ui, sans-serif;
+}
+
+.glass-light {
+  background: var(--glass-light-bg);
+  backdrop-filter: blur(var(--glass-light-blur));
+  border: var(--glass-light-border);
+}
+
+.glass-dark {
+  background: var(--glass-dark-bg);
+  backdrop-filter: blur(var(--glass-dark-blur));
+  border: var(--glass-dark-border);
 }
