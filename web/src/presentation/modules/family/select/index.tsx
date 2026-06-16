@@ -3,11 +3,11 @@
 import { useTranslations } from 'next-intl';
 
 import { useMyFamilies } from '@/core/services/usecases/family/index.hooks';
-import { Link, useRouter } from '@/i18n/navigation';
+import { useRouter } from '@/i18n/navigation';
+import { routes } from '@/i18n/routes';
 import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
 import { Alert } from '@/ui/Feedback/Alert';
-import { Button } from '@/ui/DataDisplay/Button';
 import { Text } from '@/ui/DataDisplay/Text';
 import { Title } from '@/ui/DataDisplay/Title';
 import { Page } from '@/ui/Layout/Page';
@@ -25,7 +25,7 @@ export function FamilySelectPage() {
 
   function handleSelect(familyId: string) {
     setFamilyId(familyId);
-    router.replace('/dashboard');
+    router.replace(routes.dashboard);
   }
 
   function roleLabel(role: 'Admin' | 'Member') {
@@ -61,23 +61,27 @@ export function FamilySelectPage() {
           </Text>
         )}
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           {families.map((family) => (
-            <SurfaceCard key={family.id}>
-              <Stack gap="sm" align="stretch">
-                <Text fw={600}>{family.name}</Text>
-                <Text size="sm" c="dimmed">
-                  {roleLabel(family.role)}
-                </Text>
-                <Button onClick={() => handleSelect(family.id)}>{t('selectButton')}</Button>
-              </Stack>
+            <SurfaceCard key={family.id} className="web-family-card">
+              <button
+                type="button"
+                className="web-family-card__button"
+                onClick={() => handleSelect(family.id)}
+              >
+                <Stack gap="sm" align="stretch">
+                  <Text fw={600}>{family.name}</Text>
+                  <Text size="sm" c="dimmed">
+                    {roleLabel(family.role)}
+                  </Text>
+                  <Text size="sm" fw={500} style={{ color: 'var(--color-trust-blue)' }}>
+                    {t('selectButton')}
+                  </Text>
+                </Stack>
+              </button>
             </SurfaceCard>
           ))}
         </div>
-
-        <Button component={Link} href="/families/add" variant="light" w="fit-content">
-          {t('addFamilyLink')}
-        </Button>
       </Stack>
     </Page>
   );

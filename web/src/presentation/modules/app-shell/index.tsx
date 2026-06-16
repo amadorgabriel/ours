@@ -2,10 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useLogout } from '@/core/services/usecases/auth/index.hooks';
 import { Link, usePathname } from '@/i18n/navigation';
+import { routes } from '@/i18n/routes';
 import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
 import { Button } from '@/ui/DataDisplay/Button';
@@ -22,15 +23,17 @@ type NavItem = {
 };
 
 function formatLogoutError(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
+  if (error instanceof Error) return error.message;
   return String(error);
 }
 
 function navLinkClass(isActive: boolean): string {
   return `web-sidebar__link${isActive ? ' web-sidebar__link--active' : ''}`;
+}
+
+function isNavActive(pathname: string, href: string): boolean {
+  if (href === routes.dashboard) return pathname === routes.dashboard;
+  return pathname.startsWith(href);
 }
 
 export function AppShell({ children }: AppShellProps) {
@@ -40,6 +43,7 @@ export function AppShell({ children }: AppShellProps) {
   const { session } = useAuth();
   const { familyId } = useFamily();
   const logoutMutation = useLogout();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const activeFamily = useMemo(() => {
     if (!familyId || !session) return null;
@@ -49,28 +53,37 @@ export function AppShell({ children }: AppShellProps) {
   const hasMultipleFamilies = (session?.familyCount ?? 0) > 1;
 
   const navItems: NavItem[] = [
-    { href: '/dashboard', label: t('nav.dashboard'), show: true },
-    { href: '/families/select', label: t('nav.families'), show: hasMultipleFamilies },
-    { href: '/families/add', label: t('nav.addFamily'), show: true },
+    { href: routes.dashboard, label: t('nav.dashboard'), show: true },
+    { href: routes.families.select, label: t('nav.families'), show: hasMultipleFamilies },
+    { href: routes.families.add, label: t('nav.addFamily'), show: true },
   ];
+
+  const visibleNavItems = navItems.filter((item) => item.show);
+
+  function closeMobileNav() {
+    setMobileNavOpen(false);
+  }
+
+  function handleLogout() {
+    closeMobileNav();
+    logoutMutation.mutate();
+  }
 
   return (
     <div className="web-shell">
-      <aside className="web-sidebar">
+      <aside className="web-sidebar" aria-label={t('nav.aria')}>
         <div className="web-sidebar__brand">{t('brand')}</div>
 
-        <nav className="web-sidebar__nav" aria-label={t('nav.aria')}>
-          {navItems
-            .filter((item) => item.show)
-            .map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={navLinkClass(pathname === item.href)}
-              >
-                {item.label}
-              </Link>
-            ))}
+        <nav className="web-sidebar__nav">
+          {visibleNavItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={navLinkClass(isNavActive(pathname, item.href))}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="web-sidebar__footer">
@@ -104,26 +117,53 @@ export function AppShell({ children }: AppShellProps) {
 
       <div className="web-shell__main">
         <header className="web-shell__topbar">
-          <div className="min-w-0">
-            <Text fw={600} size="lg" truncate>
-              {activeFamily?.name ?? t('brand')}
-            </Text>
-            {activeFamily && (
-              <Text size="sm" c="dimmed" truncate>
-                {session?.user.name}
+          <div className="web-shell__topbar-start">
+            <Button
+              variant="subtle"
+              size="compact-sm"
+              className="web-shell__menu-btn"
+              aria-expanded={mobileNavOpen}
+              aria-controls="web-mobile-nav"
+              onClick={() => setMobileNavOpen((open) => !open)}
+            >
+              {mobileNavOpen ? t('nav.closeMenu') : t('nav.openMenu')}
+            </Button>
+            <div className="min-w-0">
+              <Text fw={600} size="lg" truncate>
+                {activeFamily?.name ?? t('brand')}
               </Text>
-            )}
+              {activeFamily && (
+                <Text size="sm" c="dimmed" truncate>
+                  {session?.user.name}
+                </Text>
+              )}
+            </div>
           </div>
           <Button
             variant="subtle"
             size="compact-sm"
             loading={logoutMutation.isPending}
-            onClick={() => logoutMutation.mutate()}
-            className="lg:hidden"
+            onClick={handleLogout}
+            className="web-shell__logout-mobile"
           >
             {tLogout('cta')}
           </Button>
         </header>
+
+        {mobileNavOpen && (
+          <nav id="web-mobile-nav" className="web-mobile-nav" aria-label={t('nav.aria')}>
+            {visibleNavItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={navLinkClass(isNavActive(pathname, item.href))}
+                onClick={closeMobileNav}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        )}
 
         <main className="web-shell__content">{children}</main>
       </div>

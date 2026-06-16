@@ -80,9 +80,21 @@ body {
   --web-sidebar-width: 260px;
   --web-page-max-width: 960px;
   --web-auth-panel-max-width: 440px;
-  --web-content-padding: 32px;
+  --web-content-padding: 16px;
   --web-sidebar-bg: var(--color-bg-dark-green);
   --web-border-subtle: rgba(107, 88, 67, 0.12);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --web-content-padding: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --web-content-padding: 32px;
+  }
 }
 
 .web-shell {
@@ -160,11 +172,62 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   padding: 12px var(--web-content-padding);
   border-bottom: 1px solid var(--web-border-subtle);
   background: rgba(252, 248, 244, 0.92);
   backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.web-shell__topbar-start {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.web-shell__menu-btn {
+  flex-shrink: 0;
+}
+
+@media (min-width: 1024px) {
+  .web-shell__menu-btn,
+  .web-shell__logout-mobile {
+    display: none;
+  }
+}
+
+.web-mobile-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px var(--web-content-padding) 16px;
+  border-bottom: 1px solid var(--web-border-subtle);
+  background: var(--color-bg-cream);
+}
+
+@media (min-width: 1024px) {
+  .web-mobile-nav {
+    display: none;
+  }
+}
+
+.web-mobile-nav .web-sidebar__link {
+  color: var(--color-mindful-brown);
+}
+
+.web-mobile-nav .web-sidebar__link:hover {
+  background: rgba(107, 88, 67, 0.08);
+  color: var(--color-text-primary);
+}
+
+.web-mobile-nav .web-sidebar__link--active {
+  background: rgba(90, 104, 56, 0.12);
+  color: var(--color-serenity-green);
 }
 
 @media (min-width: 1024px) {
@@ -179,7 +242,13 @@ body {
 }
 
 .web-page {
-  padding: 24px var(--web-content-padding) 48px;
+  padding: 16px var(--web-content-padding) 32px;
+}
+
+@media (min-width: 640px) {
+  .web-page {
+    padding-block: 24px 48px;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -255,7 +324,7 @@ body {
   flex: 1;
   align-items: center;
   justify-content: center;
-  padding: 32px 24px;
+  padding: 24px 16px;
   background: var(--color-bg-cream);
   min-height: 100dvh;
 }
@@ -269,6 +338,127 @@ body {
 .web-auth__card {
   width: 100%;
   max-width: var(--web-auth-panel-max-width);
-  padding: 32px;
+  padding: 24px;
   border-radius: var(--radius-lg);
+}
+
+@media (min-width: 640px) {
+  .web-auth__card {
+    padding: 32px;
+  }
+}
+
+/* —— Minimal shell (onboarding) —— */
+.web-minimal-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--color-bg-cream);
+}
+
+.web-minimal-shell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px var(--web-content-padding);
+  border-bottom: 1px solid var(--web-border-subtle);
+  background: rgba(252, 248, 244, 0.92);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.web-minimal-shell__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.web-minimal-shell__user {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .web-minimal-shell__user {
+    display: block;
+    max-width: 20ch;
+  }
+}
+
+.web-minimal-shell__content {
+  flex: 1;
+  overflow: auto;
+}
+
+/* —— Family select cards —— */
+.web-family-card {
+  padding: 0;
+  overflow: hidden;
+  transition: box-shadow var(--duration-base, 250ms) ease;
+}
+
+.web-family-card:hover {
+  box-shadow: var(--shadow-high, 0 8px 32px rgba(0, 0, 0, 0.12));
+}
+
+.web-family-card__button {
+  display: block;
+  width: 100%;
+  padding: 20px 24px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+/* —— Modal (glass dark, legível com overlay) —— */
+.web-modal__content {
+  color: var(--color-text-on-deep);
+}
+
+.web-modal__header {
+  background: transparent;
+}
+
+.web-modal__title {
+  color: var(--color-text-light);
+  font-weight: 600;
+}
+
+.web-modal__body {
+  color: var(--color-text-on-deep);
+}
+
+.web-modal__close {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.web-modal__close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-light);
+}
+
+.web-modal__muted {
+  color: rgba(245, 245, 245, 0.72);
+}
+
+.web-modal__code {
+  color: var(--color-text-light);
+  letter-spacing: 0.08em;
+}
+
+/* Bloqueia scroll do body quando modal Mantine está aberta */
+body[data-scroll-locked] {
+  overflow: hidden;
+  padding-right: var(--removed-scroll-width, 0);
+}
+
+body[data-scroll-locked] .web-shell__topbar,
+body[data-scroll-locked] .web-minimal-shell__header {
+  padding-right: calc(var(--web-content-padding) + var(--removed-scroll-width, 0px));
 }

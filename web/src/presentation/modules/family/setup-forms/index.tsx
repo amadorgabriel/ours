@@ -71,8 +71,8 @@ export function FamilySetupForms({ variant, onSuccess }: FamilySetupFormsProps) 
         <Text c="dimmed">{t(`${copyRoot}.subtitle`)}</Text>
       </Stack>
 
-      <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
-        <Stack gap="md" align="stretch" className="web-surface-card glass-light p-6">
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        <Stack gap="md" align="stretch" className="web-surface-card glass-light p-4 sm:p-6">
           <Title order={3}>{t(`${copyRoot}.create.title`)}</Title>
           <Text size="sm" c="dimmed">
             {t(`${copyRoot}.create.description`)}
@@ -104,7 +104,7 @@ export function FamilySetupForms({ variant, onSuccess }: FamilySetupFormsProps) 
           </Button>
         </Stack>
 
-        <Stack gap="md" align="stretch" className="web-surface-card glass-light p-6">
+        <Stack gap="md" align="stretch" className="web-surface-card glass-light p-4 sm:p-6">
           <Title order={3}>{t(`${copyRoot}.join.title`)}</Title>
           <Text size="sm" c="dimmed">
             {t(`${copyRoot}.join.description`)}

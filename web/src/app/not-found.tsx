@@ -10,6 +10,7 @@ import { Container } from '@/ui/Layout/Container';
 import { Stack } from '@/ui/Layout/Stack';
 
 import { Link } from '@/i18n/navigation';
+import { routes } from '@/i18n/routes';
 
 export default function NotFound() {
   const t = useTranslations('notFound');
@@ -29,7 +30,7 @@ export default function NotFound() {
           <Text size="lg" c="dimmed">
             {t('description')}
           </Text>
-          <Button component={Link} href="/" variant="filled" size="md" prefetch={false}>
+          <Button component={Link} href={routes.home} variant="filled" size="md" prefetch={false}>
             {t('homeLink')}
           </Button>
         </Stack>

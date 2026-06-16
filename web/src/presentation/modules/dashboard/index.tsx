@@ -3,7 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
-import { Link } from '@/i18n/navigation';
 import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
 import { Button } from '@/ui/DataDisplay/Button';
@@ -22,12 +21,12 @@ export function DashboardPage() {
   const { familyId } = useFamily();
   const [inviteOpen, setInviteOpen] = useState(false);
 
-  const isAdmin = useMemo(() => {
-    if (!familyId || !session) return false;
-    return session.families.some((family) => family.id === familyId && family.role === 'Admin');
+  const activeFamily = useMemo(() => {
+    if (!familyId || !session) return null;
+    return session.families.find((family) => family.id === familyId) ?? null;
   }, [familyId, session]);
 
-  const hasMultipleFamilies = (session?.familyCount ?? 0) > 1;
+  const isAdmin = activeFamily?.role === 'Admin';
 
   return (
     <>
@@ -41,16 +40,28 @@ export function DashboardPage() {
       >
         <SurfaceCard>
           <Stack gap="md" align="stretch">
-            <Button component={Link} href="/families/add" variant="light">
-              {tDashboard('addFamily')}
-            </Button>
-            {hasMultipleFamilies && (
-              <Button component={Link} href="/families/select" variant="subtle">
-                {tDashboard('switchFamily')}
-              </Button>
-            )}
-            {isAdmin && (
-              <Button onClick={() => setInviteOpen(true)}>{tFamily('dashboardCta')}</Button>
+            {activeFamily ? (
+              <>
+                <Stack gap={4} align="stretch">
+                  <Text fw={600} size="lg">
+                    {activeFamily.name}
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    {activeFamily.role === 'Admin'
+                      ? tDashboard('roleAdmin')
+                      : tDashboard('roleMember')}
+                  </Text>
+                </Stack>
+                {isAdmin && (
+                  <Button onClick={() => setInviteOpen(true)} className="w-full sm:w-auto">
+                    {tFamily('dashboardCta')}
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Text c="dimmed" size="sm">
+                {tDashboard('noActiveFamily')}
+              </Text>
             )}
           </Stack>
         </SurfaceCard>

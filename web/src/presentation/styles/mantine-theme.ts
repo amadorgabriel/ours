@@ -139,6 +139,7 @@ export const mantineTheme = createTheme({
     Modal: {
       defaultProps: {
         radius: 'lg',
+        centered: true,
       },
       styles: {
         content: {
@@ -149,6 +150,16 @@ export const mantineTheme = createTheme({
         },
         overlay: {
           backgroundColor: 'rgba(30, 36, 51, 0.65)',
+        },
+        header: {
+          backgroundColor: 'transparent',
+        },
+        title: {
+          color: designTokens.colors.textLight,
+          fontWeight: 600,
+        },
+        close: {
+          color: 'rgba(255, 255, 255, 0.85)',
         },
       },
     },

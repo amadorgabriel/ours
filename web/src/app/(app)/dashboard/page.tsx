@@ -1,4 +1,4 @@
-import { DashboardPage } from '@/presentation/modules/stubs/dashboard';
+import { DashboardPage } from '@/presentation/modules/dashboard';
 
 export default function Page() {
   return <DashboardPage />;

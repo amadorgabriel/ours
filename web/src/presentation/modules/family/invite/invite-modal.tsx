@@ -52,9 +52,9 @@ export function InviteModal({ opened, onClose }: InviteModalProps) {
   }
 
   return (
-    <Modal opened={opened} onClose={handleClose} title={t('invite.modalTitle')} centered>
+    <Modal opened={opened} onClose={handleClose} title={t('invite.modalTitle')}>
       <Stack gap="md" align="stretch">
-        <Text size="sm" c="dimmed">
+        <Text size="sm" className="web-modal__muted">
           {t('invite.description')}
         </Text>
 
@@ -75,10 +75,10 @@ export function InviteModal({ opened, onClose }: InviteModalProps) {
             <Text size="sm" fw={500}>
               {t('invite.codeLabel')}
             </Text>
-            <Text ff="monospace" size="xl" fw={700}>
+            <Text ff="monospace" size="xl" fw={700} className="web-modal__code">
               {invite.inviteCode}
             </Text>
-            <Text size="sm" c="dimmed">
+            <Text size="sm" className="web-modal__muted">
               {t('invite.expiresAt', { expiresAt: formatExpiresAt(invite.expiresAt) })}
             </Text>
             <Button variant="light" onClick={handleCopy}>

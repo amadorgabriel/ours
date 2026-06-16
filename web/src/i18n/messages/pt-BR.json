@@ -43,20 +43,17 @@
         "aria": "Navegação principal",
         "dashboard": "Dashboard",
         "families": "Trocar família",
-        "addFamily": "Nova família"
+        "addFamily": "Nova família",
+        "openMenu": "Menu",
+        "closeMenu": "Fechar"
       }
     },
     "dashboard": {
       "title": "Dashboard",
-      "subtitle": "Gerencie famílias, convites e configurações do grupo ativo.",
-      "addFamily": "Adicionar família",
-      "switchFamily": "Trocar família"
-    },
-    "onboarding": {
-      "title": "Onboarding"
-    },
-    "familySelect": {
-      "title": "Selecionar família"
+      "subtitle": "Visão geral da família ativa e ações de administração.",
+      "roleAdmin": "Você é admin desta família",
+      "roleMember": "Membro da família",
+      "noActiveFamily": "Nenhuma família ativa. Use o menu para selecionar ou criar uma família."
     }
   },
   "family": {
@@ -87,7 +84,6 @@
       "roleAdmin": "Admin",
       "roleMember": "Membro",
       "selectButton": "Selecionar",
-      "addFamilyLink": "Criar ou entrar em outra família",
       "loading": "Carregando famílias…",
       "empty": "Nenhuma família encontrada."
     },
