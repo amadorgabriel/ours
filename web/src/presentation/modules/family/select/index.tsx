@@ -10,8 +10,9 @@ import { Alert } from '@/ui/Feedback/Alert';
 import { Button } from '@/ui/DataDisplay/Button';
 import { Text } from '@/ui/DataDisplay/Text';
 import { Title } from '@/ui/DataDisplay/Title';
-import { Container } from '@/ui/Layout/Container';
+import { Page } from '@/ui/Layout/Page';
 import { Stack } from '@/ui/Layout/Stack';
+import { SurfaceCard } from '@/ui/Layout/SurfaceCard';
 
 export function FamilySelectPage() {
   const t = useTranslations('family.select');
@@ -32,13 +33,16 @@ export function FamilySelectPage() {
   }
 
   return (
-    <Container className="py-10" size="sm">
-      <Stack gap="lg" align="stretch">
-        <Stack gap="sm" align="stretch">
-          <Title order={1}>{t('title')}</Title>
+    <Page
+      size="lg"
+      header={
+        <Stack gap="xs" align="stretch">
+          <Title order={2}>{t('title')}</Title>
           <Text c="dimmed">{t('subtitle')}</Text>
         </Stack>
-
+      }
+    >
+      <Stack gap="md" align="stretch">
         {isLoading && (
           <Text c="dimmed" size="sm">
             {t('loading')}
@@ -57,25 +61,24 @@ export function FamilySelectPage() {
           </Text>
         )}
 
-        {families.map((family) => (
-          <Stack
-            key={family.id}
-            gap="xs"
-            align="stretch"
-            className="rounded-lg border border-zinc-200 bg-white p-4"
-          >
-            <Text fw={600}>{family.name}</Text>
-            <Text size="sm" c="dimmed">
-              {roleLabel(family.role)}
-            </Text>
-            <Button onClick={() => handleSelect(family.id)}>{t('selectButton')}</Button>
-          </Stack>
-        ))}
+        <div className="grid gap-4 md:grid-cols-2">
+          {families.map((family) => (
+            <SurfaceCard key={family.id}>
+              <Stack gap="sm" align="stretch">
+                <Text fw={600}>{family.name}</Text>
+                <Text size="sm" c="dimmed">
+                  {roleLabel(family.role)}
+                </Text>
+                <Button onClick={() => handleSelect(family.id)}>{t('selectButton')}</Button>
+              </Stack>
+            </SurfaceCard>
+          ))}
+        </div>
 
-        <Button component={Link} href="/families/add" variant="light">
+        <Button component={Link} href="/families/add" variant="light" w="fit-content">
           {t('addFamilyLink')}
         </Button>
       </Stack>
-    </Container>
+    </Page>
   );
 }

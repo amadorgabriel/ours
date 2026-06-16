@@ -6,7 +6,6 @@ import { useEffect, type ReactNode } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useAuth } from '@/presentation/providers/auth';
 import { Text } from '@/ui/DataDisplay/Text';
-import { Container } from '@/ui/Layout/Container';
 
 import { getAuthGuardRedirect } from '../auth-redirect';
 
@@ -29,9 +28,9 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   if (isSessionLoading) {
     return (
-      <Container className="flex flex-1 items-center justify-center py-16" size="sm">
+      <div className="flex min-h-dvh flex-1 items-center justify-center">
         <Text c="dimmed">{t('loading')}</Text>
-      </Container>
+      </div>
     );
   }
 

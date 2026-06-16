@@ -36,8 +36,19 @@
     }
   },
   "app": {
+    "shell": {
+      "brand": "Project Ours",
+      "brandTagline": "Painel web para coordenar o cuidado da família — convites, famílias e administração.",
+      "nav": {
+        "aria": "Navegação principal",
+        "dashboard": "Dashboard",
+        "families": "Trocar família",
+        "addFamily": "Nova família"
+      }
+    },
     "dashboard": {
       "title": "Dashboard",
+      "subtitle": "Gerencie famílias, convites e configurações do grupo ativo.",
       "addFamily": "Adicionar família",
       "switchFamily": "Trocar família"
     },

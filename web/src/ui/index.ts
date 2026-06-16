@@ -7,5 +7,7 @@ export * from './Feedback/Modal';
 export * from './Layout/Box';
 export * from './Layout/Container';
 export * from './Layout/Divider';
+export * from './Layout/Page';
 export * from './Layout/Stack';
+export * from './Layout/SurfaceCard';
 export * from './General/Icon';

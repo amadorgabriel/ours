@@ -9,7 +9,6 @@ import { Button } from '@/ui/DataDisplay/Button';
 import { Text } from '@/ui/DataDisplay/Text';
 import { Title } from '@/ui/DataDisplay/Title';
 import { TextInput } from '@/ui/DataEntry/TextInput';
-import { Divider } from '@/ui/Layout/Divider';
 import { Stack } from '@/ui/Layout/Stack';
 
 import { getFamilyErrorMessage } from '../family-api-error';
@@ -72,69 +71,69 @@ export function FamilySetupForms({ variant, onSuccess }: FamilySetupFormsProps) 
         <Text c="dimmed">{t(`${copyRoot}.subtitle`)}</Text>
       </Stack>
 
-      <Stack gap="md" align="stretch">
-        <Title order={3}>{t(`${copyRoot}.create.title`)}</Title>
-        <Text size="sm" c="dimmed">
-          {t(`${copyRoot}.create.description`)}
-        </Text>
-        <TextInput
-          label={t(`${copyRoot}.create.nameLabel`)}
-          placeholder={t(`${copyRoot}.create.namePlaceholder`)}
-          value={familyName}
-          maxLength={MAX_NAME_LENGTH}
-          onChange={(event) => {
-            setFamilyName(event.currentTarget.value);
-            setCreateValidationError(null);
-          }}
-        />
-        {createValidationError && (
-          <Alert color="red" variant="light">
-            {createValidationError}
-          </Alert>
-        )}
-        {createFamily.isError && (
-          <Alert color="red" variant="light">
-            {getFamilyErrorMessage(createFamily.error, t, 'create')}
-          </Alert>
-        )}
-        <Button loading={createFamily.isPending} onClick={handleCreate}>
-          {createFamily.isPending
-            ? t(`${copyRoot}.create.loading`)
-            : t(`${copyRoot}.create.submit`)}
-        </Button>
-      </Stack>
+      <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+        <Stack gap="md" align="stretch" className="web-surface-card glass-light p-6">
+          <Title order={3}>{t(`${copyRoot}.create.title`)}</Title>
+          <Text size="sm" c="dimmed">
+            {t(`${copyRoot}.create.description`)}
+          </Text>
+          <TextInput
+            label={t(`${copyRoot}.create.nameLabel`)}
+            placeholder={t(`${copyRoot}.create.namePlaceholder`)}
+            value={familyName}
+            maxLength={MAX_NAME_LENGTH}
+            onChange={(event) => {
+              setFamilyName(event.currentTarget.value);
+              setCreateValidationError(null);
+            }}
+          />
+          {createValidationError && (
+            <Alert color="red" variant="light">
+              {createValidationError}
+            </Alert>
+          )}
+          {createFamily.isError && (
+            <Alert color="red" variant="light">
+              {getFamilyErrorMessage(createFamily.error, t, 'create')}
+            </Alert>
+          )}
+          <Button loading={createFamily.isPending} onClick={handleCreate}>
+            {createFamily.isPending
+              ? t(`${copyRoot}.create.loading`)
+              : t(`${copyRoot}.create.submit`)}
+          </Button>
+        </Stack>
 
-      <Divider label={t(`${copyRoot}.divider`)} labelPosition="center" />
-
-      <Stack gap="md" align="stretch">
-        <Title order={3}>{t(`${copyRoot}.join.title`)}</Title>
-        <Text size="sm" c="dimmed">
-          {t(`${copyRoot}.join.description`)}
-        </Text>
-        <TextInput
-          label={t(`${copyRoot}.join.codeLabel`)}
-          placeholder={t(`${copyRoot}.join.codePlaceholder`)}
-          value={inviteCode}
-          maxLength={INVITE_CODE_LENGTH}
-          onChange={(event) => {
-            setInviteCode(event.currentTarget.value.toUpperCase());
-            setJoinValidationError(null);
-          }}
-        />
-        {joinValidationError && (
-          <Alert color="red" variant="light">
-            {joinValidationError}
-          </Alert>
-        )}
-        {joinFamily.isError && (
-          <Alert color="red" variant="light">
-            {getFamilyErrorMessage(joinFamily.error, t, 'join')}
-          </Alert>
-        )}
-        <Button variant="light" loading={joinFamily.isPending} onClick={handleJoin}>
-          {joinFamily.isPending ? t(`${copyRoot}.join.loading`) : t(`${copyRoot}.join.submit`)}
-        </Button>
-      </Stack>
+        <Stack gap="md" align="stretch" className="web-surface-card glass-light p-6">
+          <Title order={3}>{t(`${copyRoot}.join.title`)}</Title>
+          <Text size="sm" c="dimmed">
+            {t(`${copyRoot}.join.description`)}
+          </Text>
+          <TextInput
+            label={t(`${copyRoot}.join.codeLabel`)}
+            placeholder={t(`${copyRoot}.join.codePlaceholder`)}
+            value={inviteCode}
+            maxLength={INVITE_CODE_LENGTH}
+            onChange={(event) => {
+              setInviteCode(event.currentTarget.value.toUpperCase());
+              setJoinValidationError(null);
+            }}
+          />
+          {joinValidationError && (
+            <Alert color="red" variant="light">
+              {joinValidationError}
+            </Alert>
+          )}
+          {joinFamily.isError && (
+            <Alert color="red" variant="light">
+              {getFamilyErrorMessage(joinFamily.error, t, 'join')}
+            </Alert>
+          )}
+          <Button variant="light" loading={joinFamily.isPending} onClick={handleJoin}>
+            {joinFamily.isPending ? t(`${copyRoot}.join.loading`) : t(`${copyRoot}.join.submit`)}
+          </Button>
+        </Stack>
+      </div>
     </Stack>
   );
 }

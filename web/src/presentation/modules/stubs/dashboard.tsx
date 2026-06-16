@@ -7,9 +7,11 @@ import { Link } from '@/i18n/navigation';
 import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
 import { Button } from '@/ui/DataDisplay/Button';
+import { Text } from '@/ui/DataDisplay/Text';
 import { Title } from '@/ui/DataDisplay/Title';
-import { Container } from '@/ui/Layout/Container';
+import { Page } from '@/ui/Layout/Page';
 import { Stack } from '@/ui/Layout/Stack';
+import { SurfaceCard } from '@/ui/Layout/SurfaceCard';
 
 import { InviteModal } from '../family/invite';
 
@@ -29,10 +31,16 @@ export function DashboardPage() {
 
   return (
     <>
-      <Container className="py-10" size="sm">
-        <Stack gap="lg" align="stretch">
-          <Title order={2}>{tDashboard('title')}</Title>
-          <Stack gap="sm" align="stretch">
+      <Page
+        header={
+          <Stack gap="xs" align="stretch">
+            <Title order={2}>{tDashboard('title')}</Title>
+            <Text c="dimmed">{tDashboard('subtitle')}</Text>
+          </Stack>
+        }
+      >
+        <SurfaceCard>
+          <Stack gap="md" align="stretch">
             <Button component={Link} href="/families/add" variant="light">
               {tDashboard('addFamily')}
             </Button>
@@ -45,8 +53,8 @@ export function DashboardPage() {
               <Button onClick={() => setInviteOpen(true)}>{tFamily('dashboardCta')}</Button>
             )}
           </Stack>
-        </Stack>
-      </Container>
+        </SurfaceCard>
+      </Page>
 
       <InviteModal opened={inviteOpen} onClose={() => setInviteOpen(false)} />
     </>

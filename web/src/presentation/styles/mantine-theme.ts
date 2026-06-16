@@ -154,7 +154,7 @@ export const mantineTheme = createTheme({
     },
     Container: {
       defaultProps: {
-        size: 'md',
+        size: 'lg',
       },
     },
   },

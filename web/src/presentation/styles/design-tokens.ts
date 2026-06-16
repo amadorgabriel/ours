@@ -1,6 +1,6 @@
 /**
  * Design tokens — Project Ours
- * @see .specs/design/DESIGN.md v1.2.0
+ * @see .specs/design/DESIGN.md v1.3.0
  */
 export const designTokens = {
   colors: {
@@ -71,5 +71,18 @@ export const designTokens = {
     durationSlow: '400ms',
     easingStandard: 'cubic-bezier(0.2, 0, 0, 1)',
     easingDecelerate: 'cubic-bezier(0, 0, 0.2, 1)',
+  },
+  layout: {
+    /** Largura fixa da sidebar no web admin */
+    sidebarWidth: 260,
+    /** Largura máxima do conteúdo principal */
+    pageMaxWidth: 960,
+    /** Largura do painel auth (login, cards) */
+    authPanelMaxWidth: 440,
+    breakpoints: {
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+    },
   },
 } as const;

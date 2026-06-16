@@ -21,7 +21,6 @@ const locale = routing.defaultLocale;
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
   themeColor: designTokens.colors.serenityGreen,
 };
 
@@ -49,7 +48,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <html lang={locale} className={`${urbanist.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+      <body className="flex min-h-dvh flex-col" suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
           <RootProvider>{children}</RootProvider>
         </NextIntlClientProvider>

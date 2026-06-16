@@ -67,15 +67,20 @@ Gate: `npm run pre-push:checks`
 
 ## Design system
 
-Fonte única: [`.specs/design/DESIGN.md`](../design/DESIGN.md)
+Fonte única: [`.specs/design/DESIGN.md`](../design/DESIGN.md) — tokens compartilhados; **layout web** na §6.
 
 | Camada | Arquivo |
 |--------|---------|
 | Tokens (spec) | `.specs/design/DESIGN.md` |
 | Tokens (runtime) | `presentation/styles/design-tokens.ts` |
+| Layout web | `presentation/styles/globals.css` (`web-*`), `ui/Layout/Page`, `ui/Layout/SurfaceCard` |
+| Shell admin | `presentation/modules/app-shell/` |
+| Auth layout | `presentation/layouts/auth-layout.tsx` |
 | Mantine theme | `presentation/styles/mantine-theme.ts` |
 | CSS / Tailwind | `presentation/styles/globals.css` |
 | Componentes | `ui/*` wrappers — modules nunca declaram hex |
+
+Páginas autenticadas usam `Page` (não `Container size="sm"`). Auth usa `AuthLayout`.
 
 Toda change de UI em `.specs/changes/` deve referenciar `DESIGN.md` nas tasks.
 
