@@ -2,7 +2,7 @@
 
 **Spec:** `.specs/changes/004-family-management/spec.md`  
 **Design:** `.specs/changes/004-family-management/design.md`  
-**Gate:** `cd client && npm run pre-push:checks` + `cd server && dotnet test`
+**Gate:** `cd web && npm run pre-push:checks` + `cd server && dotnet test`
 
 ## Execution Plan
 
@@ -88,7 +88,7 @@ Phase 5 — Client UI
 ### T1: i18n namespace `family` [P]
 
 **What:** Strings pt-BR para onboarding, select, invite, erros.  
-**Where:** `client/messages/pt-BR.json` (ou estrutura next-intl existente)  
+**Where:** `web/messages/pt-BR.json` (ou estrutura next-intl existente)  
 **Depends on:** None  
 **Requirement:** FAM-01, FAM-02, FAM-03, FAM-04
 
@@ -105,7 +105,7 @@ Phase 5 — Client UI
 ### T2: Domain + contract extensions [P]
 
 **What:** DTOs invite/join/list; estender `IFamily`.  
-**Where:** `client/src/core/domain/family/`  
+**Where:** `web/src/core/domain/family/`  
 **Depends on:** None  
 **Reuses:** `index.ts`, `index.contract.ts` existentes  
 **Requirement:** FAM-01–FAM-04
@@ -272,7 +272,7 @@ Phase 5 — Client UI
 ### T12: create-family.usecase + test [P]
 
 **What:** POST `/api/families`.  
-**Where:** `client/src/core/services/usecases/family/`  
+**Where:** `web/src/core/services/usecases/family/`  
 **Depends on:** T2  
 **Requirement:** FAM-01
 
@@ -289,7 +289,7 @@ Phase 5 — Client UI
 ### T13: list-families.usecase + test [P]
 
 **What:** GET `/api/families/my`.  
-**Where:** `client/src/core/services/usecases/family/`  
+**Where:** `web/src/core/services/usecases/family/`  
 **Depends on:** T2  
 **Requirement:** FAM-03
 
@@ -305,7 +305,7 @@ Phase 5 — Client UI
 ### T14: create-invite.usecase + test [P]
 
 **What:** POST `/api/invite` com family header.  
-**Where:** `client/src/core/services/usecases/family/`  
+**Where:** `web/src/core/services/usecases/family/`  
 **Depends on:** T2  
 **Requirement:** FAM-04
 
@@ -321,7 +321,7 @@ Phase 5 — Client UI
 ### T15: join-family.usecase + test [P]
 
 **What:** POST `/api/join`.  
-**Where:** `client/src/core/services/usecases/family/`  
+**Where:** `web/src/core/services/usecases/family/`  
 **Depends on:** T2  
 **Requirement:** FAM-02
 
@@ -338,7 +338,7 @@ Phase 5 — Client UI
 ### T16: Hooks, mocks, session invalidation
 
 **What:** `useCreateFamily`, `useJoinFamily`, `useCreateInvite`, `useMyFamilies`; invalidar auth query on success.  
-**Where:** `client/src/core/services/usecases/family/index.hooks.ts`, `index.mock.ts`  
+**Where:** `web/src/core/services/usecases/family/index.hooks.ts`, `index.mock.ts`  
 **Depends on:** T12–T15  
 **Reuses:** `applyActiveFamilyFromSession`, auth query keys  
 **Requirement:** FAM-06
@@ -356,7 +356,7 @@ Phase 5 — Client UI
 ### T17: OnboardingPage
 
 **What:** Substituir stub — forms create + join.  
-**Where:** `client/src/presentation/modules/family/onboarding/`  
+**Where:** `web/src/presentation/modules/family/onboarding/`  
 **Depends on:** T1, T16  
 **Reuses:** `ui/DataEntry`, `ui/Feedback`  
 **Requirement:** FAM-01, FAM-02
@@ -374,7 +374,7 @@ Phase 5 — Client UI
 ### T18: FamilySelectPage
 
 **What:** Substituir stub — lista famílias, pick → setFamilyId → dashboard.  
-**Where:** `client/src/presentation/modules/family/select/`  
+**Where:** `web/src/presentation/modules/family/select/`  
 **Depends on:** T1, T13, T16  
 **Requirement:** FAM-03
 

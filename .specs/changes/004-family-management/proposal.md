@@ -16,7 +16,7 @@ Implementar gestão de família desbloqueia M2 e prepara M3+ (atividades, metas)
 
 | Área | Detalhe |
 |------|---------|
-| **Client** | `presentation/modules/family/*`, stubs → módulos reais; i18n `family` |
+| **Web** | `presentation/modules/family/*`, stubs → módulos reais; i18n `family` |
 | **Server** | Novos controllers Application + Infrastructure; testes unitários de regras |
 | **Risk** | Baixo — schema já modelado; auth cookie pronto |
 | **Breaking** | Nenhum; stubs viram implementação |

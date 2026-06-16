@@ -5,7 +5,7 @@ Checklist manual end-to-end (dois usuários Google distintos).
 ## Pré-requisitos
 
 - API em `http://localhost:5280` (`dotnet run` em `server/src/ProjectOurs.API`)
-- Client em `http://localhost:3000` com `NEXT_PUBLIC_API_URL` e `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
+- Web em `http://localhost:3000` com `NEXT_PUBLIC_API_URL` e `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
 - PostgreSQL com migrations aplicadas
 
 ## Fluxo A — Admin cria família
@@ -48,6 +48,6 @@ Checklist manual end-to-end (dois usuários Google distintos).
 ## Gates automatizados
 
 ```bash
-cd client && npm run pre-push:checks
+cd web && npm run pre-push:checks
 cd server && dotnet test
 ```

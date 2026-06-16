@@ -2,13 +2,21 @@
 
 Áreas frágeis ou com dívida técnica conhecida.
 
-## Client
+## Web (`web/`)
 
 | Área | Risco | Detalhe |
 |------|-------|---------|
+| Rename `client/` → `web/` | — | Concluído (change 006) |
 | Módulos family/goals/activities | Baixo | Stubs sem implementação — esperado pré-MVP |
 | E2E | Médio | Playwright planejado; fluxos auth cobertos só por unit + manual |
 | Google OAuth em dev | Baixo | Sem `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, login mostra erro amigável; mock no server só em Development/Testing |
+| Papel admin vs consumer | Baixo | Fase ponte: web faz tudo; poda consumer pós-mobile M0 |
+
+## Mobile (`mobile/`)
+
+| Área | Risco | Detalhe |
+|------|-------|---------|
+| Stack indefinida | Alto | Placeholder apenas; auth strategy mobile TBD |
 
 ## Server
 
@@ -27,4 +35,4 @@
 
 ## ec-v3-ui
 
-Referência documentada em `.specs/codebase/CONVENTIONS.md` (skill `ours-client-standard`). Client alinhado ao padrão domain/infra/presentation.
+Referência documentada em `.specs/codebase/CONVENTIONS.md` (skill `ours-client-standard`). Web alinhado ao padrão domain/infra/presentation.

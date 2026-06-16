@@ -1,4 +1,6 @@
-# Conventions — Client (ec-v3-ui aligned)
+# Conventions — Web (ec-v3-ui aligned)
+
+Pacote: `web/` (PWA admin/suporte). Plataformas: `.specs/shared/platforms.md`
 
 Referência: ec-v3-ui repository · Skill: `.cursor/skills/ours-client-standard/`
 

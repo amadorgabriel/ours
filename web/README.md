@@ -1,6 +1,8 @@
-# Project Ours — frontend (`client/`)
+# Project Ours — Web PWA (`web/`)
 
-Next.js (App Router) + TypeScript, **next-intl** (`pt-BR`), Mantine, Tailwind, TanStack Query, Axios, Zod, date-fns. Arquitetura em camadas conforme [`.specs/codebase/CONVENTIONS.md`](../.specs/codebase/CONVENTIONS.md).
+PWA admin/suporte — Next.js (App Router) + TypeScript, **next-intl** (`pt-BR`), Mantine, Tailwind, TanStack Query, Axios, Zod, date-fns. Arquitetura em camadas conforme [`.specs/codebase/CONVENTIONS.md`](../.specs/codebase/CONVENTIONS.md).
+
+Plataformas: [`.specs/shared/platforms.md`](../.specs/shared/platforms.md)
 
 ## Requisitos
 
@@ -27,7 +29,7 @@ Copie `.env.example` para `.env.local` e preencha. Nunca commite segredos.
 
 ## Husky (monorepo)
 
-O repositório Git está na pasta pai. Após `npm install` em `client/`, o script `prepare` configura `core.hooksPath` para `client/.husky`. Os hooks executam os scripts acima a partir de `client/`.
+O repositório Git está na pasta pai. Após `npm install` em `web/`, o script `prepare` configura `core.hooksPath` para `web/.husky`. Os hooks executam os scripts acima a partir de `web/`.
 
 ## Estrutura
 

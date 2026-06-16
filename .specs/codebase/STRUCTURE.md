@@ -4,7 +4,9 @@
 project-ours/
 ├── .specs/
 ├── .cursor/skills/ours-client-standard/
-├── client/src/
+├── mobile/                        # placeholder — app principal (futuro)
+│   └── README.md
+├── web/src/                       # PWA admin (ex-client/)
 │   ├── app/                       # App Router (URLs diretas)
 │   ├── core/
 │   │   ├── domain/auth|family/
@@ -18,8 +20,7 @@ project-ours/
 │   └── i18n/
 └── server/
 ```
-
-## Camadas client
+## Camadas web
 
 | Camada | Path | Exemplo |
 |--------|------|---------|
@@ -29,9 +30,14 @@ project-ours/
 | Presentation | `presentation/modules/home/` | `HomePage` |
 | UI | `ui/DataDisplay/Button/` | re-export Mantine |
 
-## Testes (10 specs)
+## Testes web (10 specs)
 
 - `core/infra/http/*.test.ts`
 - `core/infra/query/query-keys.test.ts`
 - `core/services/usecases/auth/*.test.ts`
 - `presentation/providers/family/*.test.tsx`
+
+## Shared specs
+
+- `.specs/shared/platforms.md` — responsabilidades mobile vs web
+- `.specs/design/DESIGN.md` — tokens UI (web hoje; mobile futuro)

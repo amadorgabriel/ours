@@ -1,29 +1,33 @@
 # Project Ours
 
-PWA para cuidado colaborativo de pais entre irmãos — feed unificado, metas financeiras com privacidade e gestão multi-família.
+App para cuidado colaborativo de pais entre irmãos — feed unificado, metas financeiras com privacidade e gestão multi-família.
+
+**Cliente principal (futuro):** `mobile/` · **Admin PWA (ativo):** `web/` · **API:** `server/`
 
 ## Pacotes
 
-| Path | Stack |
-|------|-------|
-| `client/` | Next.js 16, Mantine, next-intl |
-| `server/` | .NET 8, PostgreSQL |
+| Path | Stack | Papel |
+|------|-------|-------|
+| `mobile/` | TBD (placeholder) | App principal — uso diário |
+| `web/` | Next.js 16, Mantine, next-intl, PWA | Admin/suporte opcional |
+| `server/` | .NET 8, PostgreSQL | API REST única |
 
 ## Documentação
 
 **Specs (SDD):** [`.specs/README.md`](.specs/README.md)
 
 - Visão: `.specs/project/PROJECT.md`
-- Convenções client: `.specs/codebase/CONVENTIONS.md`
-- Task ativa: `.specs/changes/001-client-standards/tasks.md`
+- Plataformas: `.specs/shared/platforms.md`
+- Convenções web: `.specs/codebase/CONVENTIONS.md`
+- Changes ativos: `004-family-management`, `006-client-platform-split`
 
 `_docs/` está deprecado.
 
 ## Desenvolvimento
 
 ```bash
-# Client
-cd client && npm install && npm run dev
+# Web (admin PWA)
+cd web && npm install && npm run dev
 
 # Server
 cd server && dotnet test && dotnet run --project src/ProjectOurs.API

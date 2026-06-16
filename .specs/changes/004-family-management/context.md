@@ -34,7 +34,7 @@ Decisões de implementação para áreas não ambíguas na feature spec.
 
 ## D6 — Refresh de sessão pós create/join
 
-**Decisão:** Mutations client invalidam query `auth/session` e chamam `GET /auth/me`; em sucesso aplicam `applyActiveFamilyFromSession` ou `setFamilyId` explícito.
+**Decisão:** Mutations web invalidam query `auth/session` e chamam `GET /auth/me`; em sucesso aplicam `applyActiveFamilyFromSession` ou `setFamilyId` explícito.
 
 **Motivo:** `familyCount` e lista `families` vêm da sessão auth; evita duplicar estado.
 
