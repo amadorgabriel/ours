@@ -12,7 +12,7 @@ Princípios não negociáveis. Todo change em `.specs/changes/` e feature em `.s
 ## Engenharia
 
 1. **Spec-first** — nenhuma feature sem critérios de aceitação em `.specs/`.
-2. **Clean architecture no client** — `presentation → application → domain`; `infrastructure` implementa portas.
+2. **Clean architecture no web** — `presentation → application → domain`; `infrastructure` implementa portas.
 3. **i18n obrigatório** — strings de UI só via next-intl (`pt-BR` default).
 4. **Testes no gate** — Vitest (client), xUnit (server); hooks Husky não são opcionais.
 5. **Simplicidade** — sem overengineering; diff mínimo que resolve o requisito.

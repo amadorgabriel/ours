@@ -1,4 +1,6 @@
-# Conventions — Client (ec-v3-ui aligned)
+# Conventions — Web (ec-v3-ui aligned)
+
+Pacote: `web/` (PWA admin/suporte). Plataformas: `.specs/shared/platforms.md`
 
 Referência: ec-v3-ui repository · Skill: `.cursor/skills/ours-client-standard/`
 
@@ -11,8 +13,7 @@ Next.js App Router · TypeScript · next-intl (`pt-BR`) · Mantine · Tailwind �
 ## Estrutura `src/`
 
 ```
-app/[locale]/                    # App Router (rotas finas)
-proxy.ts                         # next-intl (não middleware.ts)
+app/                             # App Router — URLs diretas (/, /login, /dashboard)
 core/
   domain/<entity>/
     index.ts                     # Models, Request/Response types
@@ -64,9 +65,35 @@ Colocados ao lado do código: `*.test.ts`, `*.test.tsx`
 
 Gate: `npm run pre-push:checks`
 
+## Design system
+
+Fonte única: [`.specs/design/DESIGN.md`](../design/DESIGN.md) — tokens compartilhados; **layout web** na §6.
+
+| Camada | Arquivo |
+|--------|---------|
+| Tokens (spec) | `.specs/design/DESIGN.md` |
+| Tokens (runtime) | `presentation/styles/design-tokens.ts` |
+| Layout web | `presentation/styles/globals.css` (`web-*`), `ui/Layout/Page`, `ui/Layout/SurfaceCard` |
+| Shell admin | `presentation/modules/app-shell/` |
+| Auth layout | `presentation/layouts/auth-layout.tsx` |
+| Mantine theme | `presentation/styles/mantine-theme.ts` |
+| CSS / Tailwind | `presentation/styles/globals.css` |
+| Componentes | `ui/*` wrappers — modules nunca declaram hex |
+
+Páginas autenticadas usam `Page` (não `Container size="sm"`). Auth usa `AuthLayout`.
+
+Toda change de UI em `.specs/changes/` deve referenciar `DESIGN.md` nas tasks.
+
+## i18n (MVP monolíngue)
+
+- Locale fixo `pt-BR` em `i18n/request.ts`
+- `localePrefix: 'never'` — sem segmento `[locale]` na URL
+- Navegação tipada: `@/i18n/navigation` (`Link`, `useRouter`, …)
+
 ## Anti-padrões
 
-- `middleware.ts` para i18n (usar `proxy.ts`)
+- Segmento `[locale]` ou `proxy.ts` no MVP (só reintroduzir com multi-idioma)
 - Importar `@mantine/core` direto em modules (usar `ui/`)
+- Hex ou cores arbitrárias em modules (usar tema / CSS vars)
 - Zustand/Redux para sessão (usar Context em `presentation/providers`)
 - axios/fetch em `page.tsx`

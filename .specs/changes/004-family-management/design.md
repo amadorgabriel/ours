@@ -68,7 +68,7 @@ flowchart LR
 | Concern | Mitigation |
 |---------|------------|
 | Stubs family (CONCERNS.md) | Este change implementa módulos reais |
-| Roles no client | Ler `role` de `AuthSessionModel.families`, não decodificar JWT |
+| Roles no web | Ler `role` de `AuthSessionModel.families`, não decodificar JWT |
 | Integration tests Docker | Smoke tests opcionais; unit tests obrigatórios server |
 
 ---

@@ -1,20 +1,19 @@
 # Testing
 
-## Client (`client/`)
+## Web (`web/`)
 
 | Tipo | Runner | Localização | Gate |
 |------|--------|-------------|------|
-| Unit / component | Vitest + RTL | `src/**/*.test.{ts,tsx}` | `npm run test:run` |
+| Unit / component | Vitest + RTL | `web/src/**/*.test.{ts,tsx}` | `npm run test:run` |
 | UI playground | @vitest/ui | `npm run test:ui` | manual |
 | E2E | Playwright | *planejado* fluxos auth/família | — |
 
-**Setup:** `src/test/setup.ts`, alias `@` → `src/`.
+**Setup:** `web/src/test/setup.ts`, alias `@` → `src/`.
 
 **Hooks:**
 
 - pre-commit: `lint-staged`, `lint`, `type-check`
 - pre-push: `build`, `test:run`
-
 ## Server (`server/`)
 
 | Tipo | Runner | Gate |
@@ -32,6 +31,6 @@ Cada user story em `.specs/features/*/spec.md` lista testes independentes.
 
 | Área | Parallel-Safe |
 |------|---------------|
-| Client unit tests | Yes |
-| Client build | No |
+| Web unit tests | Yes |
+| Web build | No |
 | Server integration (Testcontainers) | No (Docker) |

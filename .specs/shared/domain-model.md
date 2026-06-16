@@ -1,6 +1,6 @@
 # Modelo de domínio (resumo)
 
-Diagrama completo e campos: `.specs/archive/prd-v1.1.md` §5.
+Diagrama completo e campos: feature specs em `.specs/features/` e entidades em `server/`.
 
 ## Entidades principais
 

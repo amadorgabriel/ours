@@ -1,15 +1,18 @@
 # Tech Stack
 
-**Analyzed:** 2026-06-08
+**Analyzed:** 2026-06-16 (atualizado change 006)
 
 ## Monorepo
 
 | Pacote | Path | Função |
 |--------|------|--------|
-| Client | `client/` | Next.js PWA |
+| Mobile | `mobile/` | App principal (placeholder — stack TBD) |
+| Web | `web/` | PWA admin/suporte (ex-`client/`) |
 | Server | `server/` | API REST .NET 8 |
 
-## Client (`client/`)
+Ver `.specs/shared/platforms.md` para matriz de features.
+
+## Web (`web/`)
 
 - Framework: Next.js 16.2.6 (App Router)
 - Language: TypeScript 5
@@ -21,6 +24,11 @@
 - Tests: Vitest 4 + RTL + @vitest/ui
 - Hooks: Husky 9 (pre-commit, pre-push)
 
+## Mobile (`mobile/`)
+
+- **Placeholder** — sem código de app
+- Stack: TBD (change futuro)
+
 ## Server (`server/`)
 
 - Runtime: .NET 8
@@ -30,5 +38,5 @@
 
 ## Infra (planejado)
 
-- Frontend: Cloudflare
+- Web PWA: Cloudflare
 - Backend + DB: VPS Docker

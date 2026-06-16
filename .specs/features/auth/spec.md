@@ -70,3 +70,16 @@ Implementação: `.specs/archive/003-login-logout-flow/`
 - Apple Sign In
 - Refresh token exposto ao JS
 - Playwright E2E (deferred)
+
+## Rotas (MVP pt-BR)
+
+| Path | Grupo | Guard | Comportamento |
+|------|-------|-------|---------------|
+| `/` | — | — | `HomePage` → smart redirect (login / onboarding / dashboard / family select) |
+| `/login` | `(auth)` | GuestGuard | Login Google; redireciona se já autenticado |
+| `/dashboard` | `(app)` | AuthGuard | Dashboard da família ativa |
+| `/onboarding` | `(app)` | AuthGuard | Criar ou entrar em família |
+| `/families/select` | `(app)` | AuthGuard | Seletor multi-família |
+| `/families/add` | `(app)` | AuthGuard | Adicionar família |
+
+Locale fixo `pt-BR` via `next-intl` (`localePrefix: 'never'`). Sem segmento `[locale]` na URL.

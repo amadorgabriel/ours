@@ -2,11 +2,15 @@
 
 Alinhado a `ec-v3-ui` com adaptações Ours (Mantine, cookie auth, next-intl).
 
-## Client
+**Plataformas:** `.specs/shared/platforms.md`
+
+## Web (`web/`)
 
 ```
-app/[locale]/                    → rotas finas (App Router)
-proxy.ts                         → next-intl edge (substitui middleware.ts)
+app/                             → rotas finas (App Router, URLs diretas)
+  page.tsx                       → / (smart redirect via HomePage)
+  (auth)/login                   → guest guard
+  (app)/dashboard|onboarding|…     → auth guard + app shell
 
 core/domain/<entity>/
   index.ts                       → Models, Request/Response
@@ -31,7 +35,11 @@ ui/                              → wrappers Mantine por categoria Ant Design
   DataDisplay | DataEntry | Feedback | Layout | Navigation | General
 ```
 
-## Fluxo
+## Mobile (`mobile/`)
+
+Placeholder. Arquitetura a definir em change dedicado (M6). Consumirá mesma API REST que `web/`.
+
+## Fluxo web
 
 ```
 Page (app/) → presentation/modules → ui/
@@ -46,6 +54,6 @@ Inalterado: `ProjectOurs.API` → Application → Domain → Infrastructure.
 
 ## Integração
 
-- Cookie HttpOnly + antiforgery em mutações
+- Cookie HttpOnly + antiforgery em mutações (web PWA)
 - `X-Family-Id` via `FamilyProvider` + `family-context`
-- `proxy.ts` para locale routing (next-intl)
+- next-intl com `localePrefix: 'never'` (pt-BR fixo; sem segmento `[locale]` no MVP web)
