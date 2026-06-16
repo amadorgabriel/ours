@@ -14,7 +14,7 @@ Combina **Open Spec** (changes numerados, constitution, templates) com **TLC Spe
 ├── shared/           # glossário, domínio, API índice
 ├── codebase/         # STACK, ARCHITECTURE, CONVENTIONS, TESTING, CONCERNS
 ├── features/         # specs de produto por domínio
-├── changes/          # propostas ativas (004, 005, …)
+├── changes/          # propostas ativas (004, …)
 ├── template/         # spec, plan, tasks
 └── archive/          # histórico e PRD longo
 ```
@@ -31,9 +31,10 @@ Combina **Open Spec** (changes numerados, constitution, templates) com **TLC Spe
 | Change | Escopo | Tasks |
 |--------|--------|-------|
 | [004-family-management](changes/004-family-management/tasks.md) | M2: família, convites, join | Em progresso |
-| [005-design-specification](changes/005-design-specification/tasks.md) | Design system + retema client | Complete |
 
-**Design (obrigatório em UI):** [`.specs/design/DESIGN.md`](design/DESIGN.md)
+**Design (obrigatório em UI):** [`.specs/design/DESIGN.md`](design/DESIGN.md) — change 005 concluído; ver `archive/` quando arquivado.
+
+**Rotas client:** URLs diretas (`/`, `/login`, `/dashboard`, …) com next-intl `localePrefix: 'never'` (MVP monolíngue pt-BR). Detalhes em `codebase/ARCHITECTURE.md`.
 
 Skill client: `.cursor/skills/ours-client-standard/`
 

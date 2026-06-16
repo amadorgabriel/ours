@@ -5,8 +5,10 @@ Alinhado a `ec-v3-ui` com adaptações Ours (Mantine, cookie auth, next-intl).
 ## Client
 
 ```
-app/[locale]/                    → rotas finas (App Router)
-proxy.ts                         → next-intl edge (substitui middleware.ts)
+app/                             → rotas finas (App Router, URLs diretas)
+  page.tsx                       → / (smart redirect via HomePage)
+  (auth)/login                   → guest guard
+  (app)/dashboard|onboarding|…     → auth guard + app shell
 
 core/domain/<entity>/
   index.ts                       → Models, Request/Response
@@ -48,4 +50,4 @@ Inalterado: `ProjectOurs.API` → Application → Domain → Infrastructure.
 
 - Cookie HttpOnly + antiforgery em mutações
 - `X-Family-Id` via `FamilyProvider` + `family-context`
-- `proxy.ts` para locale routing (next-intl)
+- next-intl com `localePrefix: 'never'` (pt-BR fixo; sem segmento `[locale]` no MVP)

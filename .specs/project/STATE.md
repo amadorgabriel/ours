@@ -6,7 +6,8 @@ Memória persistente entre sessões. Atualizar ao registrar decisões, bloqueios
 
 | Data | Decisão | Motivo |
 |------|---------|--------|
-| 2026-06-16 | DESIGN.md v1.2.0: trust blue, kind purple, orange potencializado, fundos profundos | Ref. Freud.ai modais + paleta; mantém calor parental |
+| 2026-06-16 | Rotas client sem `[locale]`: `localePrefix: 'never'`, URLs diretas | Fix 404 em `/` quando proxy não reescrevia; MVP monolíngue |
+| 2026-06-16 | Change 005 concluído; DESIGN.md v1.2.0 canonical | Tokens + retema mergeados em feat/005 |
 | 2026-06-10 | Change 005: DESIGN.md v1.0.0 em `.specs/design/` | Fonte única para UI; ref Freud.ai adaptada para Ours |
 | 2026-06-10 | Paleta orgânica brown/green/orange/cream; Urbanist | Alinha empatia do produto; substitui tema blue/Geist |
 | 2026-06-10 | Wave Tab Bar spec-only até M3+ | Bottom nav ainda não existe |
@@ -42,6 +43,7 @@ Memória persistente entre sessões. Atualizar ao registrar decisões, bloqueios
 
 - [ ] Implementar T1–T20 em `feat/004-family-management`
 - [x] Implementar T1–T10 em change 005 (design tokens + retema)
+- [x] Corrigir rotas client (`/` 404 → URLs diretas)
 
 ## Preferences
 

@@ -31,11 +31,11 @@ O repositório Git está na pasta pai. Após `npm install` em `client/`, o scrip
 
 ## Estrutura
 
-- `src/app/[locale]/` — rotas com locale (next-intl)
+- `src/app/` — rotas App Router (`/`, `/login`, `/dashboard`, …)
 - `src/core/` — domain, infra (http/query), services/usecases
 - `src/presentation/` — modules, providers (Context), styles
 - `src/ui/` — wrappers Mantine por categoria
-- `src/i18n/` — routing, request config, mensagens `pt-BR.json`
+- `src/i18n/` — request config, mensagens `pt-BR.json`, navigation helpers
 
 ## Documentação
 

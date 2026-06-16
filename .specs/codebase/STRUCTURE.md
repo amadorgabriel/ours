@@ -5,8 +5,7 @@ project-ours/
 ├── .specs/
 ├── .cursor/skills/ours-client-standard/
 ├── client/src/
-│   ├── app/[locale]/              # App Router
-│   ├── proxy.ts                   # next-intl edge (não middleware.ts)
+│   ├── app/                       # App Router (URLs diretas)
 │   ├── core/
 │   │   ├── domain/auth|family/
 │   │   ├── infra/http|query/

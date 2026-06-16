@@ -1,39 +1,39 @@
-import '@/presentation/styles/globals.css';
+'use client';
 
-import { Urbanist } from 'next/font/google';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
-import messages from '@/i18n/messages/pt-BR.json';
+import { Button } from '@/ui/DataDisplay/Button';
+import { Text } from '@/ui/DataDisplay/Text';
+import { Title } from '@/ui/DataDisplay/Title';
+import { Box } from '@/ui/Layout/Box';
+import { Container } from '@/ui/Layout/Container';
+import { Stack } from '@/ui/Layout/Stack';
 
-const copy = messages.notFound;
+import { Link } from '@/i18n/navigation';
 
-const urbanist = Urbanist({
-  subsets: ['latin'],
-  variable: '--font-urbanist',
-  weight: ['400', '500', '600', '700'],
-});
+export default function NotFound() {
+  const t = useTranslations('notFound');
 
-export default function GlobalNotFound() {
   return (
-    <html lang="pt-BR" className={`${urbanist.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="flex min-h-screen flex-col" suppressHydrationWarning>
-        <main className="mx-auto flex min-h-screen max-w-md flex-1 flex-col justify-center px-6 py-16">
-          <p className="text-sm font-medium text-[var(--color-text-secondary)]">404</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--color-text-primary)]">
-            {copy.title}
-          </h1>
-          <p className="mt-3 text-lg text-[var(--color-mindful-brown)]">{copy.description}</p>
-          <p className="mt-8">
-            <Link
-              href="/"
-              prefetch={false}
-              className="inline-flex rounded-[var(--radius-md)] bg-[var(--color-serenity-green)] px-4 py-2 text-sm font-medium text-[var(--color-text-light)]"
-            >
-              {copy.homeLink}
-            </Link>
-          </p>
-        </main>
-      </body>
-    </html>
+    <Box
+      component="div"
+      className="flex flex-1 flex-col"
+      style={{ backgroundColor: 'var(--mantine-color-body)', minHeight: '100%' }}
+    >
+      <Container className="flex flex-1 flex-col justify-center py-16" size="sm">
+        <Stack gap="lg" align="stretch">
+          <Text size="sm" c="dimmed" fw={600}>
+            404
+          </Text>
+          <Title order={1}>{t('title')}</Title>
+          <Text size="lg" c="dimmed">
+            {t('description')}
+          </Text>
+          <Button component={Link} href="/" variant="filled" size="md" prefetch={false}>
+            {t('homeLink')}
+          </Button>
+        </Stack>
+      </Container>
+    </Box>
   );
 }

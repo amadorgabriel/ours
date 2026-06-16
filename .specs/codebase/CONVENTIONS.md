@@ -11,8 +11,7 @@ Next.js App Router · TypeScript · next-intl (`pt-BR`) · Mantine · Tailwind �
 ## Estrutura `src/`
 
 ```
-app/[locale]/                    # App Router (rotas finas)
-proxy.ts                         # next-intl (não middleware.ts)
+app/                             # App Router — URLs diretas (/, /login, /dashboard)
 core/
   domain/<entity>/
     index.ts                     # Models, Request/Response types
@@ -78,9 +77,15 @@ Fonte única: [`.specs/design/DESIGN.md`](../design/DESIGN.md)
 
 Toda change de UI em `.specs/changes/` deve referenciar `DESIGN.md` nas tasks.
 
+## i18n (MVP monolíngue)
+
+- Locale fixo `pt-BR` em `i18n/request.ts`
+- `localePrefix: 'never'` — sem segmento `[locale]` na URL
+- Navegação tipada: `@/i18n/navigation` (`Link`, `useRouter`, …)
+
 ## Anti-padrões
 
-- `middleware.ts` para i18n (usar `proxy.ts`)
+- Segmento `[locale]` ou `proxy.ts` no MVP (só reintroduzir com multi-idioma)
 - Importar `@mantine/core` direto em modules (usar `ui/`)
 - Hex ou cores arbitrárias em modules (usar tema / CSS vars)
 - Zustand/Redux para sessão (usar Context em `presentation/providers`)

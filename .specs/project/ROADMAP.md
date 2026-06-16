@@ -1,6 +1,6 @@
 # Roadmap — Project Ours MVP
 
-**Última atualização:** 2026-06-08
+**Última atualização:** 2026-06-16
 
 ## Milestones
 
@@ -17,7 +17,7 @@
 
 - [x] Setup backend .NET 8 + PostgreSQL + testes
 - [x] Setup frontend Next.js 16 + tooling (ESLint, Prettier, Husky, Vitest)
-- [x] Design tokens + tema Mantine
+- [x] Design tokens + tema Mantine (change 005 → `.specs/design/DESIGN.md`)
 - [x] Client standards (domain, infra, presentation, ui)
 - [x] Auth: login Google, logout, session restore, route guards, cookie `po_auth`
 - [x] Smart routing pós-login (onboarding / dashboard / family select)
