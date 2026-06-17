@@ -53,4 +53,27 @@ public sealed class AuthSmokeTests(PostgresApiFixture fixture)
         var meResponse = await client.GetAsync("/api/auth/me");
         meResponse.EnsureSuccessStatusCode();
     }
+
+    [DockerRequiredFact]
+    public async Task Post_google_as_mobile_client_returns_access_token_and_me_works_with_bearer()
+    {
+        var client = fixture.CreateClient(handleCookies: false);
+
+        var loginResponse = await client.PostJsonAsMobileClientAsync(
+            "/api/auth/google",
+            new { idToken = GoogleIdTokenValidator.DevMockToken });
+
+        loginResponse.EnsureSuccessStatusCode();
+
+        var session = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(session.TryGetProperty("accessToken", out var accessToken));
+        Assert.False(string.IsNullOrWhiteSpace(accessToken.GetString()));
+
+        using var bearerClient = fixture.CreateClient(handleCookies: false);
+        bearerClient.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken.GetString());
+
+        var meResponse = await bearerClient.GetAsync("/api/auth/me");
+        meResponse.EnsureSuccessStatusCode();
+    }
 }
