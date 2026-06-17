@@ -8,7 +8,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSessionState] = useState<AuthSessionModel | null>(null);
-  const [isSessionLoading, setIsSessionLoadingState] = useState(false);
+  const [isSessionLoading, setIsSessionLoadingState] = useState(true);
 
   const setSession = useCallback((value: AuthSessionModel | null) => {
     setSessionState(value);
