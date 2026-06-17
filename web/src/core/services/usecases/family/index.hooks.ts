@@ -56,10 +56,10 @@ export function useCreateFamily() {
 
   return useMutation({
     mutationFn: (data: CreateFamilyRequest) => useCase.create(data),
-    onSuccess: async (created) => {
-      await refreshAuthSession(httpClient, setSession, setFamilyId, queryClient);
+    onSuccess: (created) => {
+      void refreshAuthSession(httpClient, setSession, setFamilyId, queryClient).catch(console.error);
       setFamilyId(created.id);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.families.lists() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.families.lists() });
     },
   });
 }
@@ -73,10 +73,10 @@ export function useJoinFamily() {
 
   return useMutation({
     mutationFn: (data: JoinFamilyRequest) => useCase.join(data),
-    onSuccess: async (joined) => {
-      await refreshAuthSession(httpClient, setSession, setFamilyId, queryClient);
+    onSuccess: (joined) => {
+      void refreshAuthSession(httpClient, setSession, setFamilyId, queryClient).catch(console.error);
       setFamilyId(joined.familyId);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.families.lists() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.families.lists() });
     },
   });
 }

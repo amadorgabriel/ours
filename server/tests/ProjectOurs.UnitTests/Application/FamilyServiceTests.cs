@@ -104,9 +104,6 @@ public sealed class FamilyServiceTests
             .ReturnsAsync(new FamilyMembership { UserId = userId, FamilyId = familyId, Role = FamilyRole.Admin });
         _codeGenerator.Setup(x => x.Generate()).Returns("ABC123");
         _families
-            .Setup(x => x.InviteCodeExistsAsync("ABC123", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
-        _families
             .Setup(x => x.AddInviteAsync(It.IsAny<FamilyInvite>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
@@ -144,13 +141,8 @@ public sealed class FamilyServiceTests
             .Returns("TAKEN1")
             .Returns("FREE99");
         _families
-            .Setup(x => x.InviteCodeExistsAsync("TAKEN1", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-        _families
-            .Setup(x => x.InviteCodeExistsAsync("FREE99", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
-        _families
-            .Setup(x => x.AddInviteAsync(It.IsAny<FamilyInvite>(), It.IsAny<CancellationToken>()))
+            .SetupSequence(x => x.AddInviteAsync(It.IsAny<FamilyInvite>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InviteCodeConflictException())
             .Returns(Task.CompletedTask);
 
         var result = await _sut.CreateInviteAsync(userId, familyId, null);

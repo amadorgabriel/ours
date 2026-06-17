@@ -85,6 +85,7 @@ export function FamilySetupForms({ variant, onSuccess }: FamilySetupFormsProps) 
             onChange={(event) => {
               setFamilyName(event.currentTarget.value);
               setCreateValidationError(null);
+              createFamily.reset();
             }}
           />
           {createValidationError && (
@@ -117,6 +118,7 @@ export function FamilySetupForms({ variant, onSuccess }: FamilySetupFormsProps) 
             onChange={(event) => {
               setInviteCode(event.currentTarget.value.toUpperCase());
               setJoinValidationError(null);
+              joinFamily.reset();
             }}
           />
           {joinValidationError && (

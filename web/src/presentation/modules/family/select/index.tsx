@@ -55,7 +55,7 @@ export function FamilySelectPage() {
           </Alert>
         )}
 
-        {!isLoading && families.length === 0 && (
+        {!isLoading && !isError && families.length === 0 && (
           <Text c="dimmed" size="sm">
             {t('empty')}
           </Text>

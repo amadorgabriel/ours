@@ -31,6 +31,7 @@ export function getFamilyErrorMessage(
     case 400:
       if (context === 'create') return t('errors.invalidName');
       if (context === 'join') return t('errors.inviteExpired');
+      if (context === 'invite') return t('errors.missingFamilyId');
       return t('errors.generic');
     case 403:
       return t('errors.notAdmin');

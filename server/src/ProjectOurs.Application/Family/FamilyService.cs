@@ -56,10 +56,6 @@ public sealed class FamilyService(IFamilyRepository families, IInviteCodeGenerat
         for (var attempt = 0; attempt < MaxInviteCodeAttempts; attempt++)
         {
             var code = inviteCodeGenerator.Generate();
-            if (await families.InviteCodeExistsAsync(code, cancellationToken))
-            {
-                continue;
-            }
 
             var invite = new FamilyInvite
             {
@@ -72,8 +68,15 @@ public sealed class FamilyService(IFamilyRepository families, IInviteCodeGenerat
                 CreatedAt = now,
             };
 
-            await families.AddInviteAsync(invite, cancellationToken);
-            return new InviteDto(code, expiresAt);
+            try
+            {
+                await families.AddInviteAsync(invite, cancellationToken);
+                return new InviteDto(code, expiresAt);
+            }
+            catch (InviteCodeConflictException)
+            {
+                continue;
+            }
         }
 
         throw new InvalidOperationException("Failed to generate a unique invite code.");

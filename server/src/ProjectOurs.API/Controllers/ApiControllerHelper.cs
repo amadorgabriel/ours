@@ -10,8 +10,7 @@ internal static class ApiControllerHelper
 {
     public static bool TryGetUserId(ClaimsPrincipal user, out Guid userId)
     {
-        var subject = user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
-            ?? user.FindFirst(JwtRegisteredClaimNames.NameId)?.Value;
+        var subject = user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
         return Guid.TryParse(subject, out userId);
     }

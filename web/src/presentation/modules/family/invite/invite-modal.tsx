@@ -47,8 +47,13 @@ export function InviteModal({ opened, onClose }: InviteModalProps) {
   async function handleCopy() {
     if (!invite?.inviteCode) return;
 
-    await navigator.clipboard.writeText(invite.inviteCode);
-    setCopied(true);
+    try {
+      await navigator.clipboard.writeText(invite.inviteCode);
+      setCopied(true);
+    } catch (error) {
+      setCopied(false);
+      console.error('Failed to copy invite code:', error);
+    }
   }
 
   return (

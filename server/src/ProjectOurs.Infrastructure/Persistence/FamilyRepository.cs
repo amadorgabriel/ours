@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using ProjectOurs.Application.Abstractions.Persistence;
+using ProjectOurs.Application.Family;
 using ProjectOurs.Domain.Entities;
 using ProjectOurs.Domain.Enums;
 
@@ -78,8 +80,19 @@ public sealed class FamilyRepository(ApplicationDbContext db) : IFamilyRepositor
     public async Task AddInviteAsync(FamilyInvite invite, CancellationToken cancellationToken = default)
     {
         db.FamilyInvites.Add(invite);
-        await db.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (IsInviteCodeUniqueViolation(ex))
+        {
+            throw new InviteCodeConflictException();
+        }
     }
+
+    private static bool IsInviteCodeUniqueViolation(DbUpdateException ex) =>
+        ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 
     public async Task UpdateInviteAsync(FamilyInvite invite, CancellationToken cancellationToken = default)
     {
