@@ -1,6 +1,6 @@
 # Project Ours — Mobile
 
-**Status:** stack e specs definidos — implementação pendente (M6)
+**Status:** scaffold ativo (Change 007, T1–T4) · **Expo SDK 56** · development builds
 
 ## Papel
 
@@ -15,22 +15,95 @@ Cliente **principal** do Project Ours. Experiência diária dos cuidadores:
 
 ## Stack
 
-**Expo SDK 52+ · React Native · TypeScript · NativeWind · TanStack Query**
+**Expo SDK 56 · React Native · TypeScript · Expo Router · expo-dev-client**
+
+Próximo: NativeWind, TanStack Query, secure-store (T5+)
 
 Detalhes: [`.specs/platforms/mobile/STACK.md`](../.specs/platforms/mobile/STACK.md)
 
-## Arquitetura
+## Desenvolvimento
 
-Padrão ec-v3-ui parity com `web/`: `core/domain` → `core/infra` → `presentation/modules` → `ui/`
+Este projeto usa **development builds** via **EAS** (não Expo Go).
 
-Detalhes: [`.specs/platforms/mobile/ARCHITECTURE.md`](../.specs/platforms/mobile/ARCHITECTURE.md)
+### Pré-requisitos (uma vez)
 
-## Design
+```bash
+npm install -g eas-cli
+eas login
+cd mobile && npm install
+```
 
-- Tokens: [`.specs/design/DESIGN.md`](../.specs/design/DESIGN.md)
-- Layouts mobile: [`.specs/design/mobile.md`](../.specs/design/mobile.md)
+O projeto já está linkado: [@amadorgabriel/project-ours](https://expo.dev/accounts/amadorgabriel/projects/project-ours)
 
-## Features (specs para M6)
+### 1. Gerar o dev client (primeira vez ou após mudança nativa)
+
+**Android** (emulador ou dispositivo físico):
+
+```bash
+cd mobile
+npm run build:dev:android
+# ou: eas build --profile development --platform android
+```
+
+**iOS simulador** (macOS):
+
+```bash
+npm run build:dev:ios
+```
+
+**iOS dispositivo físico**:
+
+```bash
+npm run build:dev:ios-device
+```
+
+O EAS compila na nuvem. Ao terminar, baixe o `.apk` / `.ipa` pelo link no terminal ou em [expo.dev](https://expo.dev) → Builds → instale no dispositivo/emulador.
+
+Build local (sem nuvem, requer Android SDK / Xcode):
+
+```bash
+eas build --profile development --platform android --local
+```
+
+### 2. Rodar o app no dia a dia
+
+Com o dev client já instalado:
+
+```bash
+cd mobile
+cp .env.example .env.local   # ajustar vars se necessário
+npm run start                # Metro com --dev-client
+```
+
+Abra o app **Project Ours** (dev client) no celular — ele conecta ao Metro na sua rede.
+
+### Alternativa local (sem EAS)
+
+Se tiver Android Studio / Xcode configurado:
+
+```bash
+npm run android   # compila e instala localmente
+npm run start
+```
+
+### Gates
+
+```bash
+npm run test
+npm run type-check
+npm run lint
+```
+
+## Variáveis de ambiente
+
+| Variável | Descrição |
+|----------|-----------|
+| `EXPO_PUBLIC_API_URL` | Base URL da API REST (ex.: `http://localhost:5000/api`) |
+| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | OAuth Web client ID (Google Sign-In) |
+| `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` | OAuth iOS client ID |
+| `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` | OAuth Android client ID |
+
+## Features (specs)
 
 | Feature | Spec mobile |
 |---------|-------------|
@@ -39,15 +112,4 @@ Detalhes: [`.specs/platforms/mobile/ARCHITECTURE.md`](../.specs/platforms/mobile
 
 ## API
 
-Mesma API REST em `server/`. Contratos: [`.specs/shared/api-contracts.md`](../.specs/shared/api-contracts.md)
-
-Auth: Bearer JWT (não cookie).
-
-## Desenvolvimento
-
-Nenhum comando até scaffold M6. Para trabalho ativo no frontend, use `web/` (fase ponte).
-
-```bash
-# Quando M6 iniciar:
-cd mobile && npm install && npx expo start
-```
+Mesma API REST em `server/`. Auth: Bearer JWT (não cookie).
