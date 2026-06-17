@@ -10,7 +10,8 @@ public sealed record AuthSessionResponse(
     AuthUserDto User,
     IReadOnlyList<FamilyMembershipDto> Families,
     bool IsNewUser,
-    int FamilyCount);
+    int FamilyCount,
+    string? AccessToken = null);
 
 public sealed record AntiforgeryResponse(string RequestToken);
 
