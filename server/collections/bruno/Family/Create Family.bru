@@ -1,0 +1,29 @@
+meta {
+  name: Create Family
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/families
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  RequestVerificationToken: {{antiforgeryToken}}
+  Cookie: {{authCookie}}
+}
+
+body:json {
+  {
+    "name": "Família Silva"
+  }
+}
+
+docs {
+  Pré-requisitos: cookies de sessão (`po_auth`) e token antiforgery de `GET /api/auth/antiforgery`.
+  Cria `Family` + membership Admin para o usuário autenticado.
+  Resposta 200: `{ "id": "...", "name": "Família Silva" }`.
+}

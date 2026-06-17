@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ProjectOurs.Application.Abstractions.Auth;
 using ProjectOurs.Application.Abstractions.Persistence;
 using ProjectOurs.Application.Auth;
+using ProjectOurs.Application.Family;
 using ProjectOurs.Infrastructure.Auth;
 using ProjectOurs.Infrastructure.Options;
 using ProjectOurs.Infrastructure.Persistence;
@@ -25,9 +26,12 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IFamilyRepository, FamilyRepository>();
         services.AddScoped<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
         services.AddScoped<IJwtTokenFactory, JwtTokenFactory>();
         services.AddScoped<AuthService>();
+        services.AddScoped<IInviteCodeGenerator, InviteCodeGenerator>();
+        services.AddScoped<FamilyService>();
 
         return services;
     }

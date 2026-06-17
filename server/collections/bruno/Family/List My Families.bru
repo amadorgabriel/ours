@@ -1,0 +1,20 @@
+meta {
+  name: List My Families
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/families/my
+  body: none
+  auth: none
+}
+
+headers {
+  Cookie: {{authCookie}}
+}
+
+docs {
+  Lista famílias do usuário com papel (`Admin` ou `Member`).
+  Resposta 200: `[ { "id": "...", "name": "...", "role": "Admin" } ]`.
+}

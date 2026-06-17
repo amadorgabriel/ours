@@ -1,3 +1,6 @@
+# Specs (local only)
+.specs/
+
 # Cursor
 .cursor
 
@@ -93,10 +96,3 @@ yarn-error.log*
 *.tmp
 *.temp
 *.cache
-
-# Docs (rascunhos locais)
-_docs/mvp.md
-_docs/mvp_copy.md
-frontend-setup-prompt.md
-client-standard.md
-_docs/_draft
