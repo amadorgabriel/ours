@@ -1,5 +1,8 @@
 # Family — Specification
 
+**Plataformas:** [web.md](web.md) · [mobile.md](mobile.md)  
+**Escopo:** requisitos de produto (plataforma-agnóstico)
+
 ## Problem Statement
 
 Após login, irmãos sem família não conseguem usar o app; quem já participa de uma ou mais famílias precisa criar grupo, entrar por convite ou escolher a família ativa. Sem gestão de família e convites, o smart routing pós-auth fica preso em stubs.

@@ -1,29 +1,56 @@
 # API Contracts (índice)
 
-Contrato completo: `.specs/shared/domain-model.md` · endpoints auth: `.specs/features/auth/spec.md`
+Contrato de domínio: [domain-model.md](domain-model.md) · Specs: `.specs/features/*/spec.md`
 
 ## Convenções
 
 - Base: `/api`
-- Auth: cookie `po_auth` (browser); antiforgery em mutações
+- **Web:** cookie `po_auth` + antiforgery em mutações
+- **Mobile:** `Authorization: Bearer {jwt}` (sem antiforgery)
 - Escopo familiar: header `X-Family-Id: {uuid}`
 
-## Endpoints MVP
+## Endpoints — Auth
 
-| Método | Rota | Escopo |
-|--------|------|--------|
-| POST | `/auth/google` | Público — body `{ idToken }`, response session + Set-Cookie `po_auth` |
-| GET | `/auth/me` | Autenticado — restaura `AuthSessionModel` |
-| POST | `/auth/logout` | Autenticado — expira cookie |
-| GET | `/auth/antiforgery` | Público — token CSRF para mutações |
-| POST | `/families` | User |
-| GET | `/families/my` | User |
-| POST | `/invite` | Admin + family |
-| POST | `/join` | User |
-| POST | `/activities/call` | Family |
-| GET | `/activities/feed` | Family |
-| POST | `/goals` | Family |
-| POST | `/goals/{id}/contribute` | Family |
+| Método | Rota | Escopo | Plataformas |
+|--------|------|--------|-------------|
+| POST | `/auth/google` | Público — `{ idToken }` | web, mobile |
+| GET | `/auth/me` | Autenticado | web, mobile |
+| POST | `/auth/logout` | Autenticado | web, mobile |
+| GET | `/auth/antiforgery` | Público | web only |
+
+## Endpoints — Family (M2)
+
+| Método | Rota | Escopo | Status |
+|--------|------|--------|--------|
+| POST | `/families` | User | ✅ server |
+| GET | `/families/my` | User | ✅ server |
+| POST | `/invite` | Admin + `X-Family-Id` | ✅ server |
+| POST | `/join` | User | ✅ server |
+
+## Endpoints — Activities (M3)
+
+| Método | Rota | Escopo | Status |
+|--------|------|--------|--------|
+| POST | `/activities/call` | Family + assistido | planejado |
+| GET | `/activities/feed` | Family | planejado |
+| GET | `/activities/calendar` | Family, query `month` | planejado |
+
+## Endpoints — Goals (M4)
+
+| Método | Rota | Escopo | Status |
+|--------|------|--------|--------|
+| POST | `/goals` | Family | planejado |
+| GET | `/goals` | Family | planejado |
+| POST | `/goals/{id}/contribute` | Family | planejado |
+
+## Endpoints — Parents (M5)
+
+| Método | Rota | Escopo | Status |
+|--------|------|--------|--------|
+| GET | `/parents` | Family | planejado |
+| PUT | `/parents/{id}` | Admin | planejado |
+| POST | `/parents/{id}/credentials` | Admin | planejado |
+| POST | `/parents/{id}/attachments` | Admin | planejado |
 
 ## Coleção executável
 

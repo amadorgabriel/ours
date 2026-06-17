@@ -1,10 +1,10 @@
-# Architecture
+# Architecture — Web
 
 Alinhado a `ec-v3-ui` com adaptações Ours (Mantine, cookie auth, next-intl).
 
-**Plataformas:** `.specs/shared/platforms.md`
+**Pacote:** `web/` · **Plataformas:** [`.specs/shared/platforms.md`](../../shared/platforms.md)
 
-## Web (`web/`)
+## Camadas
 
 ```
 app/                             → rotas finas (App Router, URLs diretas)
@@ -31,15 +31,11 @@ presentation/
   providers/                     → Context: Query, Auth, Family, Mantine
   styles/                        → globals.css, tema
 
-ui/                              → wrappers Mantine por categoria Ant Design
+ui/                              → wrappers Mantine por categoria
   DataDisplay | DataEntry | Feedback | Layout | Navigation | General
 ```
 
-## Mobile (`mobile/`)
-
-Placeholder. Arquitetura a definir em change dedicado (M6). Consumirá mesma API REST que `web/`.
-
-## Fluxo web
+## Fluxo de dados
 
 ```
 Page (app/) → presentation/modules → ui/
@@ -48,12 +44,16 @@ Page (app/) → presentation/modules → ui/
                                     → core/domain
 ```
 
-## Server
+## Integração server
 
-Inalterado: `ProjectOurs.API` → Application → Domain → Infrastructure.
-
-## Integração
-
-- Cookie HttpOnly + antiforgery em mutações (web PWA)
+- Cookie HttpOnly `po_auth` + antiforgery em mutações
 - `X-Family-Id` via `FamilyProvider` + `family-context`
-- next-intl com `localePrefix: 'never'` (pt-BR fixo; sem segmento `[locale]` no MVP web)
+- next-intl com `localePrefix: 'never'` (pt-BR fixo)
+
+## Layout
+
+Desktop-first admin PWA — ver [`.specs/design/DESIGN.md`](../../design/DESIGN.md) §6.
+
+## Fase ponte
+
+Até mobile M0, `web/` implementa todas as features consumer do MVP. Após M0, consumer features migram para `mobile/`; `web/` mantém gestão admin.

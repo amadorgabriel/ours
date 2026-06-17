@@ -2,39 +2,42 @@
 
 Memória persistente entre sessões. Atualizar ao registrar decisões, bloqueios ou lições.
 
+> **Constituição** (princípios fixos): `.specs/memory/constitution.md`  
+> **Concerns** (riscos técnicos): `.specs/shared/CONCERNS.md`
+
 ## Decisões
 
 | Data | Decisão | Motivo |
 |------|---------|--------|
-| 2026-06-16 | **Breaking:** `client/` → `web/`; `mobile/` placeholder; server/DB intocados | Cliente principal será mobile; web vira PWA admin opcional (change 006) |
-| 2026-06-16 | Fase ponte confirmada: `web/` mantém MVP completo até mobile M0 | Evita produto sem interface utilizável |
-| 2026-06-16 | Rotas web sem `[locale]`: `localePrefix: 'never'`, URLs diretas | Fix 404 em `/` quando proxy não reescrevia; MVP monolíngue |
-| 2026-06-16 | Change 005 concluído; DESIGN.md v1.2.0 canonical | Tokens + retema mergeados em feat/005 |
-| 2026-06-10 | Change 005: DESIGN.md v1.0.0 em `.specs/design/` | Fonte única para UI; ref Freud.ai adaptada para Ours |
-| 2026-06-10 | Paleta orgânica brown/green/orange/cream; Urbanist | Alinha empatia do produto; substitui tema blue/Geist |
-| 2026-06-10 | Wave Tab Bar spec-only até M3+ | Bottom nav ainda não existe |
-| 2026-06-08 | Change 004: onboarding só nome da família; pais em M5 | Reduz escopo M2 |
-| 2026-06-08 | Change 004: convite 6 chars A-Z0-9, 24h, múltiplos pendentes | Alinhado entidade `FamilyInvite` + PROJECT.md |
-| 2026-06-08 | Change 004: refresh sessão auth após create/join | `familyCount` vem de `/auth/me` |
-| 2026-06-08 | M0 + M1 concluídos; changes 001–003 arquivados | Fundação + auth end-to-end mergeados |
-| 2026-06-08 | Change 003: `@react-oauth/google`, `/login` dedicado, guards client-side | Ver `archive/003-login-logout-flow/context.md` |
-| 2026-06-08 | Specs consolidadas em `.specs/` (híbrido Open Spec + TLC) | `_docs/` tinha PRD duplicado |
-| 2026-05 | Auth via cookie HttpOnly `po_auth`, não Bearer no browser | Segurança + CSRF com antiforgery |
+| 2026-06-17 | **Estrutura `.specs/` com 3 frentes:** `platforms/{mobile,web,server}/` | Suportar mobile, web e server com docs dedicados |
+| 2026-06-17 | **Stack mobile:** Expo SDK 52+ + RN + TS + NativeWind + TanStack Query | Paridade com web, ecossistema maduro, Google Sign-In |
+| 2026-06-17 | **Auth mobile:** Bearer JWT + expo-secure-store (não cookie) | Cookies não funcionam em app nativo |
+| 2026-06-17 | **Design mobile:** `.specs/design/mobile.md` v1.0 (Wave Tab Bar, sheets) | Tokens compartilhados + layouts mobile-first |
+| 2026-06-17 | **Features auth/family:** specs mobile em `features/*/mobile.md` | Preparar replicação no M6 |
+| 2026-06-17 | **Constituição** reescrita com kickoff (histórias US-01–09, fora de escopo) | Alinhar produto ao hub de cuidado parental |
+| 2026-06-17 | **`memory/` mantido** separado de `STATE.md` | Constitution = princípios imutáveis; STATE = decisões evolutivas |
+| 2026-06-17 | **`codebase/` removido** — conteúdo em `platforms/` e `shared/CONCERNS.md` | Eliminar docs deprecados |
+| 2026-06-17 | **`codebase/` → `platforms/`** | Brownfield por frente, não monolítico |
+| 2026-06-16 | `client/` → `web/`; `mobile/` placeholder | Cliente principal será mobile |
+| 2026-06-16 | Fase ponte: web mantém MVP até mobile M6 | Evita produto sem interface |
+| 2026-06-16 | Rotas web sem `[locale]` | MVP monolíngue pt-BR |
+| 2026-06-08 | M0 + M1 concluídos | Fundação + auth |
 | 2026-05 | Multi-família via `FamilyMembership` + `X-Family-Id` | PRD v1.1 |
-| 2026-05 | Vitest único (sem Jest paralelo) | Menos cerimônia |
+| 2026-05 | Cookie HttpOnly `po_auth` no web | Segurança + CSRF |
 
 ## Bloqueios
 
 | Item | Detalhe |
 |------|---------|
-| ec-v3-ui | Referência em `c:\_git\job\ec\ec-v3-ui` — `web/` reestruturado para parity |
-| Mobile stack TBD | Placeholder em `mobile/`; change dedicado necessário antes de M6 |
+| ec-v3-ui | Referência em `c:\_git\job\ec\ec-v3-ui` |
+| Mobile M6 | Scaffold Expo pendente; specs prontas |
+| Server Bearer auth | Middleware pode precisar extensão para mobile |
 
 ## Lições
 
-- Stubs de onboarding/select bloqueiam demo até M2 — priorizar vertical slice família antes de activities
-- Prompts de setup duplicavam conventions — manter tooling só em `codebase/CONVENTIONS.md`
-- Renomear cedo (`web/`) evita agentes e devs tratarem PWA como produto principal
+- Specs por plataforma (`web.md` + `mobile.md`) evitam misturar implementação com requisito de produto
+- `shared/` deve conter apenas domínio/API transversal — stack vai em `platforms/`
+- Definir stack mobile antes do scaffold reduz retrabalho de auth
 
 ## Deferred
 
@@ -42,21 +45,21 @@ Memória persistente entre sessões. Atualizar ao registrar decisões, bloqueios
 - PWA offline avançado
 - OpenAPI em `shared/contracts/`
 - Cadastro Parent no onboarding (M5)
-- Stack e auth strategy do `mobile/`
-- Poda de consumer features do `web/` (pós-mobile M0)
-- Convite com link compartilhável + WhatsApp (notas SMOKE_RESULT)
-- Admin revisualizar código de convite após fechar modal
-- Definir pais/mãe no onboarding (notas SMOKE_RESULT)
+- Poda consumer features do `web/` (pós-mobile M6)
+- `packages/shared/` no monorepo (tipos Zod compartilhados)
+- Convite WhatsApp / link compartilhável
 
 ## Todos (sessão)
 
-- [x] T1–T2 change 006: rename `client/` → `web/` + gates
-- [ ] Implementar T1–T20 em `feat/004-family-management` (paths `web/`)
-- [x] Change 006 specs + docs atualizados
-- [x] Implementar T1–T10 em change 005 (design tokens + retema)
-- [x] Corrigir rotas web (`/` 404 → URLs diretas)
+- [x] Reestruturar `.specs/` para 3 frentes
+- [x] Definir stack + arquitetura mobile
+- [x] Documentar arquitetura server
+- [x] Criar design mobile + specs auth/family mobile
+- [x] Atualizar constitution, PROJECT, ROADMAP
+- [ ] Concluir M2 family no web
+- [ ] Scaffold mobile M6
 
 ## Preferences
 
 - Responder em português
-- Fluxo: ler `.specs` → tasks → implementar → testes
+- Fluxo TLC: ler `.specs` → implementar → testes

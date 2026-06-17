@@ -93,6 +93,3 @@ yarn-error.log*
 *.tmp
 *.temp
 *.cache
-
-# harness
-.specs/*

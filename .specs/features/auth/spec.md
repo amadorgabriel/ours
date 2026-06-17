@@ -1,7 +1,9 @@
 # Auth — Specification
 
-## Problem Statement
+**Plataformas:** [web.md](web.md) · [mobile.md](mobile.md)  
+**Escopo:** requisitos de produto (plataforma-agnóstico)
 
+## Problem Statement
 Irmãos precisam entrar com Google de forma segura, permanecer autenticados entre reloads, sair quando quiserem, e ser roteados para onboarding, seleção de família ou dashboard conforme estado da conta.
 
 ## Goals

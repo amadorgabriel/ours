@@ -18,10 +18,8 @@ App para cuidado colaborativo de pais entre irmãos — feed unificado, metas fi
 
 - Visão: `.specs/project/PROJECT.md`
 - Plataformas: `.specs/shared/platforms.md`
-- Convenções web: `.specs/codebase/CONVENTIONS.md`
-- Changes ativos: `004-family-management`, `006-client-platform-split`
-
-`_docs/` está deprecado.
+- Convenções web: `.specs/platforms/web/CONVENTIONS.md`
+- Plataformas: `.specs/platforms/`
 
 ## Desenvolvimento
 

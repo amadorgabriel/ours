@@ -1,6 +1,6 @@
 # Project Ours — Web PWA (`web/`)
 
-PWA admin/suporte — Next.js (App Router) + TypeScript, **next-intl** (`pt-BR`), Mantine, Tailwind, TanStack Query, Axios, Zod, date-fns. Arquitetura em camadas conforme [`.specs/codebase/CONVENTIONS.md`](../.specs/codebase/CONVENTIONS.md).
+PWA admin/suporte — Next.js (App Router) + TypeScript, **next-intl** (`pt-BR`), Mantine, Tailwind, TanStack Query, Axios, Zod, date-fns. Arquitetura em camadas conforme [`.specs/platforms/web/CONVENTIONS.md`](../.specs/platforms/web/CONVENTIONS.md).
 
 Plataformas: [`.specs/shared/platforms.md`](../.specs/shared/platforms.md)
 
@@ -41,5 +41,5 @@ O repositório Git está na pasta pai. Após `npm install` em `web/`, o script `
 
 ## Documentação
 
-- `.specs/codebase/CONVENTIONS.md`
+- `.specs/platforms/web/CONVENTIONS.md`
 - Skill: `.cursor/skills/ours-client-standard/`

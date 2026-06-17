@@ -1,8 +1,10 @@
-# Conventions — Web (ec-v3-ui aligned)
+# Conventions — Web
 
-Pacote: `web/` (PWA admin/suporte). Plataformas: `.specs/shared/platforms.md`
+Pacote: `web/` (PWA admin/suporte) · Plataformas: `.specs/shared/platforms.md`
 
 Referência: ec-v3-ui repository · Skill: `.cursor/skills/ours-client-standard/`
+
+Ver também: [STACK.md](STACK.md) · [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ## Stack
 
@@ -67,7 +69,7 @@ Gate: `npm run pre-push:checks`
 
 ## Design system
 
-Fonte única: [`.specs/design/DESIGN.md`](../design/DESIGN.md) — tokens compartilhados; **layout web** na §6.
+Fonte única: [`.specs/design/DESIGN.md`](../../design/DESIGN.md) — tokens compartilhados; **layout web** na §6.
 
 | Camada | Arquivo |
 |--------|---------|
@@ -82,13 +84,19 @@ Fonte única: [`.specs/design/DESIGN.md`](../design/DESIGN.md) — tokens compar
 
 Páginas autenticadas usam `Page` (não `Container size="sm"`). Auth usa `AuthLayout`.
 
-Toda change de UI em `.specs/changes/` deve referenciar `DESIGN.md` nas tasks.
-
 ## i18n (MVP monolíngue)
 
 - Locale fixo `pt-BR` em `i18n/request.ts`
 - `localePrefix: 'never'` — sem segmento `[locale]` na URL
 - Navegação tipada: `@/i18n/navigation` (`Link`, `useRouter`, …)
+
+## Providers
+
+`RootProvider` = Query → Auth → Family → Mantine
+
+## Rotas
+
+URLs diretas sem `[locale]`: `/`, `/login`, `/dashboard`, `/onboarding`, `/families/select`
 
 ## Anti-padrões
 
