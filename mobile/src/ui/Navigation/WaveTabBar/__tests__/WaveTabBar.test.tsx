@@ -15,7 +15,7 @@ jest.mock('../WaveBarBackground', () => ({
   WaveBarBackground: 'WaveBarBackground',
 }));
 
-jest.mock('../CallNowSheet', () => ({
+jest.mock('@/presentation/modules/feed/call-now-sheet', () => ({
   CallNowSheet: 'CallNowSheet',
 }));
 

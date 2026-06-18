@@ -15,4 +15,9 @@ export const queryKeys = {
     list: (familyId?: string | null) =>
       [...queryKeys.parents.lists(), familyId ?? 'none'] as const,
   },
+  activities: {
+    all: ['activities'] as const,
+    feed: (familyId?: string | null) =>
+      [...queryKeys.activities.all, 'feed', familyId ?? 'none'] as const,
+  },
 } as const;
