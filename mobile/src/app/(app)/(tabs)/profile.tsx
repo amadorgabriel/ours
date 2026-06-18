@@ -1,10 +1,3 @@
-import { Text, View } from 'react-native';
+import { ProfileScreen } from '@/presentation/modules/profile';
 
-export default function ProfileScreen() {
-  return (
-    <View className="flex-1 items-center justify-center bg-cream px-6">
-      <Text className="font-sans-semibold text-xl text-mindful-brown">Perfil</Text>
-      <Text className="mt-2 font-sans text-mindful-brown/80">Em breve</Text>
-    </View>
-  );
-}
+export default ProfileScreen;
