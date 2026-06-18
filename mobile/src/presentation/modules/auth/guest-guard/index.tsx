@@ -37,6 +37,9 @@ export function GuestGuard({ children }: GuestGuardProps) {
   }
 
   if (isAuthenticated) {
+    if (session?.familyCount === 0) {
+      return children;
+    }
     return null;
   }
 
