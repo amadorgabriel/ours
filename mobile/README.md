@@ -1,6 +1,6 @@
 # Project Ours — Mobile
 
-**Status:** scaffold + app shell + feed + calendar (Changes 007–010) · **Expo SDK 56** · development builds
+**Status:** scaffold + app shell + feed + calendar + goals (Changes 007–011) · **Expo SDK 56** · development builds
 
 ## Papel
 
@@ -68,6 +68,17 @@ Spec: [`.specs/changes/009-mobile-feed/`](../.specs/changes/009-mobile-feed/)
 | Feed por intervalo | `GET /activities/feed?from=&to=` (server) |
 
 Spec: [`.specs/changes/010-mobile-calendar/`](../.specs/changes/010-mobile-calendar/)
+
+## Implementado (Change 011)
+
+| Área | Rotas / módulos |
+|------|-----------------|
+| Lista de metas financeiras | `/(app)/(tabs)/goals` · `presentation/modules/goals` |
+| Criar meta (admin) | `CreateGoalSheet` |
+| Detalhe da meta | `GoalDetailSheet` · `GoalCard` com barra de progresso |
+| API goals | `GET /goals` · `POST /goals` (server) |
+
+Spec: [`.specs/changes/011-mobile-goals/`](../.specs/changes/011-mobile-goals/)
 
 ## Desenvolvimento
 

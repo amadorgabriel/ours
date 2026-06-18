@@ -16,6 +16,13 @@ public sealed class GoalRulesTests
     public void IsValidTargetAmount_respects_minimum(decimal amount, bool expected) =>
         Assert.Equal(expected, GoalRules.IsValidTargetAmount(amount));
 
+    [Theory]
+    [InlineData("", false)]
+    [InlineData("   ", false)]
+    [InlineData("Fundo saúde", true)]
+    public void IsValidTitle_respects_length_and_whitespace(string title, bool expected) =>
+        Assert.Equal(expected, GoalRules.IsValidTitle(title));
+
     [Fact]
     public void FamilyHeaders_uses_prd_header_name() =>
         Assert.Equal("X-Family-Id", FamilyHeaders.FamilyId);

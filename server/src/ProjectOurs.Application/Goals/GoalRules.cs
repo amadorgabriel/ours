@@ -6,6 +6,10 @@ namespace ProjectOurs.Application.Goals;
 public static class GoalRules
 {
     public const decimal MinimumTargetAmount = 10m;
+    public const int MaxTitleLength = 100;
 
     public static bool IsValidTargetAmount(decimal amount) => amount >= MinimumTargetAmount;
+
+    public static bool IsValidTitle(string? title) =>
+        !string.IsNullOrWhiteSpace(title) && title.Trim().Length <= MaxTitleLength;
 }

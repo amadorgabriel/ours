@@ -107,6 +107,7 @@ public sealed class ActivitiesController(
         if (!Request.Headers.TryGetValue(FamilyHeaders.FamilyId, out var familyIdHeader)
             || !Guid.TryParse(familyIdHeader.FirstOrDefault(), out familyId))
         {
+            familyId = default;
             error = BadRequest(new { message = "Active family not specified." });
             return false;
         }

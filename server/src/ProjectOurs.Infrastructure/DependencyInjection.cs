@@ -6,6 +6,7 @@ using ProjectOurs.Application.Abstractions.Persistence;
 using ProjectOurs.Application.Activity;
 using ProjectOurs.Application.Auth;
 using ProjectOurs.Application.Family;
+using ProjectOurs.Application.Goals;
 using ProjectOurs.Infrastructure.Auth;
 using ProjectOurs.Infrastructure.Options;
 using ProjectOurs.Infrastructure.Persistence;
@@ -29,12 +30,14 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IFamilyRepository, FamilyRepository>();
         services.AddScoped<IActivityRepository, ActivityRepository>();
+        services.AddScoped<IGoalRepository, GoalRepository>();
         services.AddScoped<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
         services.AddScoped<IJwtTokenFactory, JwtTokenFactory>();
         services.AddScoped<AuthService>();
         services.AddScoped<IInviteCodeGenerator, InviteCodeGenerator>();
         services.AddScoped<FamilyService>();
         services.AddScoped<ActivityService>();
+        services.AddScoped<GoalService>();
 
         return services;
     }

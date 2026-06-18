@@ -22,4 +22,9 @@ export const queryKeys = {
     byMonth: (familyId: string | null | undefined, year: number, month: number) =>
       [...queryKeys.activities.all, 'month', familyId ?? 'none', year, month] as const,
   },
+  goals: {
+    all: ['goals'] as const,
+    list: (familyId?: string | null) =>
+      [...queryKeys.goals.all, 'list', familyId ?? 'none'] as const,
+  },
 } as const;
