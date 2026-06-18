@@ -21,7 +21,7 @@ describe('ListActivityFeedUseCase', () => {
     const httpClient: IHttpClient = { request };
 
     const useCase = new ListActivityFeedUseCase(httpClient);
-    const result = await useCase.listFeed(50);
+    const result = await useCase.listFeed({ limit: 50 });
 
     expect(request).toHaveBeenCalledWith({
       method: 'get',
@@ -29,5 +29,28 @@ describe('ListActivityFeedUseCase', () => {
       queryParams: { limit: 50 },
     });
     expect(result).toEqual(feed);
+  });
+
+  it('loads feed with date range params', async () => {
+    const feed: ActivityFeedResponse = { items: [] };
+    const request = jest.fn().mockResolvedValue({ statusCode: 200, data: feed });
+    const httpClient: IHttpClient = { request };
+
+    const useCase = new ListActivityFeedUseCase(httpClient);
+    await useCase.listFeed({
+      limit: 100,
+      from: '2026-06-01T00:00:00.000Z',
+      to: '2026-06-30T23:59:59.999Z',
+    });
+
+    expect(request).toHaveBeenCalledWith({
+      method: 'get',
+      url: '/activities/feed',
+      queryParams: {
+        limit: 100,
+        from: '2026-06-01T00:00:00.000Z',
+        to: '2026-06-30T23:59:59.999Z',
+      },
+    });
   });
 });

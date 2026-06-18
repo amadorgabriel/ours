@@ -162,7 +162,7 @@ public sealed class ActivityServiceTests
             });
 
         _activities
-            .Setup(x => x.ListByFamilyIdAsync(familyId, 50, It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListByFamilyIdAsync(familyId, 50, null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync([
                 new Activity
                 {
@@ -180,5 +180,60 @@ public sealed class ActivityServiceTests
         Assert.Single(result.Items);
         Assert.Equal(activityId.ToString(), result.Items[0].Id);
         Assert.Equal("Bruno", result.Items[0].UserName);
+    }
+
+    [Fact]
+    public async Task GetFeed_WithDateRange_PassesRangeToRepository()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var from = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero);
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FamilyId = familyId,
+                Role = FamilyRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow,
+            });
+
+        _activities
+            .Setup(x => x.ListByFamilyIdAsync(familyId, 50, from, to, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+
+        var result = await _sut.GetFeedAsync(userId, familyId, null, from, to);
+
+        Assert.Empty(result.Items);
+        _activities.Verify(
+            x => x.ListByFamilyIdAsync(familyId, 50, from, to, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetFeed_WithInvalidDateRange_ThrowsValidation()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var from = new DateTimeOffset(2026, 6, 30, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FamilyId = familyId,
+                Role = FamilyRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow,
+            });
+
+        var act = () => _sut.GetFeedAsync(userId, familyId, null, from, to);
+
+        await Assert.ThrowsAsync<ActivityValidationException>(act);
     }
 }

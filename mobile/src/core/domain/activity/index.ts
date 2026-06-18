@@ -20,6 +20,12 @@ export type RegisterCallRequest = {
 
 export type RegisterCallResponse = ActivityFeedItem;
 
+export type ActivityFeedParams = {
+  limit?: number;
+  from?: string;
+  to?: string;
+};
+
 export type ActivityFeedResponse = {
   items: ActivityFeedItem[];
 };

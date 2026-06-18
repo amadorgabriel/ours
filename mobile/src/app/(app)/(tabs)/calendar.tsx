@@ -1,10 +1,5 @@
-import { Text, View } from 'react-native';
+import { CalendarScreen } from '@/presentation/modules/calendar';
 
-export default function CalendarScreen() {
-  return (
-    <View className="flex-1 items-center justify-center bg-cream px-6">
-      <Text className="font-sans-semibold text-xl text-mindful-brown">Calendário</Text>
-      <Text className="mt-2 font-sans text-mindful-brown/80">Em breve</Text>
-    </View>
-  );
+export default function CalendarRoute() {
+  return <CalendarScreen />;
 }

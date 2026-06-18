@@ -21,15 +21,31 @@ public sealed class ActivityRepository(ApplicationDbContext db) : IActivityRepos
     public async Task<IReadOnlyList<Activity>> ListByFamilyIdAsync(
         Guid familyId,
         int limit,
-        CancellationToken cancellationToken = default) =>
-        await db.Activities
+        DateTimeOffset? from = null,
+        DateTimeOffset? to = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = db.Activities
             .AsNoTracking()
             .Include(x => x.User)
             .Include(x => x.Parent)
-            .Where(x => x.FamilyId == familyId)
+            .Where(x => x.FamilyId == familyId);
+
+        if (from is not null)
+        {
+            query = query.Where(x => x.CreatedAt >= from);
+        }
+
+        if (to is not null)
+        {
+            query = query.Where(x => x.CreatedAt <= to);
+        }
+
+        return await query
             .OrderByDescending(x => x.CreatedAt)
             .Take(limit)
             .ToListAsync(cancellationToken);
+    }
 
     public Task<bool> ParentBelongsToFamilyAsync(
         Guid parentId,

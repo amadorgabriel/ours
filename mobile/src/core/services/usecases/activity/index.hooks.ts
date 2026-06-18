@@ -6,6 +6,7 @@ import { queryKeys } from '@/core/infra/query/query-keys';
 import { useFamily } from '@/presentation/providers/family';
 
 import { ListActivityFeedUseCase } from './list-activity-feed.usecase';
+import { getMonthRange } from './month-range';
 import { RegisterCallUseCase } from './register-call.usecase';
 
 export function useActivityFeed(limit = 50) {
@@ -15,7 +16,25 @@ export function useActivityFeed(limit = 50) {
 
   return useQuery({
     queryKey: queryKeys.activities.feed(familyId),
-    queryFn: () => useCase.listFeed(limit),
+    queryFn: () => useCase.listFeed({ limit }),
+    enabled: Boolean(familyId),
+  });
+}
+
+export function useActivitiesByMonth(year: number, month: number) {
+  const { familyId } = useFamily();
+  const httpClient = HttpClientFactory.create();
+  const useCase = new ListActivityFeedUseCase(httpClient);
+  const range = getMonthRange(year, month);
+
+  return useQuery({
+    queryKey: queryKeys.activities.byMonth(familyId, year, month),
+    queryFn: () =>
+      useCase.listFeed({
+        limit: 100,
+        from: range.from,
+        to: range.to,
+      }),
     enabled: Boolean(familyId),
   });
 }
@@ -29,7 +48,7 @@ export function useRegisterCall() {
   return useMutation({
     mutationFn: (data: RegisterCallRequest) => useCase.registerCall(data),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.activities.feed(familyId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.activities.all });
     },
   });
 }

@@ -18,4 +18,12 @@ public static class ActivityRules
 
         return Math.Min(limit.Value, MaxFeedLimit);
     }
+
+    public static void ValidateFeedDateRange(DateTimeOffset? from, DateTimeOffset? to)
+    {
+        if (from is not null && to is not null && from > to)
+        {
+            throw new ActivityValidationException("'from' must be earlier than or equal to 'to'.");
+        }
+    }
 }

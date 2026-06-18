@@ -19,6 +19,8 @@ public sealed class ActivitiesController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetFeed(
         [FromQuery] int? limit,
+        [FromQuery] DateTimeOffset? from,
+        [FromQuery] DateTimeOffset? to,
         CancellationToken cancellationToken)
     {
         if (!ApiControllerHelper.TryGetUserId(User, out var userId))
@@ -33,8 +35,18 @@ public sealed class ActivitiesController(
 
         try
         {
-            var feed = await activityService.GetFeedAsync(userId, familyId, limit, cancellationToken);
+            var feed = await activityService.GetFeedAsync(
+                userId,
+                familyId,
+                limit,
+                from,
+                to,
+                cancellationToken);
             return Ok(feed);
+        }
+        catch (ActivityValidationException ex)
+        {
+            return MapActivityException(ex);
         }
         catch (ActivityForbiddenException ex)
         {

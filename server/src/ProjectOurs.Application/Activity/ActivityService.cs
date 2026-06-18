@@ -73,12 +73,20 @@ public sealed class ActivityService(
         Guid userId,
         Guid familyId,
         int? limit,
+        DateTimeOffset? from = null,
+        DateTimeOffset? to = null,
         CancellationToken cancellationToken = default)
     {
         await EnsureMembershipAsync(userId, familyId, cancellationToken);
+        ActivityRules.ValidateFeedDateRange(from, to);
 
         var normalizedLimit = ActivityRules.NormalizeFeedLimit(limit);
-        var items = await activities.ListByFamilyIdAsync(familyId, normalizedLimit, cancellationToken);
+        var items = await activities.ListByFamilyIdAsync(
+            familyId,
+            normalizedLimit,
+            from,
+            to,
+            cancellationToken);
 
         return new ActivityFeedResponse(items.Select(MapToDto).ToList());
     }

@@ -10,6 +10,8 @@ public interface IActivityRepository
     Task<IReadOnlyList<ActivityEntity>> ListByFamilyIdAsync(
         Guid familyId,
         int limit,
+        DateTimeOffset? from = null,
+        DateTimeOffset? to = null,
         CancellationToken cancellationToken = default);
 
     Task<bool> ParentBelongsToFamilyAsync(

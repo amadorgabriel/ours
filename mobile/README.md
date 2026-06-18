@@ -1,6 +1,6 @@
 # Project Ours — Mobile
 
-**Status:** scaffold + app shell + feed (Changes 007–009) · **Expo SDK 56** · development builds
+**Status:** scaffold + app shell + feed + calendar (Changes 007–010) · **Expo SDK 56** · development builds
 
 ## Papel
 
@@ -58,6 +58,16 @@ Spec: [`.specs/changes/008-mobile-app-shell/`](../.specs/changes/008-mobile-app-
 | API activities | `GET /activities/feed` · `POST /activities/call` (server) |
 
 Spec: [`.specs/changes/009-mobile-feed/`](../.specs/changes/009-mobile-feed/)
+
+## Implementado (Change 010)
+
+| Área | Rotas / módulos |
+|------|-----------------|
+| Calendário mensal com dots | `/(app)/(tabs)/calendar` · `presentation/modules/calendar` |
+| Detalhe do dia | `DayDetailSheet` · reutiliza `ActivityCard` |
+| Feed por intervalo | `GET /activities/feed?from=&to=` (server) |
+
+Spec: [`.specs/changes/010-mobile-calendar/`](../.specs/changes/010-mobile-calendar/)
 
 ## Desenvolvimento
 
