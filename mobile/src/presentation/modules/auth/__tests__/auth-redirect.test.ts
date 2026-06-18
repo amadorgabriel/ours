@@ -3,6 +3,7 @@ import {
   getAuthGuardRedirect,
   getGuestGuardRedirect,
   getHomeRedirect,
+  getFamilySelectRedirect,
 } from '../auth-redirect';
 
 describe('auth-redirect', () => {
@@ -43,6 +44,20 @@ describe('auth-redirect', () => {
   describe('getHomeRedirect', () => {
     it('returns login when logged out', () => {
       expect(getHomeRedirect(false, false, undefined)).toBe('/(auth)/login');
+    });
+  });
+
+  describe('getFamilySelectRedirect', () => {
+    it('redirects when multiple families and none selected', () => {
+      expect(getFamilySelectRedirect(2, null)).toBe('/(app)/families/select');
+    });
+
+    it('returns null when family is already selected', () => {
+      expect(getFamilySelectRedirect(2, 'f1')).toBeNull();
+    });
+
+    it('returns null for single-family users', () => {
+      expect(getFamilySelectRedirect(1, null)).toBeNull();
     });
   });
 });
