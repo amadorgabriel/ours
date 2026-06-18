@@ -48,3 +48,13 @@ export function getGuestGuardRedirect(
   if (isSessionLoading || !isAuthenticated || familyCount === undefined) return null;
   return resolvePostLoginRoute(familyCount);
 }
+
+export function getFamilySelectRedirect(
+  familyCount: number | undefined,
+  familyId: string | null
+): typeof mobileRoutes.familiesSelect | null {
+  if (familyCount !== undefined && familyCount > 1 && familyId === null) {
+    return mobileRoutes.familiesSelect;
+  }
+  return null;
+}
