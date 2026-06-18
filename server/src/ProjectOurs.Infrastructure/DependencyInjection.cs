@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IFamilyRepository, FamilyRepository>();
         services.AddScoped<IActivityRepository, ActivityRepository>();
         services.AddScoped<IGoalRepository, GoalRepository>();
+        services.AddScoped<IGoalContributionRepository, GoalContributionRepository>();
         services.AddScoped<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
         services.AddScoped<IJwtTokenFactory, JwtTokenFactory>();
         services.AddScoped<AuthService>();
@@ -38,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<FamilyService>();
         services.AddScoped<ActivityService>();
         services.AddScoped<GoalService>();
+        services.AddScoped<GoalContributionService>();
 
         return services;
     }

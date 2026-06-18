@@ -122,6 +122,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             e.ToTable("goal_contributions");
             e.HasKey(x => x.Id);
             e.Property(x => x.Amount).HasPrecision(10, 2);
+            e.Property(x => x.IsPrivate).HasDefaultValue(false);
             e.HasOne(x => x.Goal)
                 .WithMany(x => x.Contributions)
                 .HasForeignKey(x => x.GoalId)

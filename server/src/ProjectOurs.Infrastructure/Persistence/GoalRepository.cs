@@ -25,4 +25,14 @@ public sealed class GoalRepository(ApplicationDbContext db) : IGoalRepository
             .AsNoTracking()
             .FirstAsync(x => x.Id == goal.Id, cancellationToken);
     }
+
+    public async Task<Goal?> GetActiveByIdAndFamilyIdAsync(
+        Guid goalId,
+        Guid familyId,
+        CancellationToken cancellationToken = default) =>
+        await db.Goals
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                x => x.Id == goalId && x.FamilyId == familyId && x.Status == GoalStatus.Active,
+                cancellationToken);
 }

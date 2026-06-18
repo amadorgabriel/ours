@@ -6,6 +6,7 @@ public class GoalContribution
     public Guid GoalId { get; set; }
     public Guid UserId { get; set; }
     public decimal Amount { get; set; }
+    public bool IsPrivate { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 
     public Goal Goal { get; set; } = null!;

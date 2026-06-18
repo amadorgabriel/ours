@@ -26,5 +26,7 @@ export const queryKeys = {
     all: ['goals'] as const,
     list: (familyId?: string | null) =>
       [...queryKeys.goals.all, 'list', familyId ?? 'none'] as const,
+    contributions: (familyId: string | null | undefined, goalId: string) =>
+      [...queryKeys.goals.all, 'contributions', familyId ?? 'none', goalId] as const,
   },
 } as const;

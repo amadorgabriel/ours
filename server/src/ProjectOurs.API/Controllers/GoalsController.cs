@@ -10,6 +10,7 @@ namespace ProjectOurs.API.Controllers;
 [Authorize]
 public sealed class GoalsController(
     GoalService goalService,
+    GoalContributionService goalContributionService,
     ILogger<GoalsController> logger) : ControllerBase
 {
     [HttpGet]
@@ -88,6 +89,114 @@ public sealed class GoalsController(
         }
     }
 
+    [HttpGet("{goalId:guid}/contributions")]
+    [ProducesResponseType(typeof(GoalContributionListResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ListContributions(
+        Guid goalId,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (!TryGetFamilyId(out var familyId, out var familyError))
+        {
+            return familyError!;
+        }
+
+        try
+        {
+            var response = await goalContributionService.ListAsync(
+                userId,
+                familyId,
+                goalId,
+                cancellationToken);
+            return Ok(response);
+        }
+        catch (GoalValidationException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (GoalForbiddenException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (GoalNotFoundException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to list contributions for goal {GoalId}, user {UserId}, family {FamilyId}.",
+                goalId,
+                userId,
+                familyId);
+            return MapGoalException(ex);
+        }
+    }
+
+    [HttpPost("{goalId:guid}/contributions")]
+    [ProducesResponseType(typeof(GoalContributionDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CreateContribution(
+        Guid goalId,
+        [FromBody] CreateGoalContributionRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (!TryGetFamilyId(out var familyId, out var familyError))
+        {
+            return familyError!;
+        }
+
+        try
+        {
+            var contribution = await goalContributionService.CreateAsync(
+                userId,
+                familyId,
+                goalId,
+                request,
+                cancellationToken);
+            return Ok(contribution);
+        }
+        catch (GoalValidationException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (GoalForbiddenException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (GoalNotFoundException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to create contribution for goal {GoalId}, user {UserId}, family {FamilyId}.",
+                goalId,
+                userId,
+                familyId);
+            return MapGoalException(ex);
+        }
+    }
+
     private bool TryGetFamilyId(out Guid familyId, out IActionResult? error)
     {
         if (!Request.Headers.TryGetValue(FamilyHeaders.FamilyId, out var familyIdHeader)
@@ -110,6 +219,7 @@ public sealed class GoalsController(
             {
                 StatusCode = StatusCodes.Status403Forbidden,
             },
+            GoalNotFoundException ex => new NotFoundObjectResult(new { message = ex.Message }),
             _ => new ObjectResult(new { message = "An unexpected error occurred." })
             {
                 StatusCode = StatusCodes.Status500InternalServerError,

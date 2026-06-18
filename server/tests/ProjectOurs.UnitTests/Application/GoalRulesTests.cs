@@ -40,4 +40,20 @@ public sealed class GoalRulesTests
         Assert.NotNull(result);
         Assert.Equal(user.Email, result.Email);
     }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(50.5)]
+    public void IsValidContributionAmount_WithValidValues_ReturnsTrue(decimal amount)
+    {
+        Assert.True(GoalRules.IsValidContributionAmount(amount));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(0.99)]
+    public void IsValidContributionAmount_WithInvalidValues_ReturnsFalse(decimal amount)
+    {
+        Assert.False(GoalRules.IsValidContributionAmount(amount));
+    }
 }

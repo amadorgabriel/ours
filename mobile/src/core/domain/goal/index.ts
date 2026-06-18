@@ -22,3 +22,23 @@ export type CreateGoalRequest = {
 };
 
 export type CreateGoalResponse = Goal;
+
+export type GoalContribution = {
+  id: string;
+  amount: number | null;
+  isPrivate: boolean;
+  userId: string;
+  userName: string;
+  createdAt: string;
+};
+
+export type GoalContributionListResponse = {
+  items: GoalContribution[];
+};
+
+export type CreateGoalContributionRequest = {
+  amount: number;
+  isPrivate: boolean;
+};
+
+export type CreateGoalContributionResponse = GoalContribution;

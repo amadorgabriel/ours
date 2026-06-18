@@ -9,4 +9,9 @@ public interface IGoalRepository
         CancellationToken cancellationToken = default);
 
     Task<Goal> AddAsync(Goal goal, CancellationToken cancellationToken = default);
+
+    Task<Goal?> GetActiveByIdAndFamilyIdAsync(
+        Guid goalId,
+        Guid familyId,
+        CancellationToken cancellationToken = default);
 }

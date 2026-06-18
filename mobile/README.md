@@ -1,6 +1,6 @@
 # Project Ours — Mobile
 
-**Status:** scaffold + app shell + feed + calendar + goals (Changes 007–011) · **Expo SDK 56** · development builds
+**Status:** scaffold + app shell + feed + calendar + goals + contributions (Changes 007–012) · **Expo SDK 56** · development builds
 
 ## Papel
 
@@ -11,6 +11,7 @@ Cliente **principal** do Project Ours. Experiência diária dos cuidadores:
 - Registrar ligações ("Liguei agora")
 - Calendário mensal de cuidado
 - Metas financeiras (visão agregada)
+- Contribuições em metas (com privacidade opcional)
 - Seletor de assistido (Pai, Mãe)
 
 ## Stack
@@ -79,6 +80,16 @@ Spec: [`.specs/changes/010-mobile-calendar/`](../.specs/changes/010-mobile-calen
 | API goals | `GET /goals` · `POST /goals` (server) |
 
 Spec: [`.specs/changes/011-mobile-goals/`](../.specs/changes/011-mobile-goals/)
+
+## Implementado (Change 012)
+
+| Área | Rotas / módulos |
+|------|-----------------|
+| Registrar contribuição | `ContributeSheet` · toggle privacidade |
+| Histórico no detalhe | `GoalDetailSheet` · lista contribuições visíveis |
+| API contributions | `GET/POST /goals/{id}/contributions` (server) |
+
+Spec: [`.specs/changes/012-mobile-goals-contributions/`](../.specs/changes/012-mobile-goals-contributions/)
 
 ## Desenvolvimento
 
