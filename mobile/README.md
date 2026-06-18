@@ -1,6 +1,6 @@
 # Project Ours — Mobile
 
-**Status:** scaffold ativo (Change 007, T1–T20) · **Expo SDK 56** · development builds
+**Status:** scaffold + app shell (Changes 007–008) · **Expo SDK 56** · development builds
 
 ## Papel
 
@@ -36,6 +36,18 @@ Arquitetura alinhada ao `web/`: `core/` (domain, infra, usecases) → `presentat
 | Shell com tabs + WaveTabBar | `/(app)/(tabs)/*` |
 
 Specs: [auth/mobile.md](../.specs/features/auth/mobile.md) · [family/mobile.md](../.specs/features/family/mobile.md)
+
+## Implementado (Change 008)
+
+| Área | Rotas / módulos |
+|------|-----------------|
+| Header global (chips família + assistido) | `AppHeader` em `/(app)/(tabs)/_layout` |
+| Bottom sheet reutilizável | `ui/Feedback/BottomSheet/` |
+| Admin convite (gerar / copiar / compartilhar) | `InviteSheet` · Perfil (Admin) |
+| Seletor assistido + persist | `AssistidoProvider` · `AssistidoSheet` |
+| Perfil (dados, família, logout) | `/(app)/(tabs)/profile` |
+
+Spec: [`.specs/changes/008-mobile-app-shell/`](../.specs/changes/008-mobile-app-shell/)
 
 ## Desenvolvimento
 
@@ -111,7 +123,7 @@ npm run test && npm run type-check
 npm run lint      # opcional
 ```
 
-Gate documentado no change: [`.specs/changes/007-mobile-scaffold/`](../.specs/changes/007-mobile-scaffold/)
+Gate documentado nos changes: [007](../.specs/changes/007-mobile-scaffold/) · [008](../.specs/changes/008-mobile-app-shell/)
 
 ## Variáveis de ambiente
 
