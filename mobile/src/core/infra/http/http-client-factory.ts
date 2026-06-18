@@ -6,7 +6,7 @@ export class HttpClientFactory {
 
   static create(): IHttpClient {
     if (!this.instance) {
-      const baseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:5000/api';
+      const baseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:5280/api';
       this.instance = new HttpClient(baseUrl);
     }
     return this.instance;

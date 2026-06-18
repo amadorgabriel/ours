@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { getHomeRedirect } from '@/presentation/modules/auth/auth-redirect';
 import { useAuth } from '@/presentation/providers/auth';
+import { colors } from '@/presentation/styles/tokens';
 
 export default function Index() {
   const { isAuthenticated, isSessionLoading, session } = useAuth();
@@ -12,7 +13,7 @@ export default function Index() {
   if (redirectTo === null) {
     return (
       <View className="flex-1 items-center justify-center bg-cream">
-        <ActivityIndicator color="#5A6838" />
+        <ActivityIndicator color={colors.serenityGreen60} />
       </View>
     );
   }
