@@ -2,7 +2,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
 
 import type { AuthSessionModel } from '@/core/domain/auth';
-import type { CreateFamilyRequest, FamilyId, JoinFamilyRequest } from '@/core/domain/family';
+import type {
+  CreateFamilyRequest,
+  CreateInviteRequest,
+  FamilyId,
+  JoinFamilyRequest,
+} from '@/core/domain/family';
 import { HttpClientFactory } from '@/core/infra/http/http-client-factory';
 import type { IHttpClient } from '@/core/infra/http/index.types';
 import { queryKeys } from '@/core/infra/query/query-keys';
@@ -12,6 +17,7 @@ import { useFamily } from '@/presentation/providers/family';
 import { applyActiveFamilyFromSession } from '../auth/apply-active-family';
 import { AuthGetSessionUseCase } from '../auth/get-session.usecase';
 import { CreateFamilyUseCase } from './create-family.usecase';
+import { CreateInviteUseCase } from './create-invite.usecase';
 import { JoinFamilyUseCase } from './join-family.usecase';
 import { ListFamiliesUseCase } from './list-families.usecase';
 
@@ -70,5 +76,14 @@ export function useJoinFamily() {
       setFamilyId(joined.familyId);
       void queryClient.invalidateQueries({ queryKey: queryKeys.families.lists() });
     },
+  });
+}
+
+export function useCreateInvite() {
+  const httpClient = HttpClientFactory.create();
+  const useCase = new CreateInviteUseCase(httpClient);
+
+  return useMutation({
+    mutationFn: (data: CreateInviteRequest) => useCase.createInvite(data),
   });
 }
