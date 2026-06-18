@@ -29,6 +29,14 @@
       "expo-router",
       "expo-dev-client",
       [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#F5F0E8",
@@ -39,7 +47,12 @@
         }
       ],
       "expo-secure-store",
-      "@react-native-google-signin/google-signin"
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.385042091210-d3mrb52t2jpb742oi63itqa9ucdvet46"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -47,7 +60,7 @@
     },
     "extra": {
       "googleSignIn": {
-        "iosUrlScheme": "com.googleusercontent.apps.YOUR_IOS_CLIENT_ID"
+        "iosUrlScheme": "com.googleusercontent.apps.385042091210-d3mrb52t2jpb742oi63itqa9ucdvet46"
       },
       "router": {},
       "eas": {

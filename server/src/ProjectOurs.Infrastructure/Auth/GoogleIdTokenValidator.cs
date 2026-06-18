@@ -30,9 +30,25 @@ public sealed class GoogleIdTokenValidator(
                 null);
         }
 
+        var audiences = new List<string>();
+        if (!string.IsNullOrWhiteSpace(googleOptions.Value.ClientId))
+        {
+            audiences.Add(googleOptions.Value.ClientId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(googleOptions.Value.AndroidClientId))
+        {
+            audiences.Add(googleOptions.Value.AndroidClientId);
+        }
+
+        if (audiences.Count == 0)
+        {
+            throw new InvalidOperationException("Google OAuth client ID is not configured.");
+        }
+
         var settings = new GoogleJsonWebSignature.ValidationSettings
         {
-            Audience = [googleOptions.Value.ClientId],
+            Audience = audiences,
         };
 
         var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
