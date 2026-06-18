@@ -8,7 +8,7 @@ App para cuidado colaborativo de pais entre irmãos — feed unificado, metas fi
 
 | Path | Stack | Papel |
 |------|-------|-------|
-| `mobile/` | TBD (placeholder) | App principal — uso diário |
+| `mobile/` | Expo SDK 56, React Native, Expo Router | App principal — uso diário |
 | `web/` | Next.js 16, Mantine, next-intl, PWA | Admin/suporte opcional |
 | `server/` | .NET 8, PostgreSQL | API REST única |
 
@@ -26,6 +26,9 @@ App para cuidado colaborativo de pais entre irmãos — feed unificado, metas fi
 ```bash
 # Web (admin PWA)
 cd web && npm install && npm run dev
+
+# Mobile (development build — não Expo Go)
+cd mobile && npm install && npm run android
 
 # Server
 cd server && dotnet test && dotnet run --project src/ProjectOurs.API

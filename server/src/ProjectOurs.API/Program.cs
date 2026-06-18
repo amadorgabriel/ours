@@ -65,9 +65,16 @@ public sealed class Program
                 {
                     OnMessageReceived = context =>
                     {
-                        if (context.Request.Cookies.TryGetValue(AuthCookie.Name, out var token))
+                        if (context.Request.Cookies.TryGetValue(AuthCookie.Name, out var cookieToken))
                         {
-                            context.Token = token;
+                            context.Token = cookieToken;
+                            return Task.CompletedTask;
+                        }
+
+                        var authorization = context.Request.Headers.Authorization.ToString();
+                        if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            context.Token = authorization["Bearer ".Length..].Trim();
                         }
 
                         return Task.CompletedTask;

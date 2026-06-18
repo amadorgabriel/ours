@@ -28,4 +28,17 @@ public static class IntegrationHttpClientExtensions
         request.Headers.Add("RequestVerificationToken", token);
         return await client.SendAsync(request);
     }
+
+    public static async Task<HttpResponseMessage> PostJsonAsMobileClientAsync<T>(
+        this HttpClient client,
+        string url,
+        T body)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = JsonContent.Create(body),
+        };
+        request.Headers.Add("X-Client-Platform", "mobile");
+        return await client.SendAsync(request);
+    }
 }

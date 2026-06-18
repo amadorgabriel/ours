@@ -32,13 +32,16 @@ public sealed class AuthController(
             return BadRequest(new { message = "idToken is required." });
         }
 
-        try
+        if (!MobileClientHeaders.ShouldSkipAntiforgery(Request))
         {
-            await antiforgery.ValidateRequestAsync(HttpContext);
-        }
-        catch (AntiforgeryValidationException)
-        {
-            return BadRequest(new { message = "Invalid antiforgery token." });
+            try
+            {
+                await antiforgery.ValidateRequestAsync(HttpContext);
+            }
+            catch (AntiforgeryValidationException)
+            {
+                return BadRequest(new { message = "Invalid antiforgery token." });
+            }
         }
 
         try
@@ -55,7 +58,7 @@ public sealed class AuthController(
                 session.User.Email,
                 session.User.Name);
             cookieService.Append(Response, token);
-            return Ok(session);
+            return Ok(session with { AccessToken = token });
         }
         catch (InvalidOperationException ex)
         {
@@ -92,13 +95,16 @@ public sealed class AuthController(
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        try
+        if (!MobileClientHeaders.ShouldSkipAntiforgery(Request))
         {
-            await antiforgery.ValidateRequestAsync(HttpContext);
-        }
-        catch (AntiforgeryValidationException)
-        {
-            return BadRequest(new { message = "Invalid antiforgery token." });
+            try
+            {
+                await antiforgery.ValidateRequestAsync(HttpContext);
+            }
+            catch (AntiforgeryValidationException)
+            {
+                return BadRequest(new { message = "Invalid antiforgery token." });
+            }
         }
 
         cookieService.Delete(Response);
