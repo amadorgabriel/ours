@@ -1,6 +1,6 @@
 # Project Ours — Mobile
 
-**Status:** scaffold ativo (Change 007, T1–T4) · **Expo SDK 56** · development builds
+**Status:** scaffold ativo (Change 007, T1–T20) · **Expo SDK 56** · development builds
 
 ## Papel
 
@@ -15,11 +15,27 @@ Cliente **principal** do Project Ours. Experiência diária dos cuidadores:
 
 ## Stack
 
-**Expo SDK 56 · React Native · TypeScript · Expo Router · expo-dev-client**
+**Expo SDK 56 · React Native · TypeScript · Expo Router · NativeWind 4 · TanStack Query · expo-secure-store · expo-dev-client**
 
-Próximo: NativeWind, TanStack Query, secure-store (T5+)
+Arquitetura alinhada ao `web/`: `core/` (domain, infra, usecases) → `presentation/` (providers, modules) → `ui/`.
 
-Detalhes: [`.specs/platforms/mobile/STACK.md`](../.specs/platforms/mobile/STACK.md)
+| Doc | Path |
+|-----|------|
+| Stack | [`.specs/platforms/mobile/STACK.md`](../.specs/platforms/mobile/STACK.md) |
+| Estrutura | [`.specs/platforms/mobile/STRUCTURE.md`](../.specs/platforms/mobile/STRUCTURE.md) |
+| Arquitetura | [`.specs/platforms/mobile/ARCHITECTURE.md`](../.specs/platforms/mobile/ARCHITECTURE.md) |
+| Convenções | [`.specs/platforms/mobile/CONVENTIONS.md`](../.specs/platforms/mobile/CONVENTIONS.md) |
+
+## Implementado (Change 007)
+
+| Área | Rotas / módulos |
+|------|-----------------|
+| Auth Google + restore sessão | `/(auth)/login` |
+| Onboarding família (criar / entrar código) | `/(auth)/onboarding` |
+| Seletor multi-família | `/(app)/families/select` |
+| Shell com tabs + WaveTabBar | `/(app)/(tabs)/*` |
+
+Specs: [auth/mobile.md](../.specs/features/auth/mobile.md) · [family/mobile.md](../.specs/features/family/mobile.md)
 
 ## Desenvolvimento
 
@@ -31,9 +47,10 @@ Este projeto usa **development builds** via **EAS** (não Expo Go).
 npm install -g eas-cli
 eas login
 cd mobile && npm install
+cp .env.example .env.local   # ajustar API URL e Google client IDs
 ```
 
-O projeto já está linkado: [@amadorgabriel/project-ours](https://expo.dev/accounts/amadorgabriel/projects/project-ours)
+O projeto está linkado: [@amadorgabriel/project-ours](https://expo.dev/accounts/amadorgabriel/projects/project-ours)
 
 ### 1. Gerar o dev client (primeira vez ou após mudança nativa)
 
@@ -42,7 +59,6 @@ O projeto já está linkado: [@amadorgabriel/project-ours](https://expo.dev/acco
 ```bash
 cd mobile
 npm run build:dev:android
-# ou: eas build --profile development --platform android
 ```
 
 **iOS simulador** (macOS):
@@ -57,59 +73,57 @@ npm run build:dev:ios
 npm run build:dev:ios-device
 ```
 
-O EAS compila na nuvem. Ao terminar, baixe o `.apk` / `.ipa` pelo link no terminal ou em [expo.dev](https://expo.dev) → Builds → instale no dispositivo/emulador.
+O EAS compila na nuvem. Baixe o `.apk` / `.ipa` em [expo.dev](https://expo.dev) → Builds → instale no dispositivo/emulador.
 
-Build local (sem nuvem, requer Android SDK / Xcode):
+Build local (requer Android SDK / Xcode):
 
 ```bash
 eas build --profile development --platform android --local
 ```
 
-### 2. Rodar o app no dia a dia
+### 2. Rodar no dia a dia
 
-Com o dev client já instalado:
+Com o dev client instalado e a API (`server/`) acessível:
 
 ```bash
 cd mobile
-cp .env.example .env.local   # ajustar vars se necessário
 npm run start                # Metro com --dev-client
 ```
 
-Abra o app **Project Ours** (dev client) no celular — ele conecta ao Metro na sua rede.
+Abra o app **Project Ours** (dev client) no celular — conecta ao Metro na sua rede.
+
+**Android emulador:** use `10.0.2.2` em vez de `localhost` na `EXPO_PUBLIC_API_URL`.
 
 ### Alternativa local (sem EAS)
 
-Se tiver Android Studio / Xcode configurado:
+Com Android Studio / Xcode configurado:
 
 ```bash
-npm run android   # compila e instala localmente
+npm run android   # ou npm run ios
 npm run start
 ```
 
-### Gates
+### Gates (CI / pre-merge)
 
 ```bash
-npm run test
-npm run type-check
-npm run lint
+cd mobile
+npm run test && npm run type-check
+npm run lint      # opcional
 ```
+
+Gate documentado no change: [`.specs/changes/007-mobile-scaffold/`](../.specs/changes/007-mobile-scaffold/)
 
 ## Variáveis de ambiente
 
 | Variável | Descrição |
 |----------|-----------|
 | `EXPO_PUBLIC_API_URL` | Base URL da API REST (ex.: `http://localhost:5280/api`) |
-| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | OAuth Web client ID (Google Sign-In) |
+| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | OAuth Web client ID (Google Sign-In — idToken) |
 | `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` | OAuth iOS client ID |
-| `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` | OAuth Android client ID |
+| `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` | OAuth Android client ID (SHA-1 no Google Console) |
 
-## Features (specs)
-
-| Feature | Spec mobile |
-|---------|-------------|
-| Auth | [`.specs/features/auth/mobile.md`](../.specs/features/auth/mobile.md) |
-| Family | [`.specs/features/family/mobile.md`](../.specs/features/family/mobile.md) |
+Template: [`.env.example`](.env.example)
 
 ## API
 
-Mesma API REST em `server/`. Auth: Bearer JWT (não cookie).
+Mesma API REST em `server/`. Auth mobile: **Bearer JWT** no header `Authorization` + `X-Family-Id` para contexto de família (sem cookie/antiforgery do web).
