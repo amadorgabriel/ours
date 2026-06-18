@@ -24,6 +24,7 @@ import { applyActiveFamilyFromSession } from "@/core/services/usecases/auth/appl
 import { useLoginWithGoogle } from "@/core/services/usecases/auth/index.hooks";
 
 import { resolvePostLoginRoute } from "@/presentation/modules/auth/auth-redirect";
+import { colors } from "@/presentation/styles/tokens";
 
 import { useFamily } from "@/presentation/providers/family";
 
@@ -157,7 +158,7 @@ export function LoginScreen() {
             onPress={() => void handleGoogleSignIn()}
           >
             {loginMutation.isPending ? (
-              <ActivityIndicator color="#FCF8F4" />
+              <ActivityIndicator color={colors.textLight} />
             ) : (
               <Text className="font-sans-semibold text-light">
                 Entrar com Google

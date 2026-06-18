@@ -1,7 +1,9 @@
+import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Tabs } from 'expo-router';
 
 import { colors } from '@/presentation/styles/tokens';
 
@@ -15,20 +17,11 @@ import {
 } from './tab-config';
 import { WaveBarBackground } from './WaveBarBackground';
 
-type WaveTabBarProps = {
-  state: {
-    index: number;
-    routes: Array<{ key: string; name: string; params?: Readonly<object | undefined> }>;
-  };
-  navigation: {
-    emit: (event: {
-      type: string;
-      target: string;
-      canPreventDefault?: boolean;
-    }) => { defaultPrevented: boolean };
-    navigate: (name: string, params?: object) => void;
-  };
-};
+type TabBarProps = Parameters<
+  Extract<NonNullable<ComponentProps<typeof Tabs>['tabBar']>, (...args: never[]) => unknown>
+>[0];
+
+export type WaveTabBarProps = Pick<TabBarProps, 'state' | 'navigation'>;
 
 type TabIconName = keyof typeof Ionicons.glyphMap;
 
@@ -120,7 +113,6 @@ export function WaveTabBar({ state, navigation }: WaveTabBarProps) {
   );
 }
 
-export type { WaveTabBarProps };
 export {
   ACTIVE_TAB_CIRCLE_SIZE,
   CENTER_BUTTON_OFFSET,

@@ -98,7 +98,7 @@ npm run lint
 
 | Variável | Descrição |
 |----------|-----------|
-| `EXPO_PUBLIC_API_URL` | Base URL da API REST (ex.: `http://localhost:5000/api`) |
+| `EXPO_PUBLIC_API_URL` | Base URL da API REST (ex.: `http://localhost:5280/api`) |
 | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | OAuth Web client ID (Google Sign-In) |
 | `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` | OAuth iOS client ID |
 | `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` | OAuth Android client ID |

@@ -5,6 +5,7 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { useAuth } from '@/presentation/providers/auth';
 
 import { getGuestGuardRedirect } from '../auth-redirect';
+import { colors } from '@/presentation/styles/tokens';
 
 type GuestGuardProps = {
   children: ReactNode;
@@ -29,7 +30,7 @@ export function GuestGuard({ children }: GuestGuardProps) {
   if (isSessionLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-cream">
-        <ActivityIndicator color="#5A6838" />
+        <ActivityIndicator color={colors.serenityGreen60} />
         <Text className="mt-2 text-mindful-brown">Carregando sessão…</Text>
       </View>
     );
