@@ -6,7 +6,7 @@ export default function AppLayout() {
   return (
     <AuthGuard>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#FCF8F4' } }}>
-        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="families/select" />
       </Stack>
     </AuthGuard>
