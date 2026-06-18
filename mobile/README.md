@@ -1,6 +1,6 @@
 # Project Ours — Mobile
 
-**Status:** scaffold + app shell (Changes 007–008) · **Expo SDK 56** · development builds
+**Status:** scaffold + app shell + feed (Changes 007–009) · **Expo SDK 56** · development builds
 
 ## Papel
 
@@ -48,6 +48,16 @@ Specs: [auth/mobile.md](../.specs/features/auth/mobile.md) · [family/mobile.md]
 | Perfil (dados, família, logout) | `/(app)/(tabs)/profile` |
 
 Spec: [`.specs/changes/008-mobile-app-shell/`](../.specs/changes/008-mobile-app-shell/)
+
+## Implementado (Change 009)
+
+| Área | Rotas / módulos |
+|------|-----------------|
+| Feed cronológico de atividades | `/(app)/(tabs)/index` · `presentation/modules/feed` |
+| Registrar ligação ("Liguei agora") | `CallNowSheet` · botão central WaveTabBar |
+| API activities | `GET /activities/feed` · `POST /activities/call` (server) |
+
+Spec: [`.specs/changes/009-mobile-feed/`](../.specs/changes/009-mobile-feed/)
 
 ## Desenvolvimento
 
@@ -123,7 +133,7 @@ npm run test && npm run type-check
 npm run lint      # opcional
 ```
 
-Gate documentado nos changes: [007](../.specs/changes/007-mobile-scaffold/) · [008](../.specs/changes/008-mobile-app-shell/)
+Gate documentado nos changes: [007](../.specs/archive/007-mobile-scaffold/) · [008](../.specs/changes/008-mobile-app-shell/) · [009](../.specs/changes/009-mobile-feed/)
 
 ## Variáveis de ambiente
 

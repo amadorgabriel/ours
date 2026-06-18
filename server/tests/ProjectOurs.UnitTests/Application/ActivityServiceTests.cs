@@ -1,0 +1,184 @@
+using Moq;
+using ProjectOurs.Application.Abstractions.Persistence;
+using ProjectOurs.Application.Activity;
+using ProjectOurs.Domain.Entities;
+using ProjectOurs.Domain.Enums;
+using Xunit;
+
+namespace ProjectOurs.UnitTests.Application;
+
+public sealed class ActivityServiceTests
+{
+    private readonly Mock<IActivityRepository> _activities = new();
+    private readonly Mock<IFamilyRepository> _families = new();
+    private readonly ActivityService _sut;
+
+    public ActivityServiceTests()
+    {
+        _sut = new ActivityService(_activities.Object, _families.Object);
+    }
+
+    [Fact]
+    public async Task RegisterCall_WithValidRequest_ReturnsFeedItem()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var parentId = Guid.NewGuid();
+        var activityId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FamilyId = familyId,
+                Role = FamilyRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow,
+            });
+
+        _activities
+            .Setup(x => x.ParentBelongsToFamilyAsync(parentId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        _activities
+            .Setup(x => x.AddAsync(It.IsAny<Activity>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Activity activity, CancellationToken _) => new Activity
+            {
+                Id = activityId,
+                FamilyId = familyId,
+                UserId = userId,
+                ParentId = parentId,
+                Type = ActivityType.Call,
+                Metadata = activity.Metadata,
+                CreatedAt = activity.CreatedAt,
+                User = new User { Id = userId, Name = "Ana" },
+                Parent = new Parent { Id = parentId, Name = "Pai" },
+            });
+
+        var result = await _sut.RegisterCallAsync(
+            userId,
+            familyId,
+            new RegisterCallRequest(parentId.ToString(), "  Ligação rápida  "));
+
+        Assert.Equal(activityId.ToString(), result.Id);
+        Assert.Equal("Call", result.Type);
+        Assert.Equal("Ana", result.UserName);
+        Assert.Equal(parentId.ToString(), result.ParentId);
+        Assert.Equal("Pai", result.ParentName);
+        Assert.Equal("Ligação rápida", result.Notes);
+    }
+
+    [Fact]
+    public async Task RegisterCall_WithoutMembership_ThrowsForbidden()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((FamilyMembership?)null);
+
+        var act = () => _sut.RegisterCallAsync(
+            userId,
+            familyId,
+            new RegisterCallRequest(null, null));
+
+        await Assert.ThrowsAsync<ActivityForbiddenException>(act);
+    }
+
+    [Fact]
+    public async Task RegisterCall_WithInvalidParent_ThrowsValidation()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var parentId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FamilyId = familyId,
+                Role = FamilyRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow,
+            });
+
+        _activities
+            .Setup(x => x.ParentBelongsToFamilyAsync(parentId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var act = () => _sut.RegisterCallAsync(
+            userId,
+            familyId,
+            new RegisterCallRequest(parentId.ToString(), null));
+
+        await Assert.ThrowsAsync<ActivityValidationException>(act);
+    }
+
+    [Fact]
+    public async Task RegisterCall_WithTooLongNotes_ThrowsValidation()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var notes = new string('a', ActivityRules.MaxNotesLength + 1);
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FamilyId = familyId,
+                Role = FamilyRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow,
+            });
+
+        var act = () => _sut.RegisterCallAsync(
+            userId,
+            familyId,
+            new RegisterCallRequest(null, notes));
+
+        await Assert.ThrowsAsync<ActivityValidationException>(act);
+    }
+
+    [Fact]
+    public async Task GetFeed_WithMembership_ReturnsMappedItems()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var activityId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FamilyId = familyId,
+                Role = FamilyRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow,
+            });
+
+        _activities
+            .Setup(x => x.ListByFamilyIdAsync(familyId, 50, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new Activity
+                {
+                    Id = activityId,
+                    FamilyId = familyId,
+                    UserId = userId,
+                    Type = ActivityType.Call,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    User = new User { Id = userId, Name = "Bruno" },
+                },
+            ]);
+
+        var result = await _sut.GetFeedAsync(userId, familyId, null);
+
+        Assert.Single(result.Items);
+        Assert.Equal(activityId.ToString(), result.Items[0].Id);
+        Assert.Equal("Bruno", result.Items[0].UserName);
+    }
+}

@@ -7,7 +7,7 @@ import { Tabs } from 'expo-router';
 
 import { colors } from '@/presentation/styles/tokens';
 
-import { CallNowSheet } from './CallNowSheet';
+import { CallNowSheet } from '@/presentation/modules/feed/call-now-sheet';
 import {
   ACTIVE_TAB_CIRCLE_SIZE,
   CENTER_BUTTON_OFFSET,
