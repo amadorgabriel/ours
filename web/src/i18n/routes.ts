@@ -6,6 +6,7 @@ export const routes = {
   goals: '/goals',
   parents: '/parents',
   feed: '/feed',
+  calendar: '/calendar',
   families: {
     select: '/families/select',
     add: '/families/add',
@@ -20,6 +21,7 @@ export type AppRoute =
   | typeof routes.goals
   | typeof routes.parents
   | typeof routes.feed
+  | typeof routes.calendar
   | typeof routes.families.select
   | typeof routes.families.add;
 

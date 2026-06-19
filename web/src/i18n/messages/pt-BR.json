@@ -43,6 +43,7 @@
         "aria": "Navegação principal",
         "dashboard": "Dashboard",
         "feed": "Atividades",
+        "calendar": "Calendário",
         "goals": "Metas",
         "parents": "Assistidos",
         "families": "Trocar família",
@@ -256,6 +257,30 @@
       "notesPlaceholder": "Ex.: Conversamos sobre a consulta",
       "submit": "Registrar",
       "error": "Não foi possível registrar a ligação. Tente novamente."
+    }
+  },
+  "calendar": {
+    "title": "Calendário",
+    "subtitle": "Veja as atividades da família organizadas por dia no mês.",
+    "noFamily": "Selecione ou crie uma família no menu para ver o calendário.",
+    "loading": "Carregando calendário…",
+    "loadError": "Não foi possível carregar o calendário.",
+    "refreshError": "Não foi possível atualizar o calendário.",
+    "retry": "Tentar novamente",
+    "prevMonth": "Mês anterior",
+    "nextMonth": "Próximo mês",
+    "activityTypes": {
+      "Call": "Ligação",
+      "Visit": "Visita",
+      "Medical": "Médico",
+      "Task": "Tarefa",
+      "Medication": "Medicação"
+    },
+    "dayDetail": {
+      "countOne": "1 atividade",
+      "countMany": "{count} atividades",
+      "empty": "Nenhuma atividade neste dia.",
+      "registerCallLink": "Registrar ligação nas atividades"
     }
   },
   "metadata": {

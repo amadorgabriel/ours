@@ -23,6 +23,8 @@ export const queryKeys = {
     all: ['activities'] as const,
     feed: (familyId?: string | null) =>
       [...queryKeys.activities.all, 'feed', familyId ?? 'none'] as const,
+    byMonth: (familyId: string | null | undefined, year: number, month: number) =>
+      [...queryKeys.activities.all, 'month', familyId ?? 'none', year, month] as const,
   },
   goals: {
     all: ['goals'] as const,
