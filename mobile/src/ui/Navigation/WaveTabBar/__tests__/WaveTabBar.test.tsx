@@ -19,6 +19,13 @@ jest.mock('@/presentation/modules/feed/call-now-sheet', () => ({
   CallNowSheet: 'CallNowSheet',
 }));
 
+jest.mock('@/presentation/providers/notifications', () => ({
+  useNotificationActions: jest.fn(() => ({
+    callNowRequested: false,
+    consumeCallNowRequest: jest.fn(),
+  })),
+}));
+
 describe('WaveTabBar', () => {
   it('renders tab bar shell', () => {
     const navigation = {

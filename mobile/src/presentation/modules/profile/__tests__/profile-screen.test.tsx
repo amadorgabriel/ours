@@ -65,6 +65,22 @@ jest.mock('@/presentation/providers/family', () => ({
   useFamily: jest.fn(),
 }));
 
+jest.mock('@/core/infra/notifications/notification-service', () => ({
+  loadReminderSettings: jest.fn(() =>
+    Promise.resolve({ enabled: false, time: { hour: 9, minute: 0 } })
+  ),
+  requestNotificationPermission: jest.fn(),
+  getExpoPushToken: jest.fn(),
+  getDevicePlatform: jest.fn(() => 'ios'),
+  saveReminderSettings: jest.fn(),
+}));
+
+jest.mock('@/core/services/usecases/device/index.hooks', () => ({
+  useRegisterDevice: jest.fn(() => ({
+    mutateAsync: jest.fn(),
+  })),
+}));
+
 const { useAuth } = jest.requireMock('@/presentation/providers/auth');
 const { useFamily } = jest.requireMock('@/presentation/providers/family');
 const { useLogout } = jest.requireMock('@/core/services/usecases/auth/index.hooks');

@@ -13,4 +13,5 @@ public class User
     public ICollection<Activity> Activities { get; set; } = new List<Activity>();
     public ICollection<Goal> CreatedGoals { get; set; } = new List<Goal>();
     public ICollection<GoalContribution> GoalContributions { get; set; } = new List<GoalContribution>();
+    public ICollection<Device> Devices { get; set; } = new List<Device>();
 }

@@ -14,6 +14,7 @@ import type { ParentSummary } from '@/core/domain/parent';
 import { useLogout } from '@/core/services/usecases/auth/index.hooks';
 import { useParents } from '@/core/services/usecases/parent/index.hooks';
 import { InviteSheet } from '@/presentation/modules/family/invite';
+import { NotificationSettings } from '@/presentation/modules/profile/notification-settings';
 import { CreateParentSheet } from '@/presentation/modules/parents/create-parent-sheet';
 import { EditParentSheet } from '@/presentation/modules/parents/edit-parent-sheet';
 import { ParentDetailSheet } from '@/presentation/modules/parents/parent-detail-sheet';
@@ -202,6 +203,8 @@ export function ProfileScreen() {
             </Pressable>
           ) : null}
         </View>
+
+        <NotificationSettings />
 
         {isAdmin && (
           <Pressable

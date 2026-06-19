@@ -1,11 +1,12 @@
 import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
 
 import { colors } from '@/presentation/styles/tokens';
+import { useNotificationActions } from '@/presentation/providers/notifications';
 
 import { CallNowSheet } from '@/presentation/modules/feed/call-now-sheet';
 import {
@@ -30,7 +31,18 @@ const RIGHT_TAB_INDEXES = [2, 3] as const;
 
 export function WaveTabBar({ state, navigation }: WaveTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { callNowRequested, consumeCallNowRequest } = useNotificationActions();
   const [callNowVisible, setCallNowVisible] = useState(false);
+
+  useEffect(() => {
+    if (!callNowRequested) {
+      return;
+    }
+
+    navigation.navigate('index');
+    setCallNowVisible(true);
+    consumeCallNowRequest();
+  }, [callNowRequested, consumeCallNowRequest, navigation]);
 
   function renderTab(routeIndex: number) {
     const route = state.routes[routeIndex];

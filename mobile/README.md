@@ -1,6 +1,6 @@
 # Project Ours — Mobile
 
-**Status:** scaffold + app shell + feed + calendar + goals + contributions + parents + parent detail + polish (Changes 007–015) · **Expo SDK 56** · development builds
+**Status:** scaffold + app shell + feed + calendar + goals + contributions + parents + parent detail + polish + notifications (Changes 007–016) · **Expo SDK 56** · development builds
 
 ## Papel
 
@@ -15,10 +15,11 @@ Cliente **principal** do Project Ours. Experiência diária dos cuidadores:
 - Cadastro de assistidos (Pai/Mãe) + seletor no header
 - Ficha do assistido (info médica + briefing de emergência)
 - Empty states e retry de erros padronizados (`EmptyState`, `QueryErrorState`)
+- Lembretes locais configuráveis no Perfil + registro de push token no server
 
 ## Stack
 
-**Expo SDK 56 · React Native · TypeScript · Expo Router · NativeWind 4 · TanStack Query · expo-secure-store · expo-dev-client**
+**Expo SDK 56 · React Native · TypeScript · Expo Router · NativeWind 4 · TanStack Query · expo-secure-store · expo-notifications · expo-dev-client**
 
 Arquitetura alinhada ao `web/`: `core/` (domain, infra, usecases) → `presentation/` (providers, modules) → `ui/`.
 

@@ -4,6 +4,7 @@ import { AssistidoProvider } from './assistido';
 import { AuthProvider } from './auth';
 import { SessionBootstrap } from './auth/session-bootstrap';
 import { FamilyProvider } from './family';
+import { NotificationProvider } from './notifications';
 import { QueryProvider } from './query';
 
 export function RootProvider({ children }: { children: ReactNode }) {
@@ -12,7 +13,9 @@ export function RootProvider({ children }: { children: ReactNode }) {
       <AuthProvider>
         <FamilyProvider>
           <SessionBootstrap>
-            <AssistidoProvider>{children}</AssistidoProvider>
+            <NotificationProvider>
+              <AssistidoProvider>{children}</AssistidoProvider>
+            </NotificationProvider>
           </SessionBootstrap>
         </FamilyProvider>
       </AuthProvider>

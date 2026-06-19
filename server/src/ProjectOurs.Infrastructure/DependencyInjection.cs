@@ -5,6 +5,7 @@ using ProjectOurs.Application.Abstractions.Auth;
 using ProjectOurs.Application.Abstractions.Persistence;
 using ProjectOurs.Application.Activity;
 using ProjectOurs.Application.Auth;
+using ProjectOurs.Application.Devices;
 using ProjectOurs.Application.Family;
 using ProjectOurs.Application.Goals;
 using ProjectOurs.Application.Parents;
@@ -34,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<IGoalRepository, GoalRepository>();
         services.AddScoped<IGoalContributionRepository, GoalContributionRepository>();
         services.AddScoped<IParentRepository, ParentRepository>();
+        services.AddScoped<IDeviceRepository, DeviceRepository>();
         services.AddScoped<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
         services.AddScoped<IJwtTokenFactory, JwtTokenFactory>();
         services.AddScoped<AuthService>();
@@ -43,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<GoalService>();
         services.AddScoped<GoalContributionService>();
         services.AddScoped<ParentService>();
+        services.AddScoped<DeviceService>();
 
         return services;
     }
