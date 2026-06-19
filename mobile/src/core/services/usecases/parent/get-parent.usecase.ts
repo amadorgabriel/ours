@@ -1,15 +1,14 @@
-import type { ParentDetail, ParentId, UpdateParentRequest } from '@/core/domain/parent';
+import type { ParentDetail, ParentId } from '@/core/domain/parent';
 import type { IParent } from '@/core/domain/parent/index.contract';
 import type { IHttpClient } from '@/core/infra/http/index.types';
 
-export class UpdateParentUseCase implements Pick<IParent, 'updateParent'> {
+export class GetParentUseCase implements Pick<IParent, 'getParent'> {
   constructor(private readonly httpClient: IHttpClient) {}
 
-  async updateParent(id: ParentId, params: UpdateParentRequest): Promise<ParentDetail> {
+  async getParent(id: ParentId): Promise<ParentDetail> {
     const response = await this.httpClient.request<ParentDetail>({
-      method: 'put',
+      method: 'get',
       url: `/parents/${id}`,
-      body: params,
     });
 
     return response.data;

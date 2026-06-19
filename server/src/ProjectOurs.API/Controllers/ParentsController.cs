@@ -49,6 +49,55 @@ public sealed class ParentsController(
         }
     }
 
+    [HttpGet("{parentId:guid}")]
+    [ProducesResponseType(typeof(ParentDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Get(
+        Guid parentId,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (!TryGetFamilyId(out var familyId, out var familyError))
+        {
+            return familyError!;
+        }
+
+        try
+        {
+            var parent = await parentService.GetAsync(userId, familyId, parentId, cancellationToken);
+            return Ok(parent);
+        }
+        catch (ParentValidationException ex)
+        {
+            return MapParentException(ex);
+        }
+        catch (ParentForbiddenException ex)
+        {
+            return MapParentException(ex);
+        }
+        catch (ParentNotFoundException ex)
+        {
+            return MapParentException(ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to get parent {ParentId} for user {UserId} in family {FamilyId}.",
+                parentId,
+                userId,
+                familyId);
+            return MapParentException(ex);
+        }
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(ParentDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -89,7 +138,7 @@ public sealed class ParentsController(
     }
 
     [HttpPut("{parentId:guid}")]
-    [ProducesResponseType(typeof(ParentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ParentDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

@@ -7,6 +7,11 @@ export type ParentSummary = {
   birthDate?: string;
 };
 
+export type ParentDetail = ParentSummary & {
+  medicalInfo?: string;
+  emergencyBriefing?: string;
+};
+
 export type ParentListResponse = {
   items: ParentSummary[];
 };
@@ -17,7 +22,10 @@ export type CreateParentRequest = {
   birthDate?: string;
 };
 
-export type UpdateParentRequest = CreateParentRequest;
+export type UpdateParentRequest = CreateParentRequest & {
+  medicalInfo?: string;
+  emergencyBriefing?: string;
+};
 
 export const PARENT_RELATIONSHIPS = ['Pai', 'Mãe', 'Outro'] as const;
 

@@ -29,6 +29,7 @@ jest.mock('@/core/services/usecases/family/index.hooks', () => ({
 
 jest.mock('@/core/services/usecases/parent/index.hooks', () => ({
   useParents: jest.fn(),
+  useParent: jest.fn(),
   useCreateParent: jest.fn(() => ({
     mutate: jest.fn(),
     reset: jest.fn(),
@@ -56,7 +57,7 @@ jest.mock('@/presentation/providers/family', () => ({
 const { useAuth } = jest.requireMock('@/presentation/providers/auth');
 const { useFamily } = jest.requireMock('@/presentation/providers/family');
 const { useLogout } = jest.requireMock('@/core/services/usecases/auth/index.hooks');
-const { useParents } = jest.requireMock('@/core/services/usecases/parent/index.hooks');
+const { useParents, useParent } = jest.requireMock('@/core/services/usecases/parent/index.hooks');
 
 function renderProfileScreen(options?: {
   role?: 'Admin' | 'Member';
@@ -87,6 +88,12 @@ function renderProfileScreen(options?: {
   useParents.mockReturnValue({
     data: [],
     isLoading: false,
+  });
+
+  useParent.mockReturnValue({
+    data: null,
+    isLoading: false,
+    isError: false,
   });
 
   let tree!: renderer.ReactTestRenderer;
@@ -140,6 +147,14 @@ describe('ProfileScreen', () => {
 
     expect(json).toContain('Assistidos');
     expect(json).toContain('Novo assistido');
+  });
+
+  it('shows parents section for Member with read access (MS-53)', () => {
+    const tree = renderProfileScreen({ role: 'Member' });
+    const json = JSON.stringify(tree.toJSON());
+
+    expect(json).toContain('Assistidos');
+    expect(json).not.toContain('Novo assistido');
   });
 
   it('hides invite CTA for Member (MS-17)', () => {

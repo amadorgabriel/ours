@@ -9,6 +9,7 @@ import { useParents } from '@/core/services/usecases/parent/index.hooks';
 import { InviteSheet } from '@/presentation/modules/family/invite';
 import { CreateParentSheet } from '@/presentation/modules/parents/create-parent-sheet';
 import { EditParentSheet } from '@/presentation/modules/parents/edit-parent-sheet';
+import { ParentDetailSheet } from '@/presentation/modules/parents/parent-detail-sheet';
 import { mobileRoutes } from '@/presentation/modules/auth/auth-redirect';
 import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
@@ -19,30 +20,41 @@ function roleLabel(role: FamilyWithRoleModel['role']): string {
 
 function ParentListItem({
   parent,
+  onOpen,
   onEdit,
+  showEdit,
 }: {
   parent: ParentSummary;
-  onEdit: () => void;
+  onOpen: () => void;
+  onEdit?: () => void;
+  showEdit?: boolean;
 }) {
   return (
     <View className="mb-2 flex-row items-center rounded-xl bg-cream px-3 py-3">
-      <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-mindful-brown/15">
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Ver ficha de ${parent.name}`}
+        className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-mindful-brown/15"
+        onPress={onOpen}
+      >
         <Text className="font-sans-semibold text-mindful-brown">
           {parent.name.charAt(0).toUpperCase()}
         </Text>
-      </View>
-      <View className="flex-1">
+      </Pressable>
+      <Pressable accessibilityRole="button" className="flex-1" onPress={onOpen}>
         <Text className="font-sans-semibold text-mindful-brown">{parent.name}</Text>
         <Text className="font-sans text-sm text-mindful-brown/70">{parent.relationship}</Text>
-      </View>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`Editar ${parent.name}`}
-        className="rounded-lg px-3 py-2"
-        onPress={onEdit}
-      >
-        <Text className="font-sans-semibold text-sm text-serenity-green">Editar</Text>
       </Pressable>
+      {showEdit && onEdit ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Editar ${parent.name}`}
+          className="rounded-lg px-3 py-2"
+          onPress={onEdit}
+        >
+          <Text className="font-sans-semibold text-sm text-serenity-green">Editar</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -56,6 +68,7 @@ export function ProfileScreen() {
   const [inviteVisible, setInviteVisible] = useState(false);
   const [createParentVisible, setCreateParentVisible] = useState(false);
   const [editParent, setEditParent] = useState<ParentSummary | null>(null);
+  const [detailParentId, setDetailParentId] = useState<string | null>(null);
 
   const activeFamily = session?.families.find((family) => family.id === familyId);
   const isAdmin = activeFamily?.role === 'Admin';
@@ -98,53 +111,57 @@ export function ProfileScreen() {
           </Text>
         </View>
 
-        {isAdmin && (
-          <>
-            <View className="mt-4 rounded-2xl bg-white p-5">
-              <Text className="font-sans-semibold text-lg text-mindful-brown">Assistidos</Text>
-              <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
-                Pais ou pessoas que a família cuida.
-              </Text>
+        <View className="mt-4 rounded-2xl bg-white p-5">
+          <Text className="font-sans-semibold text-lg text-mindful-brown">Assistidos</Text>
+          <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
+            Pais ou pessoas que a família cuida.
+          </Text>
 
-              {parentsLoading ? (
-                <Text className="mt-4 font-sans text-sm text-mindful-brown/70">Carregando...</Text>
-              ) : null}
+          {parentsLoading ? (
+            <Text className="mt-4 font-sans text-sm text-mindful-brown/70">Carregando...</Text>
+          ) : null}
 
-              {!parentsLoading && parents.length === 0 ? (
-                <Text className="mt-4 font-sans text-sm text-mindful-brown/70">
-                  Nenhum assistido cadastrado ainda.
-                </Text>
-              ) : null}
+          {!parentsLoading && parents.length === 0 ? (
+            <Text className="mt-4 font-sans text-sm text-mindful-brown/70">
+              {isAdmin
+                ? 'Nenhum assistido cadastrado ainda.'
+                : 'Peça ao administrador para cadastrar os assistidos.'}
+            </Text>
+          ) : null}
 
-              {!parentsLoading
-                ? parents.map((parent) => (
-                    <ParentListItem
-                      key={parent.id}
-                      parent={parent}
-                      onEdit={() => setEditParent(parent)}
-                    />
-                  ))
-                : null}
+          {!parentsLoading
+            ? parents.map((parent) => (
+                <ParentListItem
+                  key={parent.id}
+                  parent={parent}
+                  showEdit={isAdmin}
+                  onOpen={() => setDetailParentId(parent.id)}
+                  onEdit={() => setEditParent(parent)}
+                />
+              ))
+            : null}
 
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Novo assistido"
-                className="mt-4 items-center rounded-xl border border-serenity-green py-3"
-                onPress={() => setCreateParentVisible(true)}
-              >
-                <Text className="font-sans-semibold text-serenity-green">Novo assistido</Text>
-              </Pressable>
-            </View>
-
+          {isAdmin ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Convidar familiar"
-              className="mt-4 items-center rounded-xl bg-serenity-green py-3"
-              onPress={() => setInviteVisible(true)}
+              accessibilityLabel="Novo assistido"
+              className="mt-4 items-center rounded-xl border border-serenity-green py-3"
+              onPress={() => setCreateParentVisible(true)}
             >
-              <Text className="font-sans-semibold text-light">Convidar familiar</Text>
+              <Text className="font-sans-semibold text-serenity-green">Novo assistido</Text>
             </Pressable>
-          </>
+          ) : null}
+        </View>
+
+        {isAdmin && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Convidar familiar"
+            className="mt-4 items-center rounded-xl bg-serenity-green py-3"
+            onPress={() => setInviteVisible(true)}
+          >
+            <Text className="font-sans-semibold text-light">Convidar familiar</Text>
+          </Pressable>
         )}
 
         <View className="mt-auto pt-8">
@@ -171,6 +188,12 @@ export function ProfileScreen() {
         parent={editParent}
         visible={editParent !== null}
         onClose={() => setEditParent(null)}
+      />
+      <ParentDetailSheet
+        parentId={detailParentId}
+        visible={detailParentId !== null}
+        isAdmin={isAdmin}
+        onClose={() => setDetailParentId(null)}
       />
     </>
   );

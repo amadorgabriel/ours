@@ -14,6 +14,9 @@ export const queryKeys = {
     lists: () => [...queryKeys.parents.all, 'list'] as const,
     list: (familyId?: string | null) =>
       [...queryKeys.parents.lists(), familyId ?? 'none'] as const,
+    details: () => [...queryKeys.parents.all, 'detail'] as const,
+    detail: (familyId: string | null | undefined, parentId: string) =>
+      [...queryKeys.parents.details(), familyId ?? 'none', parentId] as const,
   },
   activities: {
     all: ['activities'] as const,

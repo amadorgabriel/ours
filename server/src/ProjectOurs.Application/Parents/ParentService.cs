@@ -19,6 +19,23 @@ public sealed class ParentService(
         return new ParentListResponse(items.Select(MapToDto).ToList());
     }
 
+    public async Task<ParentDetailDto> GetAsync(
+        Guid userId,
+        Guid familyId,
+        Guid parentId,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureMembershipAsync(userId, familyId, cancellationToken);
+
+        var existing = await parents.GetByIdAndFamilyIdAsync(parentId, familyId, cancellationToken);
+        if (existing is null)
+        {
+            throw new ParentNotFoundException("Parent not found.");
+        }
+
+        return MapToDetailDto(existing);
+    }
+
     public async Task<ParentDto> CreateAsync(
         Guid userId,
         Guid familyId,
@@ -26,7 +43,7 @@ public sealed class ParentService(
         CancellationToken cancellationToken = default)
     {
         await EnsureAdminAsync(userId, familyId, cancellationToken);
-        ValidateRequest(request.Name, request.Relationship);
+        ValidateBasicFields(request.Name, request.Relationship);
 
         var parent = new ParentEntity
         {
@@ -41,7 +58,7 @@ public sealed class ParentService(
         return MapToDto(created);
     }
 
-    public async Task<ParentDto> UpdateAsync(
+    public async Task<ParentDetailDto> UpdateAsync(
         Guid userId,
         Guid familyId,
         Guid parentId,
@@ -49,7 +66,7 @@ public sealed class ParentService(
         CancellationToken cancellationToken = default)
     {
         await EnsureAdminAsync(userId, familyId, cancellationToken);
-        ValidateRequest(request.Name, request.Relationship);
+        ValidateRequest(request);
 
         var existing = await parents.GetByIdAndFamilyIdAsync(parentId, familyId, cancellationToken);
         if (existing is null)
@@ -60,12 +77,31 @@ public sealed class ParentService(
         existing.Name = request.Name.Trim();
         existing.Relationship = request.Relationship.Trim();
         existing.BirthDate = request.BirthDate;
+        existing.MedicalInfo = NormalizeOptionalText(request.MedicalInfo);
+        existing.EmergencyBriefing = NormalizeOptionalText(request.EmergencyBriefing);
 
         var updated = await parents.UpdateAsync(existing, cancellationToken);
-        return MapToDto(updated);
+        return MapToDetailDto(updated);
     }
 
-    private static void ValidateRequest(string name, string relationship)
+    private static void ValidateRequest(UpdateParentRequest request)
+    {
+        ValidateBasicFields(request.Name, request.Relationship);
+
+        if (!ParentRules.IsValidMedicalInfo(request.MedicalInfo))
+        {
+            throw new ParentValidationException(
+                $"Medical info must be at most {ParentRules.MaxMedicalInfoLength} characters.");
+        }
+
+        if (!ParentRules.IsValidEmergencyBriefing(request.EmergencyBriefing))
+        {
+            throw new ParentValidationException(
+                $"Emergency briefing must be at most {ParentRules.MaxEmergencyBriefingLength} characters.");
+        }
+    }
+
+    private static void ValidateBasicFields(string name, string relationship)
     {
         if (!ParentRules.IsValidName(name))
         {
@@ -78,6 +114,16 @@ public sealed class ParentService(
             throw new ParentValidationException(
                 $"Relationship is required and must be at most {ParentRules.MaxRelationshipLength} characters.");
         }
+    }
+
+    private static string? NormalizeOptionalText(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return value.Trim();
     }
 
     private async Task EnsureMembershipAsync(
@@ -110,4 +156,13 @@ public sealed class ParentService(
             parent.Name,
             parent.Relationship,
             parent.BirthDate);
+
+    internal static ParentDetailDto MapToDetailDto(ParentEntity parent) =>
+        new(
+            parent.Id.ToString(),
+            parent.Name,
+            parent.Relationship,
+            parent.BirthDate,
+            parent.MedicalInfo,
+            parent.EmergencyBriefing);
 }

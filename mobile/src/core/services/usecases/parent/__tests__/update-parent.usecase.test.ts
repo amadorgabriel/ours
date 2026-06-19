@@ -1,11 +1,16 @@
-import type { ParentSummary } from '@/core/domain/parent';
+import type { ParentDetail } from '@/core/domain/parent';
 import type { IHttpClient } from '@/core/infra/http/index.types';
 
 import { UpdateParentUseCase } from '../update-parent.usecase';
 
 describe('UpdateParentUseCase', () => {
   it('updates parent via PUT /parents/{id}', async () => {
-    const updated: ParentSummary = { id: 'p1', name: 'João Silva', relationship: 'Pai' };
+    const updated: ParentDetail = {
+      id: 'p1',
+      name: 'João Silva',
+      relationship: 'Pai',
+      medicalInfo: 'Alergia',
+    };
     const request = jest.fn().mockResolvedValue({ statusCode: 200, data: updated });
     const httpClient: IHttpClient = { request };
 

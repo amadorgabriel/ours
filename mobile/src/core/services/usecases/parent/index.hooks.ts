@@ -6,6 +6,7 @@ import { queryKeys } from '@/core/infra/query/query-keys';
 import { useFamily } from '@/presentation/providers/family';
 
 import { CreateParentUseCase } from './create-parent.usecase';
+import { GetParentUseCase } from './get-parent.usecase';
 import { ListParentsUseCase } from './list-parents.usecase';
 import { UpdateParentUseCase } from './update-parent.usecase';
 
@@ -20,6 +21,18 @@ export function useParents(familyId: string | null, enabled = true) {
       return response.items;
     },
     enabled: enabled && Boolean(familyId),
+  });
+}
+
+export function useParent(parentId: ParentId | null, enabled = true) {
+  const { familyId } = useFamily();
+  const httpClient = HttpClientFactory.create();
+  const useCase = new GetParentUseCase(httpClient);
+
+  return useQuery({
+    queryKey: queryKeys.parents.detail(familyId, parentId ?? 'none'),
+    queryFn: () => useCase.getParent(parentId!),
+    enabled: enabled && Boolean(familyId) && Boolean(parentId),
   });
 }
 

@@ -58,6 +58,70 @@ public sealed class ParentServiceTests
     }
 
     [Fact]
+    public async Task GetAsync_WithMembership_ReturnsParentDetail()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var parentId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FamilyId = familyId,
+                Role = FamilyRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow,
+            });
+
+        _parents
+            .Setup(x => x.GetByIdAndFamilyIdAsync(parentId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Parent
+            {
+                Id = parentId,
+                FamilyId = familyId,
+                Name = "João",
+                Relationship = "Pai",
+                MedicalInfo = "Alergia a penicilina",
+                EmergencyBriefing = "Ligar 192",
+            });
+
+        var result = await _sut.GetAsync(userId, familyId, parentId);
+
+        Assert.Equal(parentId.ToString(), result.Id);
+        Assert.Equal("João", result.Name);
+        Assert.Equal("Alergia a penicilina", result.MedicalInfo);
+        Assert.Equal("Ligar 192", result.EmergencyBriefing);
+    }
+
+    [Fact]
+    public async Task GetAsync_WhenParentNotFound_ThrowsNotFound()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var parentId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FamilyId = familyId,
+                Role = FamilyRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow,
+            });
+
+        _parents
+            .Setup(x => x.GetByIdAndFamilyIdAsync(parentId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Parent?)null);
+
+        await Assert.ThrowsAsync<ParentNotFoundException>(() =>
+            _sut.GetAsync(userId, familyId, parentId));
+    }
+
+    [Fact]
     public async Task ListAsync_WithoutMembership_ThrowsForbidden()
     {
         var userId = Guid.NewGuid();
@@ -199,9 +263,16 @@ public sealed class ParentServiceTests
             userId,
             familyId,
             parentId,
-            new UpdateParentRequest("João Silva", "Pai", null));
+            new UpdateParentRequest(
+                "João Silva",
+                "Pai",
+                null,
+                "  Alergia a dipirona  ",
+                "  Contato emergência: Maria  "));
 
         Assert.Equal("João Silva", result.Name);
         Assert.Equal("Pai", result.Relationship);
+        Assert.Equal("Alergia a dipirona", result.MedicalInfo);
+        Assert.Equal("Contato emergência: Maria", result.EmergencyBriefing);
     }
 }

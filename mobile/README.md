@@ -1,6 +1,6 @@
 # Project Ours — Mobile
 
-**Status:** scaffold + app shell + feed + calendar + goals + contributions + parents (Changes 007–013) · **Expo SDK 56** · development builds
+**Status:** scaffold + app shell + feed + calendar + goals + contributions + parents + parent detail (Changes 007–014) · **Expo SDK 56** · development builds
 
 ## Papel
 
@@ -13,6 +13,7 @@ Cliente **principal** do Project Ours. Experiência diária dos cuidadores:
 - Metas financeiras (visão agregada)
 - Contribuições em metas (com privacidade opcional)
 - Cadastro de assistidos (Pai/Mãe) + seletor no header
+- Ficha do assistido (info médica + briefing de emergência)
 
 ## Stack
 
@@ -100,6 +101,16 @@ Spec: [`.specs/changes/012-mobile-goals-contributions/`](../.specs/changes/012-m
 | API parents | `GET/POST /parents` · `PUT /parents/{id}` (server) |
 
 Spec: [`.specs/changes/013-mobile-parents/`](../.specs/changes/013-mobile-parents/)
+
+## Implementado (Change 014)
+
+| Área | Rotas / módulos |
+|------|-----------------|
+| Ficha do assistido (leitura) | `ParentDetailSheet` · Perfil (membro + admin) |
+| Editar info médica / emergência (admin) | `ParentDetailSheet` modo edição |
+| API parent detail | `GET /parents/{id}` · `PUT` estendido (server) |
+
+Spec: [`.specs/changes/014-mobile-parent-detail/`](../.specs/changes/014-mobile-parent-detail/)
 
 ## Desenvolvimento
 
