@@ -1,7 +1,9 @@
+import { useRouter, type Href } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
-import type { ParentSummary } from '@/core/domain/parent';
+import { useAuth } from '@/presentation/providers/auth';
 import { useAssistido } from '@/presentation/providers/assistido';
+import { useFamily } from '@/presentation/providers/family';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 
 type AssistidoSheetProps = {
@@ -14,7 +16,7 @@ function ParentListItem({
   isSelected,
   onSelect,
 }: {
-  parent: ParentSummary;
+  parent: { id: string; name: string; relationship: string };
   isSelected: boolean;
   onSelect: () => void;
 }) {
@@ -42,11 +44,22 @@ function ParentListItem({
 }
 
 export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
+  const router = useRouter();
+  const { session } = useAuth();
+  const { familyId } = useFamily();
   const { parents, parentId, isLoading, setParentId } = useAssistido();
+
+  const activeFamily = session?.families.find((family) => family.id === familyId);
+  const isAdmin = activeFamily?.role === 'Admin';
 
   function handleSelect(id: string) {
     setParentId(id);
     onClose();
+  }
+
+  function handleAdminCreate() {
+    onClose();
+    router.push('/(app)/(tabs)/profile' as Href);
   }
 
   return (
@@ -64,9 +77,20 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
         <View className="mt-6 rounded-xl bg-white p-4">
           <Text className="font-sans-semibold text-mindful-brown">Nenhum assistido cadastrado</Text>
           <Text className="mt-2 font-sans text-sm text-mindful-brown/70">
-            Os dados dos pais serão cadastrados em breve. Quando estiverem disponíveis, você poderá
-            selecioná-los aqui.
+            {isAdmin
+              ? 'Cadastre Pai, Mãe ou outro assistido para personalizar ligações e atividades.'
+              : 'Peça ao administrador da família para cadastrar os assistidos.'}
           </Text>
+          {isAdmin ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Cadastrar assistido"
+              className="mt-4 items-center rounded-xl bg-serenity-green py-3"
+              onPress={handleAdminCreate}
+            >
+              <Text className="font-sans-semibold text-light">Cadastrar assistido</Text>
+            </Pressable>
+          ) : null}
         </View>
       )}
 

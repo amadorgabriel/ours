@@ -6,6 +6,11 @@ import { AssistidoSheet } from '../index';
 
 const mockSetParentId = jest.fn();
 const mockOnClose = jest.fn();
+const mockPush = jest.fn();
+
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
@@ -15,10 +20,21 @@ jest.mock('@/presentation/providers/assistido', () => ({
   useAssistido: jest.fn(),
 }));
 
+jest.mock('@/presentation/providers/auth', () => ({
+  useAuth: jest.fn(),
+}));
+
+jest.mock('@/presentation/providers/family', () => ({
+  useFamily: jest.fn(),
+}));
+
 const { useAssistido } = jest.requireMock('@/presentation/providers/assistido');
+const { useAuth } = jest.requireMock('@/presentation/providers/auth');
+const { useFamily } = jest.requireMock('@/presentation/providers/family');
 
 function renderAssistidoSheet(
-  overrides?: Partial<ReturnType<typeof useAssistido>>
+  overrides?: Partial<ReturnType<typeof useAssistido>>,
+  options?: { isAdmin?: boolean }
 ) {
   useAssistido.mockReturnValue({
     parents: [],
@@ -28,6 +44,14 @@ function renderAssistidoSheet(
     activeParent: null,
     ...overrides,
   });
+
+  useAuth.mockReturnValue({
+    session: {
+      families: [{ id: 'fam-1', name: 'Família', role: options?.isAdmin === false ? 'Member' : 'Admin' }],
+    },
+  });
+
+  useFamily.mockReturnValue({ familyId: 'fam-1' });
 
   let tree!: renderer.ReactTestRenderer;
 
@@ -49,6 +73,25 @@ describe('AssistidoSheet', () => {
 
     expect(json).toContain('Nenhum assistido cadastrado');
     expect(json).toContain('Assistido');
+  });
+
+  it('shows admin CTA in empty state', () => {
+    const tree = renderAssistidoSheet({}, { isAdmin: true });
+    const json = JSON.stringify(tree.toJSON());
+
+    expect(json).toContain('Cadastrar assistido');
+  });
+
+  it('navigates to profile when admin taps create CTA', () => {
+    const tree = renderAssistidoSheet({}, { isAdmin: true });
+    const createButton = tree.root.findByProps({ accessibilityLabel: 'Cadastrar assistido' });
+
+    act(() => {
+      createButton.props.onPress();
+    });
+
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith('/(app)/(tabs)/profile');
   });
 
   it('selects parent and closes sheet', () => {

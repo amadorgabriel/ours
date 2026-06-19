@@ -27,6 +27,24 @@ jest.mock('@/core/services/usecases/family/index.hooks', () => ({
   })),
 }));
 
+jest.mock('@/core/services/usecases/parent/index.hooks', () => ({
+  useParents: jest.fn(),
+  useCreateParent: jest.fn(() => ({
+    mutate: jest.fn(),
+    reset: jest.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+  })),
+  useUpdateParent: jest.fn(() => ({
+    mutate: jest.fn(),
+    reset: jest.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+  })),
+}));
+
 jest.mock('@/presentation/providers/auth', () => ({
   useAuth: jest.fn(),
 }));
@@ -38,6 +56,7 @@ jest.mock('@/presentation/providers/family', () => ({
 const { useAuth } = jest.requireMock('@/presentation/providers/auth');
 const { useFamily } = jest.requireMock('@/presentation/providers/family');
 const { useLogout } = jest.requireMock('@/core/services/usecases/auth/index.hooks');
+const { useParents } = jest.requireMock('@/core/services/usecases/parent/index.hooks');
 
 function renderProfileScreen(options?: {
   role?: 'Admin' | 'Member';
@@ -63,6 +82,11 @@ function renderProfileScreen(options?: {
   useLogout.mockReturnValue({
     mutate: mockMutate,
     isPending: false,
+  });
+
+  useParents.mockReturnValue({
+    data: [],
+    isLoading: false,
   });
 
   let tree!: renderer.ReactTestRenderer;
@@ -108,6 +132,14 @@ describe('ProfileScreen', () => {
 
     const json = JSON.stringify(tree.toJSON());
     expect(json).toContain('Gerar código');
+  });
+
+  it('shows parents admin section with create CTA (MS-50)', () => {
+    const tree = renderProfileScreen({ role: 'Admin' });
+    const json = JSON.stringify(tree.toJSON());
+
+    expect(json).toContain('Assistidos');
+    expect(json).toContain('Novo assistido');
   });
 
   it('hides invite CTA for Member (MS-17)', () => {

@@ -71,6 +71,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             e.ToTable("parents");
             e.HasKey(x => x.Id);
             e.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Relationship).HasMaxLength(20).IsRequired();
             e.Property(x => x.MedicalInfo).HasColumnType("jsonb");
             e.Property(x => x.EmergencyBriefing);
             e.HasOne(x => x.Family)
