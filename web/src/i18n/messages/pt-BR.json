@@ -42,6 +42,9 @@
       "nav": {
         "aria": "Navegação principal",
         "dashboard": "Dashboard",
+        "feed": "Atividades",
+        "goals": "Metas",
+        "parents": "Assistidos",
         "families": "Trocar família",
         "addFamily": "Nova família",
         "openMenu": "Menu",
@@ -137,6 +140,122 @@
       "joinFailed": "Não foi possível entrar na família. Tente novamente.",
       "inviteFailed": "Não foi possível gerar o convite. Tente novamente.",
       "generic": "Algo deu errado. Tente novamente."
+    }
+  },
+  "goals": {
+    "title": "Metas",
+    "subtitle": "Acompanhe e contribua para os objetivos financeiros da família.",
+    "createCta": "Nova meta",
+    "loading": "Carregando metas…",
+    "loadError": "Não foi possível carregar as metas.",
+    "retry": "Tentar novamente",
+    "noFamily": "Selecione uma família ativa para ver as metas.",
+    "emptyTitle": "Nenhuma meta ainda",
+    "emptyAdmin": "Crie a primeira meta financeira da família.",
+    "emptyMember": "Peça ao administrador da família para criar uma meta.",
+    "create": {
+      "title": "Nova meta",
+      "description": "Defina um objetivo financeiro para o cuidado da família.",
+      "titleLabel": "Título",
+      "titlePlaceholder": "Ex.: Reserva de emergência",
+      "targetLabel": "Valor alvo (R$)",
+      "targetPlaceholder": "Ex.: 500",
+      "targetHint": "Mínimo R$ {min}",
+      "submit": "Criar meta"
+    },
+    "contribute": {
+      "title": "Contribuir",
+      "description": "Registre quanto você está contribuindo para esta meta.",
+      "amountLabel": "Valor (R$)",
+      "amountPlaceholder": "Ex.: 50",
+      "amountHint": "Mínimo R$ {min}",
+      "privateLabel": "Contribuição privada",
+      "privateHint": "Outros membros não verão o valor",
+      "privateOn": "Privada: sim",
+      "privateOff": "Privada: não",
+      "submit": "Registrar contribuição"
+    },
+    "detail": {
+      "createdAt": "Criada em {date}",
+      "progress": "Progresso",
+      "remaining": "Faltam {amount}",
+      "contributeCta": "Contribuir",
+      "contributionsTitle": "Contribuições",
+      "contributionsEmpty": "Nenhuma contribuição ainda."
+    },
+    "errors": {
+      "createFailed": "Não foi possível criar a meta. Tente novamente.",
+      "contributeFailed": "Não foi possível registrar a contribuição. Tente novamente.",
+      "invalidInput": "Verifique título e valor alvo (mínimo R$ 10,00).",
+      "invalidContribution": "Informe um valor válido (mínimo R$ 1,00).",
+      "notAdmin": "Apenas administradores podem criar metas.",
+      "generic": "Algo deu errado. Tente novamente."
+    }
+  },
+  "parents": {
+    "title": "Assistidos",
+    "subtitle": "Gerencie quem a família cuida e consulte informações médicas.",
+    "createCta": "Novo assistido",
+    "loading": "Carregando assistidos…",
+    "loadError": "Não foi possível carregar os assistidos.",
+    "retry": "Tentar novamente",
+    "noFamily": "Selecione uma família ativa para ver os assistidos.",
+    "emptyTitle": "Nenhum assistido cadastrado",
+    "emptyAdmin": "Cadastre quem a família cuida (Pai, Mãe ou outro).",
+    "emptyMember": "Peça ao administrador para cadastrar um assistido.",
+    "create": {
+      "title": "Novo assistido",
+      "description": "Cadastre quem a família cuida (Pai, Mãe ou outro).",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Ex.: João Silva",
+      "relationshipLabel": "Relação",
+      "birthDateLabel": "Data de nascimento (opcional)",
+      "birthDatePlaceholder": "AAAA-MM-DD",
+      "submit": "Cadastrar"
+    },
+    "detail": {
+      "title": "Ficha do assistido",
+      "medicalLabel": "Informações médicas",
+      "medicalEmpty": "Nenhuma informação médica registrada.",
+      "emergencyLabel": "Briefing de emergência",
+      "emergencyEmpty": "Nenhum briefing de emergência registrado.",
+      "edit": "Editar informações",
+      "save": "Salvar",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "createFailed": "Não foi possível cadastrar o assistido. Tente novamente.",
+      "updateFailed": "Não foi possível atualizar o assistido. Tente novamente.",
+      "invalidInput": "Informe nome e relação válidos.",
+      "notAdmin": "Apenas administradores podem gerenciar assistidos.",
+      "generic": "Algo deu errado. Tente novamente."
+    }
+  },
+  "feed": {
+    "title": "Atividades",
+    "subtitle": "Acompanhe ligações e outras atividades recentes da família.",
+    "registerCallCta": "Registrar ligação",
+    "loading": "Carregando atividades…",
+    "loadError": "Não foi possível carregar as atividades.",
+    "retry": "Tentar novamente",
+    "emptyTitle": "Nenhuma atividade ainda",
+    "emptyDescription": "Registre a primeira ligação para começar o histórico da família.",
+    "activityTypes": {
+      "Call": "Ligação",
+      "Visit": "Visita",
+      "Medical": "Médico",
+      "Task": "Tarefa",
+      "Medication": "Medicação"
+    },
+    "registerCall": {
+      "title": "Registrar ligação",
+      "description": "Registre que você ligou para o assistido ou para a família.",
+      "parentLabel": "Assistido (opcional)",
+      "noParent": "Sem assistido",
+      "notesLabel": "Observações (opcional)",
+      "notesPlaceholder": "Ex.: Conversamos sobre a consulta",
+      "submit": "Registrar",
+      "error": "Não foi possível registrar a ligação. Tente novamente."
     }
   },
   "metadata": {

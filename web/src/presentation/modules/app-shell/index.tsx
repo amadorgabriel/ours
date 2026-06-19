@@ -54,6 +54,9 @@ export function AppShell({ children }: AppShellProps) {
 
   const navItems: NavItem[] = [
     { href: routes.dashboard, label: t('nav.dashboard'), show: true },
+    { href: routes.feed, label: t('nav.feed'), show: true },
+    { href: routes.goals, label: t('nav.goals'), show: true },
+    { href: routes.parents, label: t('nav.parents'), show: true },
     { href: routes.families.select, label: t('nav.families'), show: hasMultipleFamilies },
     { href: routes.families.add, label: t('nav.addFamily'), show: true },
   ];

@@ -3,6 +3,9 @@ export const routes = {
   login: '/login',
   dashboard: '/dashboard',
   onboarding: '/onboarding',
+  goals: '/goals',
+  parents: '/parents',
+  feed: '/feed',
   families: {
     select: '/families/select',
     add: '/families/add',
@@ -14,6 +17,9 @@ export type AppRoute =
   | typeof routes.login
   | typeof routes.dashboard
   | typeof routes.onboarding
+  | typeof routes.goals
+  | typeof routes.parents
+  | typeof routes.feed
   | typeof routes.families.select
   | typeof routes.families.add;
 
