@@ -1,9 +1,20 @@
+import { Text } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
 import { ProfileScreen } from '../index';
 
 const mockReplace = jest.fn();
 const mockMutate = jest.fn();
+
+function getAllText(tree: renderer.ReactTestRenderer): string {
+  return tree.root
+    .findAllByType(Text)
+    .map((node) => {
+      const { children } = node.props;
+      return typeof children === 'string' ? children : '';
+    })
+    .join(' ');
+}
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
@@ -88,6 +99,9 @@ function renderProfileScreen(options?: {
   useParents.mockReturnValue({
     data: [],
     isLoading: false,
+    isError: false,
+    isRefetching: false,
+    refetch: jest.fn(),
   });
 
   useParent.mockReturnValue({
@@ -112,18 +126,18 @@ describe('ProfileScreen', () => {
 
   it('shows user name and email (MS-17)', () => {
     const tree = renderProfileScreen();
-    const json = JSON.stringify(tree.toJSON());
+    const text = getAllText(tree);
 
-    expect(json).toContain('Ana Silva');
-    expect(json).toContain('ana@example.com');
+    expect(text).toContain('Ana Silva');
+    expect(text).toContain('ana@example.com');
   });
 
   it('shows active family name and role (MS-17)', () => {
     const tree = renderProfileScreen({ role: 'Admin' });
-    const json = JSON.stringify(tree.toJSON());
+    const text = getAllText(tree);
 
-    expect(json).toContain('Família Silva');
-    expect(json).toContain('Administrador');
+    expect(text).toContain('Família Silva');
+    expect(text).toContain('Administrador');
   });
 
   it('shows invite CTA for Admin and opens InviteSheet (MS-17, M-FAM-04)', () => {
@@ -137,31 +151,31 @@ describe('ProfileScreen', () => {
       inviteButton.props.onPress();
     });
 
-    const json = JSON.stringify(tree.toJSON());
-    expect(json).toContain('Gerar código');
+    const text = getAllText(tree);
+    expect(text).toContain('Gerar código');
   });
 
   it('shows parents admin section with create CTA (MS-50)', () => {
     const tree = renderProfileScreen({ role: 'Admin' });
-    const json = JSON.stringify(tree.toJSON());
+    const text = getAllText(tree);
 
-    expect(json).toContain('Assistidos');
-    expect(json).toContain('Novo assistido');
+    expect(text).toContain('Assistidos');
+    expect(text).toContain('Novo assistido');
   });
 
   it('shows parents section for Member with read access (MS-53)', () => {
     const tree = renderProfileScreen({ role: 'Member' });
-    const json = JSON.stringify(tree.toJSON());
+    const text = getAllText(tree);
 
-    expect(json).toContain('Assistidos');
-    expect(json).not.toContain('Novo assistido');
+    expect(text).toContain('Assistidos');
+    expect(text).not.toContain('Novo assistido');
   });
 
   it('hides invite CTA for Member (MS-17)', () => {
     const tree = renderProfileScreen({ role: 'Member' });
-    const json = JSON.stringify(tree.toJSON());
+    const text = getAllText(tree);
 
-    expect(json).not.toContain('Convidar familiar');
+    expect(text).not.toContain('Convidar familiar');
   });
 
   it('calls logout and navigates to login', () => {

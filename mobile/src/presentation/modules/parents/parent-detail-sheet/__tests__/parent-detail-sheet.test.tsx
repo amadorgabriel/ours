@@ -1,6 +1,17 @@
+import { Text } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
 import { ParentDetailSheet } from '../index';
+
+function getAllText(tree: renderer.ReactTestRenderer): string {
+  return tree.root
+    .findAllByType(Text)
+    .map((node) => {
+      const { children } = node.props;
+      return typeof children === 'string' ? children : '';
+    })
+    .join(' ');
+}
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
@@ -30,6 +41,8 @@ function renderSheet(options?: {
     data: options?.parent ?? null,
     isLoading: options?.isLoading ?? false,
     isError: options?.isError ?? false,
+    isRefetching: false,
+    refetch: jest.fn(),
   });
 
   useUpdateParent.mockReturnValue({
@@ -71,14 +84,14 @@ describe('ParentDetailSheet', () => {
         emergencyBriefing: 'Ligar Maria',
       },
     });
-    const json = JSON.stringify(tree.toJSON());
+    const text = getAllText(tree);
 
-    expect(json).toContain('João');
-    expect(json).toContain('Informações médicas');
-    expect(json).toContain('Alergia a dipirona');
-    expect(json).toContain('Briefing de emergência');
-    expect(json).toContain('Ligar Maria');
-    expect(json).not.toContain('Editar');
+    expect(text).toContain('João');
+    expect(text).toContain('Informações médicas');
+    expect(text).toContain('Alergia a dipirona');
+    expect(text).toContain('Briefing de emergência');
+    expect(text).toContain('Ligar Maria');
+    expect(text).not.toContain('Editar');
   });
 
   it('shows edit CTA for admin (MS-54)', () => {
@@ -90,9 +103,9 @@ describe('ParentDetailSheet', () => {
         relationship: 'Mãe',
       },
     });
-    const json = JSON.stringify(tree.toJSON());
+    const text = getAllText(tree);
 
-    expect(json).toContain('Editar');
+    expect(text).toContain('Editar');
   });
 
   it('shows empty states when fields are missing (MS-53)', () => {
@@ -103,9 +116,9 @@ describe('ParentDetailSheet', () => {
         relationship: 'Pai',
       },
     });
-    const json = JSON.stringify(tree.toJSON());
+    const text = getAllText(tree);
 
-    expect(json).toContain('Nenhuma informação médica cadastrada ainda.');
-    expect(json).toContain('Nenhum briefing de emergência cadastrado ainda.');
+    expect(text).toContain('Nenhuma informação médica cadastrada ainda.');
+    expect(text).toContain('Nenhum briefing de emergência cadastrado ainda.');
   });
 });

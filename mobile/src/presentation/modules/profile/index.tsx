@@ -1,6 +1,13 @@
 import { useRouter, type Href } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 
 import type { FamilyWithRoleModel } from '@/core/domain/family';
 import type { ParentSummary } from '@/core/domain/parent';
@@ -13,6 +20,9 @@ import { ParentDetailSheet } from '@/presentation/modules/parents/parent-detail-
 import { mobileRoutes } from '@/presentation/modules/auth/auth-redirect';
 import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
+import { colors } from '@/presentation/styles/tokens';
+import { EmptyState } from '@/ui/Feedback/EmptyState';
+import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
 
 function roleLabel(role: FamilyWithRoleModel['role']): string {
   return role === 'Admin' ? 'Administrador' : 'Membro';
@@ -64,7 +74,13 @@ export function ProfileScreen() {
   const { session } = useAuth();
   const { familyId } = useFamily();
   const logoutMutation = useLogout();
-  const { data: parents = [], isLoading: parentsLoading } = useParents(familyId);
+  const {
+    data: parents = [],
+    isLoading: parentsLoading,
+    isError: parentsError,
+    isRefetching: parentsRefetching,
+    refetch: refetchParents,
+  } = useParents(familyId);
   const [inviteVisible, setInviteVisible] = useState(false);
   const [createParentVisible, setCreateParentVisible] = useState(false);
   const [editParent, setEditParent] = useState<ParentSummary | null>(null);
@@ -82,7 +98,19 @@ export function ProfileScreen() {
 
   return (
     <>
-      <ScrollView className="flex-1 bg-cream" contentContainerClassName="grow px-6 py-8">
+      <ScrollView
+        className="flex-1 bg-cream"
+        contentContainerClassName="grow px-6 py-8"
+        refreshControl={
+          <RefreshControl
+            refreshing={parentsRefetching}
+            tintColor={colors.serenityGreen60}
+            onRefresh={() => {
+              void refetchParents();
+            }}
+          />
+        }
+      >
         <Text className="font-sans-semibold text-2xl text-mindful-brown">Perfil</Text>
 
         <View className="mt-8 rounded-2xl bg-white p-5">
@@ -118,18 +146,40 @@ export function ProfileScreen() {
           </Text>
 
           {parentsLoading ? (
-            <Text className="mt-4 font-sans text-sm text-mindful-brown/70">Carregando...</Text>
+            <View className="mt-4 items-center py-4">
+              <ActivityIndicator color={colors.serenityGreen60} />
+            </View>
           ) : null}
 
-          {!parentsLoading && parents.length === 0 ? (
-            <Text className="mt-4 font-sans text-sm text-mindful-brown/70">
-              {isAdmin
-                ? 'Nenhum assistido cadastrado ainda.'
-                : 'Peça ao administrador para cadastrar os assistidos.'}
-            </Text>
+          {parentsError ? (
+            <View className="mt-4">
+              <QueryErrorState
+                message="Não foi possível carregar os assistidos."
+                variant="inline"
+                onRetry={() => {
+                  void refetchParents();
+                }}
+              />
+            </View>
           ) : null}
 
-          {!parentsLoading
+          {!parentsLoading && !parentsError && parents.length === 0 ? (
+            <View className="mt-4">
+              <EmptyState
+                title="Nenhum assistido cadastrado"
+                description={
+                  isAdmin
+                    ? 'Cadastre Pai, Mãe ou outro assistido para a família.'
+                    : 'Peça ao administrador para cadastrar os assistidos.'
+                }
+                actionLabel={isAdmin ? 'Novo assistido' : undefined}
+                onAction={isAdmin ? () => setCreateParentVisible(true) : undefined}
+                variant="inline"
+              />
+            </View>
+          ) : null}
+
+          {!parentsLoading && !parentsError
             ? parents.map((parent) => (
                 <ParentListItem
                   key={parent.id}
@@ -141,7 +191,7 @@ export function ProfileScreen() {
               ))
             : null}
 
-          {isAdmin ? (
+          {isAdmin && !parentsError ? (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Novo assistido"

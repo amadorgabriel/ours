@@ -1,8 +1,9 @@
-import { FlatList, Text, View } from 'react-native';
+import { FlatList, Text } from 'react-native';
 
 import type { ActivityFeedItem } from '@/core/domain/activity';
 import { ActivityCard } from '@/ui/DataDisplay/ActivityCard';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { EmptyState } from '@/ui/Feedback/EmptyState';
 
 type DayDetailSheetProps = {
   visible: boolean;
@@ -10,16 +11,6 @@ type DayDetailSheetProps = {
   items: ActivityFeedItem[];
   onClose: () => void;
 };
-
-function DayEmptyState() {
-  return (
-    <View className="items-center py-8">
-      <Text className="font-sans text-sm text-mindful-brown/70">
-        Nenhuma atividade neste dia.
-      </Text>
-    </View>
-  );
-}
 
 export function DayDetailSheet({ visible, dateLabel, items, onClose }: DayDetailSheetProps) {
   return (
@@ -30,7 +21,7 @@ export function DayDetailSheet({ visible, dateLabel, items, onClose }: DayDetail
       </Text>
 
       {items.length === 0 ? (
-        <DayEmptyState />
+        <EmptyState title="Nenhuma atividade neste dia." variant="inline" />
       ) : (
         <FlatList
           data={items}

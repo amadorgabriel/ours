@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -12,6 +13,8 @@ import type { ParentId } from '@/core/domain/parent';
 import { useParent, useUpdateParent } from '@/core/services/usecases/parent/index.hooks';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { EmptyState } from '@/ui/Feedback/EmptyState';
+import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
 
 import { getParentErrorMessage } from '../parents-api-error';
 
@@ -21,14 +24,6 @@ type ParentDetailSheetProps = {
   isAdmin: boolean;
   onClose: () => void;
 };
-
-function SectionEmptyState({ message }: { message: string }) {
-  return (
-    <View className="rounded-xl bg-white/80 p-4">
-      <Text className="font-sans text-sm text-mindful-brown/70">{message}</Text>
-    </View>
-  );
-}
 
 function ReadSection({
   title,
@@ -47,7 +42,7 @@ function ReadSection({
           <Text className="font-sans text-sm text-mindful-brown">{content}</Text>
         </View>
       ) : (
-        <SectionEmptyState message={emptyMessage} />
+        <EmptyState title={emptyMessage} variant="inline" />
       )}
     </View>
   );
@@ -59,7 +54,7 @@ export function ParentDetailSheet({
   isAdmin,
   onClose,
 }: ParentDetailSheetProps) {
-  const { data: parent, isLoading, isError } = useParent(parentId, visible);
+  const { data: parent, isLoading, isError, isRefetching, refetch } = useParent(parentId, visible);
   const updateParent = useUpdateParent(parentId ?? '');
   const [isEditing, setIsEditing] = useState(false);
   const [medicalInfo, setMedicalInfo] = useState('');
@@ -109,13 +104,26 @@ export function ParentDetailSheet({
           <ActivityIndicator color={colors.serenityGreen60} />
         </View>
       ) : isError || !parent ? (
-        <View className="py-6">
-          <Text className="font-sans text-sm text-red-600">
-            Não foi possível carregar a ficha do assistido.
-          </Text>
-        </View>
+        <QueryErrorState
+          message="Não foi possível carregar a ficha do assistido."
+          variant="inline"
+          onRetry={() => {
+            void refetch();
+          }}
+        />
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              tintColor={colors.serenityGreen60}
+              onRefresh={() => {
+                void refetch();
+              }}
+            />
+          }
+        >
           <View className="flex-row items-start justify-between">
             <View className="flex-1 pr-3">
               <Text className="font-sans-semibold text-xl text-mindful-brown">{parent.name}</Text>

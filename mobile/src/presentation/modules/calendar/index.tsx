@@ -9,6 +9,7 @@ import {
 } from '@/core/services/usecases/activity/month-range';
 import { colors } from '@/presentation/styles/tokens';
 import { CalendarGrid } from '@/ui/DataDisplay/CalendarGrid';
+import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
 
 import { DayDetailSheet } from './day-detail-sheet';
 
@@ -77,6 +78,19 @@ export function CalendarScreen() {
     );
   }
 
+  if (isError && items.length === 0) {
+    return (
+      <View className="flex-1 bg-cream">
+        <QueryErrorState
+          message="Não foi possível carregar o calendário."
+          onRetry={() => {
+            void refetch();
+          }}
+        />
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-cream">
       <ScrollView
@@ -103,9 +117,15 @@ export function CalendarScreen() {
         />
 
         {isError ? (
-          <Text className="mt-4 font-sans text-sm text-red-600">
-            Não foi possível carregar as atividades. Puxe para tentar novamente.
-          </Text>
+          <View className="mt-4">
+            <QueryErrorState
+              message="Não foi possível atualizar o calendário."
+              variant="inline"
+              onRetry={() => {
+                void refetch();
+              }}
+            />
+          </View>
         ) : null}
       </ScrollView>
 

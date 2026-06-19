@@ -5,6 +5,7 @@ import { useAuth } from '@/presentation/providers/auth';
 import { useAssistido } from '@/presentation/providers/assistido';
 import { useFamily } from '@/presentation/providers/family';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { EmptyState } from '@/ui/Feedback/EmptyState';
 
 type AssistidoSheetProps = {
   visible: boolean;
@@ -73,26 +74,21 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
         <Text className="mt-6 font-sans text-sm text-mindful-brown/70">Carregando...</Text>
       )}
 
-      {!isLoading && parents.length === 0 && (
-        <View className="mt-6 rounded-xl bg-white p-4">
-          <Text className="font-sans-semibold text-mindful-brown">Nenhum assistido cadastrado</Text>
-          <Text className="mt-2 font-sans text-sm text-mindful-brown/70">
-            {isAdmin
-              ? 'Cadastre Pai, Mãe ou outro assistido para personalizar ligações e atividades.'
-              : 'Peça ao administrador da família para cadastrar os assistidos.'}
-          </Text>
-          {isAdmin ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Cadastrar assistido"
-              className="mt-4 items-center rounded-xl bg-serenity-green py-3"
-              onPress={handleAdminCreate}
-            >
-              <Text className="font-sans-semibold text-light">Cadastrar assistido</Text>
-            </Pressable>
-          ) : null}
+      {!isLoading && parents.length === 0 ? (
+        <View className="mt-6">
+          <EmptyState
+            title="Nenhum assistido cadastrado"
+            description={
+              isAdmin
+                ? 'Cadastre Pai, Mãe ou outro assistido para personalizar ligações e atividades.'
+                : 'Peça ao administrador da família para cadastrar os assistidos.'
+            }
+            actionLabel={isAdmin ? 'Cadastrar assistido' : undefined}
+            onAction={isAdmin ? handleAdminCreate : undefined}
+            variant="inline"
+          />
         </View>
-      )}
+      ) : null}
 
       {!isLoading &&
         parents.map((parent) => (

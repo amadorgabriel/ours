@@ -1,6 +1,6 @@
 # Project Ours — Mobile
 
-**Status:** scaffold + app shell + feed + calendar + goals + contributions + parents + parent detail (Changes 007–014) · **Expo SDK 56** · development builds
+**Status:** scaffold + app shell + feed + calendar + goals + contributions + parents + parent detail + polish (Changes 007–015) · **Expo SDK 56** · development builds
 
 ## Papel
 
@@ -14,6 +14,7 @@ Cliente **principal** do Project Ours. Experiência diária dos cuidadores:
 - Contribuições em metas (com privacidade opcional)
 - Cadastro de assistidos (Pai/Mãe) + seletor no header
 - Ficha do assistido (info médica + briefing de emergência)
+- Empty states e retry de erros padronizados (`EmptyState`, `QueryErrorState`)
 
 ## Stack
 
@@ -111,6 +112,16 @@ Spec: [`.specs/changes/013-mobile-parents/`](../.specs/changes/013-mobile-parent
 | API parent detail | `GET /parents/{id}` · `PUT` estendido (server) |
 
 Spec: [`.specs/changes/014-mobile-parent-detail/`](../.specs/changes/014-mobile-parent-detail/)
+
+## Implementado (Change 015)
+
+| Área | Rotas / módulos |
+|------|-----------------|
+| Empty states padronizados | `ui/Feedback/EmptyState` · feed, metas, calendário, assistidos, perfil |
+| Erro com retry | `ui/Feedback/QueryErrorState` · feed, metas, calendário, perfil, ficha |
+| Pull-to-refresh ampliado | Perfil · `ParentDetailSheet` |
+
+Spec: [`.specs/changes/015-mobile-polish/`](../.specs/changes/015-mobile-polish/)
 
 ## Desenvolvimento
 

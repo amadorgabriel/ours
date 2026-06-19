@@ -16,6 +16,7 @@ import {
 import { colors } from '@/presentation/styles/tokens';
 import { GoalCard } from '@/ui/DataDisplay/GoalCard';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { EmptyState } from '@/ui/Feedback/EmptyState';
 
 import { ContributeSheet } from '../contribute-sheet';
 
@@ -67,13 +68,7 @@ function ContributionRow({ contribution }: { contribution: GoalContribution }) {
 }
 
 function ContributionsEmptyState() {
-  return (
-    <View className="items-center py-6">
-      <Text className="font-sans text-sm text-mindful-brown/70">
-        Nenhuma contribuição ainda.
-      </Text>
-    </View>
-  );
+  return <EmptyState title="Nenhuma contribuição ainda." variant="inline" />;
 }
 
 export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps) {
