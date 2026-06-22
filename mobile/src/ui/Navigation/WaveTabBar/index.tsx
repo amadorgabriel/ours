@@ -91,7 +91,7 @@ export function WaveTabBar({ state, navigation }: WaveTabBarProps) {
   return (
     <>
       <View
-        className="border-t border-mindful-brown/10 bg-cream"
+        className="bg-cream"
         style={{ paddingBottom: insets.bottom }}
       >
         <View style={{ height: WAVE_TAB_BAR_HEIGHT }}>

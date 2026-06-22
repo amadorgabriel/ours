@@ -9,7 +9,7 @@ import { useRouter, type Href } from "expo-router";
 
 import { useEffect, useState } from "react";
 
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, Text, View } from "react-native";
 
 import {
   getGoogleIosClientId,
@@ -137,6 +137,13 @@ export function LoginScreen() {
 
   return (
     <View className="flex-1 items-center justify-center bg-cream px-6">
+      <Image
+        accessibilityLabel="Project Ours"
+        className="mb-4"
+        resizeMode="contain"
+        source={require("@/assets/images/logo-ours.png")}
+        style={{ height: 96, width: 96 }}
+      />
       <Text className="font-sans-semibold text-2xl text-mindful-brown">
         Project Ours
       </Text>

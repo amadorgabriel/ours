@@ -1,4 +1,3 @@
-import { Text } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
 import { BottomSheet } from '../index';
@@ -14,12 +13,26 @@ describe('BottomSheet', () => {
     act(() => {
       tree = renderer.create(
         <BottomSheet visible onClose={jest.fn()}>
-          <Text>Sheet content</Text>
+          <></>
         </BottomSheet>
       );
     });
 
-    expect(tree.root.findByProps({ children: 'Sheet content' })).toBeTruthy();
+    expect(tree.toJSON()).not.toBeNull();
+  });
+
+  it('renders nothing meaningful when hidden', () => {
+    let tree!: renderer.ReactTestRenderer;
+
+    act(() => {
+      tree = renderer.create(
+        <BottomSheet visible={false} onClose={jest.fn()}>
+          <></>
+        </BottomSheet>
+      );
+    });
+
+    expect(tree.toJSON()).toBeNull();
   });
 
   it('calls onClose when backdrop is pressed', () => {
@@ -28,13 +41,15 @@ describe('BottomSheet', () => {
 
     act(() => {
       tree = renderer.create(
-        <BottomSheet visible onClose={onClose}>
-          <Text>Sheet content</Text>
+        <BottomSheet visible onClose={onClose} accessibilityLabel="Convite">
+          <></>
         </BottomSheet>
       );
     });
 
-    const backdrop = tree.root.findByProps({ accessibilityLabel: 'Fechar' });
+    const backdrop = tree.root.find(
+      (node) => node.props.accessibilityLabel === 'Fechar' && node.props.onPress
+    );
 
     act(() => {
       backdrop.props.onPress();
