@@ -28,7 +28,7 @@ public sealed class PostgresApiFixture : IAsyncLifetime
 
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
     }
 
     public async Task DisposeAsync()

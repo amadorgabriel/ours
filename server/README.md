@@ -38,14 +38,27 @@ CORS em desenvolvimento permite `http://localhost:3000` (Next.js).
 
 ## Migrations
 
-Nesta etapa o modelo existe apenas em código (`ApplicationDbContext`). Quando for o momento de versionar o schema:
+O schema é versionado com EF Core em `src/ProjectOurs.Infrastructure/Migrations/`.
+
+Em **Development** e **Testing**, a API aplica migrations automaticamente no startup (`Database.Migrate()`).
+
+### Criar nova migration
 
 ```bash
-cd src/ProjectOurs.API
-dotnet ef migrations add NomeDaMigration --project ../ProjectOurs.Infrastructure
+cd server
+dotnet ef migrations add NomeDaMigration --project src/ProjectOurs.Infrastructure --startup-project src/ProjectOurs.API
 ```
 
 (Exige `dotnet tool install --global dotnet-ef` se ainda não estiver instalado.)
+
+### Aplicar manualmente (produção ou banco existente)
+
+```bash
+cd server
+dotnet ef database update --project src/ProjectOurs.Infrastructure --startup-project src/ProjectOurs.API
+```
+
+Para design-time, opcional: `PROJECTOURS_CONNECTION_STRING` aponta para o Postgres local.
 
 ## Estrutura
 

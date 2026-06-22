@@ -1,10 +1,12 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProjectOurs.API.Auth;
 using ProjectOurs.Infrastructure;
 using ProjectOurs.Infrastructure.Options;
+using ProjectOurs.Infrastructure.Persistence;
 
 namespace ProjectOurs.API;
 
@@ -115,6 +117,13 @@ public sealed class Program
         builder.Services.AddInfrastructure(builder.Configuration);
 
         var app = builder.Build();
+
+        if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Database.MigrateAsync();
+        }
 
         if (app.Environment.IsDevelopment())
         {
