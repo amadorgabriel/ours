@@ -1,11 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, type Href } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AssistidoSheet } from '@/presentation/modules/assistido';
-import { mobileRoutes } from '@/presentation/modules/auth/auth-redirect';
+import { FamilyDropdown } from '@/presentation/modules/app-shell/FamilyDropdown';
 import { useAssistido } from '@/presentation/providers/assistido';
 import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
@@ -15,20 +14,16 @@ const HEADER_HEIGHT = 56;
 
 export function AppHeader() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { session } = useAuth();
-  const { familyId } = useFamily();
+  const { familyId, setFamilyId } = useFamily();
   const { activeParent } = useAssistido();
   const [assistidoSheetVisible, setAssistidoSheetVisible] = useState(false);
 
-  const activeFamily = session?.families.find((family) => family.id === familyId);
+  const families = session?.families ?? [];
+  const activeFamily = families.find((family) => family.id === familyId);
   const familyName = activeFamily?.name ?? 'Família';
   const assistidoLabel = activeParent?.name ?? 'Assistido';
   const assistidoInitial = assistidoLabel.charAt(0).toUpperCase();
-
-  function handleFamilyPress() {
-    router.push(mobileRoutes.familiesSelect as Href);
-  }
 
   function handleAssistidoPress() {
     setAssistidoSheetVisible(true);
@@ -41,23 +36,12 @@ export function AppHeader() {
         style={{ paddingTop: insets.top, height: HEADER_HEIGHT + insets.top }}
       >
         <View className="h-14 flex-row items-center justify-between gap-2">
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Família ativa: ${familyName}. Toque para trocar`}
-            className="min-h-[44px] max-w-[48%] flex-row items-center rounded-full bg-white px-3 py-2"
-            onPress={handleFamilyPress}
-          >
-            <Ionicons color={colors.mindfulBrown60} name="people" size={18} />
-            <Text
-              className="ml-2 shrink font-sans-semibold text-sm text-mindful-brown"
-              numberOfLines={1}
-            >
-              {familyName}
-            </Text>
-            <View className="ml-1">
-              <Ionicons color={colors.mindfulBrown60} name="chevron-down" size={16} />
-            </View>
-          </Pressable>
+          <FamilyDropdown
+            families={families}
+            familyId={familyId}
+            familyName={familyName}
+            onSelectFamily={setFamilyId}
+          />
 
           <Pressable
             accessibilityRole="button"

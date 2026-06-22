@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { View } from 'react-native';
 
 import { AppHeader } from '@/presentation/modules/app-shell/AppHeader';
+import { TabPagerLayout } from '@/presentation/modules/app-shell/TabPager/TabPagerLayout';
 import { FamilySelectGuard } from '@/presentation/modules/family/family-select-guard';
 import { colors } from '@/presentation/styles/tokens';
 import { WaveTabBar } from '@/ui/Navigation/WaveTabBar';
@@ -13,6 +14,13 @@ export default function AppTabsLayout() {
         <AppHeader />
         <View className="flex-1">
           <Tabs
+            layout={({ state, navigation, descriptors }) => (
+              <TabPagerLayout
+                descriptors={descriptors}
+                navigation={navigation}
+                state={state}
+              />
+            )}
             screenOptions={{
               headerShown: false,
               sceneStyle: { backgroundColor: colors.bgCream },

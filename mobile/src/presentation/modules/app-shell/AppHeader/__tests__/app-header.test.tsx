@@ -4,6 +4,12 @@ import type { ParentSummary } from '@/core/domain/parent';
 
 import { AppHeader } from '../index';
 
+jest.mock('@tanstack/react-query', () => ({
+  useQueryClient: () => ({
+    invalidateQueries: jest.fn(),
+  }),
+}));
+
 const mockPush = jest.fn();
 
 jest.mock('expo-router', () => ({
@@ -96,8 +102,27 @@ describe('AppHeader', () => {
     expect(json).toContain('João');
   });
 
-  it('navigates to family select on family chip tap', () => {
+  it('shows static family chip when user has one family', () => {
     const tree = renderAppHeader();
+    const json = JSON.stringify(tree.toJSON());
+
+    expect(json).toContain('Família Silva');
+    expect(json).not.toContain('chevron-down');
+  });
+
+  it('opens family dropdown when user has multiple families', () => {
+    const tree = renderAppHeader({
+      session: {
+        user: { id: 'u1', email: 'a@b.com', name: 'Ana' },
+        families: [
+          { id: 'fam-1', name: 'Família Silva', role: 'Admin' },
+          { id: 'fam-2', name: 'Família Costa', role: 'Member' },
+        ],
+        familyCount: 2,
+        isNewUser: false,
+      },
+    });
+
     const familyChip = tree.root.findByProps({
       accessibilityLabel: 'Família ativa: Família Silva. Toque para trocar',
     });
@@ -106,7 +131,9 @@ describe('AppHeader', () => {
       familyChip.props.onPress();
     });
 
-    expect(mockPush).toHaveBeenCalledWith('/(app)/families/select');
+    const json = JSON.stringify(tree.toJSON());
+    expect(json).toContain('Família Costa');
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('opens AssistidoSheet on assistido chip tap', () => {

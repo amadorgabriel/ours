@@ -1,16 +1,12 @@
 import { useRouter, type Href } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 
-import type { FamilyWithRoleModel } from '@/core/domain/family';
 import { useMyFamilies } from '@/core/services/usecases/family/index.hooks';
 import { mobileRoutes } from '@/presentation/modules/auth/auth-redirect';
+import { roleLabel } from '@/presentation/modules/family/role-label';
 import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
 import { colors } from '@/presentation/styles/tokens';
-
-function roleLabel(role: FamilyWithRoleModel['role']): string {
-  return role === 'Admin' ? 'Administrador' : 'Membro';
-}
 
 export function FamilySelectScreen() {
   const router = useRouter();

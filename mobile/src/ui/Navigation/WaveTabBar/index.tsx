@@ -73,10 +73,10 @@ export function WaveTabBar({ state, navigation }: WaveTabBarProps) {
       >
         {isFocused ? (
           <View
-            className="items-center justify-center rounded-full bg-dark-green"
+            className="items-center justify-center rounded-full bg-serenity-green/20"
             style={{ height: ACTIVE_TAB_CIRCLE_SIZE, width: ACTIVE_TAB_CIRCLE_SIZE }}
           >
-            <Ionicons color={colors.textLight} name={iconName} size={22} />
+            <Ionicons color={colors.serenityGreen60} name={iconName} size={22} />
           </View>
         ) : (
           <View className="items-center">
