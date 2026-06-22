@@ -6,6 +6,9 @@ import type {
   FamilyWithRoleModel,
   JoinFamilyRequest,
   JoinFamilyResponse,
+  DeleteFamilyRequest,
+  UpdateFamilyRequest,
+  UpdateFamilyResponse,
 } from './index';
 
 export interface IFamily {
@@ -13,4 +16,6 @@ export interface IFamily {
   listMine(): Promise<FamilyWithRoleModel[]>;
   createInvite(params: CreateInviteRequest): Promise<CreateInviteResponse>;
   join(params: JoinFamilyRequest): Promise<JoinFamilyResponse>;
+  update(familyId: string, params: UpdateFamilyRequest): Promise<UpdateFamilyResponse>;
+  delete(familyId: string, params: DeleteFamilyRequest): Promise<void>;
 }

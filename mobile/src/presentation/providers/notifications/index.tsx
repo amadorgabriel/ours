@@ -14,6 +14,7 @@ import * as Notifications from 'expo-notifications';
 type NotificationContextValue = {
   callNowRequested: boolean;
   consumeCallNowRequest: () => void;
+  requestCallNow: () => void;
 };
 
 const NotificationContext = createContext<NotificationContextValue | null>(null);
@@ -47,6 +48,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     () => ({
       callNowRequested,
       consumeCallNowRequest: () => setCallNowRequested(false),
+      requestCallNow: () => setCallNowRequested(true),
     }),
     [callNowRequested]
   );

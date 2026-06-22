@@ -5,7 +5,11 @@ import { NotificationSettings } from '../index';
 
 jest.mock('@/core/infra/notifications/notification-service', () => ({
   loadReminderSettings: jest.fn(() =>
-    Promise.resolve({ enabled: false, time: { hour: 9, minute: 0 } })
+    Promise.resolve({
+      enabled: false,
+      time: { hour: 9, minute: 0 },
+      frequency: 'daily',
+    })
   ),
   requestNotificationPermission: jest.fn(),
   getExpoPushToken: jest.fn(),
@@ -33,6 +37,6 @@ describe('NotificationSettings', () => {
       .join(' ');
 
     expect(text).toContain('Notificações');
-    expect(text).toContain('Lembrete diário');
+    expect(text).toContain('Lembretes');
   });
 });

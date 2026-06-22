@@ -12,6 +12,7 @@ const mockJoinMutate = jest.fn();
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
+  useLocalSearchParams: () => ({}),
 }));
 
 jest.mock('@/core/services/usecases/family/index.hooks', () => ({

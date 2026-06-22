@@ -61,4 +61,68 @@ public sealed class FamiliesController(
         var families = await familyService.ListMineAsync(userId, cancellationToken);
         return Ok(families);
     }
+
+    [HttpPatch("{familyId:guid}")]
+    [ProducesResponseType(typeof(FamilyDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateFamily(
+        Guid familyId,
+        [FromBody] UpdateFamilyRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var family = await familyService.UpdateFamilyAsync(userId, familyId, request.Name, cancellationToken);
+            return Ok(family);
+        }
+        catch (FamilyValidationException ex)
+        {
+            return ApiControllerHelper.MapFamilyException(ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to update family {FamilyId} for user {UserId}.", familyId, userId);
+            return ApiControllerHelper.MapFamilyException(ex);
+        }
+    }
+
+    [HttpDelete("{familyId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteFamily(
+        Guid familyId,
+        [FromBody] DeleteFamilyRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            await familyService.DeleteFamilyAsync(userId, familyId, request.ConfirmName, cancellationToken);
+            return NoContent();
+        }
+        catch (FamilyValidationException ex)
+        {
+            return ApiControllerHelper.MapFamilyException(ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to delete family {FamilyId} for user {UserId}.", familyId, userId);
+            return ApiControllerHelper.MapFamilyException(ex);
+        }
+    }
 }

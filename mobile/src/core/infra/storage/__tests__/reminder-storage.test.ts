@@ -1,6 +1,12 @@
 import * as SecureStore from 'expo-secure-store';
 
-import { DEFAULT_REMINDER_TIME } from '@/core/domain/device';
+import {
+  DEFAULT_CUSTOM_INTERVAL_DAYS,
+  DEFAULT_DAY_OF_MONTH,
+  DEFAULT_REMINDER_FREQUENCY,
+  DEFAULT_REMINDER_TIME,
+  DEFAULT_WEEKDAY,
+} from '@/core/domain/device';
 
 import { getReminderSettings, setReminderSettings } from '../reminder-storage';
 
@@ -20,11 +26,20 @@ describe('reminder-storage', () => {
     await expect(getReminderSettings()).resolves.toEqual({
       enabled: false,
       time: DEFAULT_REMINDER_TIME,
+      frequency: DEFAULT_REMINDER_FREQUENCY,
+      customIntervalDays: DEFAULT_CUSTOM_INTERVAL_DAYS,
+      weekday: DEFAULT_WEEKDAY,
+      dayOfMonth: DEFAULT_DAY_OF_MONTH,
+      lastAcknowledgedAt: undefined,
     });
   });
 
   it('persists reminder settings', async () => {
-    const settings = { enabled: true, time: { hour: 18, minute: 0 } };
+    const settings = {
+      enabled: true,
+      time: { hour: 18, minute: 0 },
+      frequency: 'daily' as const,
+    };
 
     await setReminderSettings(settings);
 
@@ -42,6 +57,11 @@ describe('reminder-storage', () => {
     await expect(getReminderSettings()).resolves.toEqual({
       enabled: true,
       time: { hour: 12, minute: 0 },
+      frequency: DEFAULT_REMINDER_FREQUENCY,
+      customIntervalDays: DEFAULT_CUSTOM_INTERVAL_DAYS,
+      weekday: DEFAULT_WEEKDAY,
+      dayOfMonth: DEFAULT_DAY_OF_MONTH,
+      lastAcknowledgedAt: undefined,
     });
   });
 });

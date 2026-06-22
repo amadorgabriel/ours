@@ -19,10 +19,22 @@ export type ReminderTime = {
   minute: number;
 };
 
+export type ReminderFrequency = 'daily' | 'weekly' | 'monthly' | 'custom';
+
 export type ReminderSettings = {
   enabled: boolean;
   time: ReminderTime;
+  frequency: ReminderFrequency;
+  customIntervalDays?: number;
+  weekday?: number;
+  dayOfMonth?: number;
+  lastAcknowledgedAt?: string;
 };
+
+export const DEFAULT_REMINDER_FREQUENCY: ReminderFrequency = 'daily';
+export const DEFAULT_CUSTOM_INTERVAL_DAYS = 7;
+export const DEFAULT_WEEKDAY = 1;
+export const DEFAULT_DAY_OF_MONTH = 1;
 
 export const DEFAULT_REMINDER_TIME: ReminderTime = { hour: 9, minute: 0 };
 

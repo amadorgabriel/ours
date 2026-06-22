@@ -39,4 +39,16 @@ public interface IFamilyRepository
         FamilyInvite invite,
         FamilyMembership membership,
         CancellationToken cancellationToken = default);
+
+    Task<Domain.Entities.Family?> GetByIdAsync(
+        Guid familyId,
+        CancellationToken cancellationToken = default);
+
+    Task UpdateFamilyAsync(
+        Domain.Entities.Family family,
+        CancellationToken cancellationToken = default);
+
+    Task DeleteFamilyAsync(
+        Guid familyId,
+        CancellationToken cancellationToken = default);
 }

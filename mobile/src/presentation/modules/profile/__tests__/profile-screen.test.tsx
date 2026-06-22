@@ -36,6 +36,20 @@ jest.mock('@/core/services/usecases/family/index.hooks', () => ({
     isError: false,
     error: null,
   })),
+  useUpdateFamily: jest.fn(() => ({
+    mutate: jest.fn(),
+    reset: jest.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+  })),
+  useDeleteFamily: jest.fn(() => ({
+    mutate: jest.fn(),
+    reset: jest.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+  })),
 }));
 
 jest.mock('@/core/services/usecases/parent/index.hooks', () => ({
@@ -67,7 +81,11 @@ jest.mock('@/presentation/providers/family', () => ({
 
 jest.mock('@/core/infra/notifications/notification-service', () => ({
   loadReminderSettings: jest.fn(() =>
-    Promise.resolve({ enabled: false, time: { hour: 9, minute: 0 } })
+    Promise.resolve({
+      enabled: false,
+      time: { hour: 9, minute: 0 },
+      frequency: 'daily',
+    })
   ),
   requestNotificationPermission: jest.fn(),
   getExpoPushToken: jest.fn(),

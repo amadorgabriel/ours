@@ -41,4 +41,54 @@ public static class IntegrationHttpClientExtensions
         request.Headers.Add("X-Client-Platform", "mobile");
         return await client.SendAsync(request);
     }
+
+    public static async Task<HttpResponseMessage> PatchJsonAsync<T>(
+        this HttpClient client,
+        string url,
+        T body)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Patch, url)
+        {
+            Content = JsonContent.Create(body),
+        };
+        return await client.SendAsync(request);
+    }
+
+    public static async Task<HttpResponseMessage> DeleteJsonAsync<T>(
+        this HttpClient client,
+        string url,
+        T body)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Delete, url)
+        {
+            Content = JsonContent.Create(body),
+        };
+        return await client.SendAsync(request);
+    }
+
+    public static async Task<HttpResponseMessage> PatchJsonAsMobileClientAsync<T>(
+        this HttpClient client,
+        string url,
+        T body)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Patch, url)
+        {
+            Content = JsonContent.Create(body),
+        };
+        request.Headers.Add("X-Client-Platform", "mobile");
+        return await client.SendAsync(request);
+    }
+
+    public static async Task<HttpResponseMessage> DeleteJsonAsMobileClientAsync<T>(
+        this HttpClient client,
+        string url,
+        T body)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Delete, url)
+        {
+            Content = JsonContent.Create(body),
+        };
+        request.Headers.Add("X-Client-Platform", "mobile");
+        return await client.SendAsync(request);
+    }
 }

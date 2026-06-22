@@ -110,4 +110,31 @@ public sealed class FamilyRepository(ApplicationDbContext db) : IFamilyRepositor
         db.FamilyMemberships.Add(membership);
         await db.SaveChangesAsync(cancellationToken);
     }
+
+    public Task<Domain.Entities.Family?> GetByIdAsync(
+        Guid familyId,
+        CancellationToken cancellationToken = default) =>
+        db.Families.FirstOrDefaultAsync(x => x.Id == familyId, cancellationToken);
+
+    public async Task UpdateFamilyAsync(
+        Domain.Entities.Family family,
+        CancellationToken cancellationToken = default)
+    {
+        db.Families.Update(family);
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeleteFamilyAsync(
+        Guid familyId,
+        CancellationToken cancellationToken = default)
+    {
+        var family = await db.Families.FirstOrDefaultAsync(x => x.Id == familyId, cancellationToken);
+        if (family is null)
+        {
+            return;
+        }
+
+        db.Families.Remove(family);
+        await db.SaveChangesAsync(cancellationToken);
+    }
 }

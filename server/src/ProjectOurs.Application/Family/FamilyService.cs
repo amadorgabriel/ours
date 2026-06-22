@@ -136,4 +136,60 @@ public sealed class FamilyService(IFamilyRepository families, IInviteCodeGenerat
             invite.Family.Name,
             "Member");
     }
+
+    public async Task<FamilyDto> UpdateFamilyAsync(
+        Guid userId,
+        Guid familyId,
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        if (!FamilyRules.IsValidName(name))
+        {
+            throw new FamilyValidationException("Family name must be between 1 and 100 characters.");
+        }
+
+        var membership = await families.GetMembershipAsync(userId, familyId, cancellationToken);
+        if (membership is null || membership.Role != FamilyRole.Admin)
+        {
+            throw new FamilyForbiddenException("Only the family admin can update the family.");
+        }
+
+        var family = await families.GetByIdAsync(familyId, cancellationToken);
+        if (family is null)
+        {
+            throw new FamilyNotFoundException("Family not found.");
+        }
+
+        family.Name = FamilyRules.NormalizeName(name);
+        await families.UpdateFamilyAsync(family, cancellationToken);
+
+        return new FamilyDto(family.Id.ToString(), family.Name);
+    }
+
+    public async Task DeleteFamilyAsync(
+        Guid userId,
+        Guid familyId,
+        string confirmName,
+        CancellationToken cancellationToken = default)
+    {
+        var membership = await families.GetMembershipAsync(userId, familyId, cancellationToken);
+        if (membership is null || membership.Role != FamilyRole.Admin)
+        {
+            throw new FamilyForbiddenException("Only the family admin can delete the family.");
+        }
+
+        var family = await families.GetByIdAsync(familyId, cancellationToken);
+        if (family is null)
+        {
+            throw new FamilyNotFoundException("Family not found.");
+        }
+
+        var normalizedConfirm = FamilyRules.NormalizeName(confirmName);
+        if (!string.Equals(normalizedConfirm, family.Name, StringComparison.Ordinal))
+        {
+            throw new FamilyValidationException("Confirmation name does not match the family name.");
+        }
+
+        await families.DeleteFamilyAsync(familyId, cancellationToken);
+    }
 }

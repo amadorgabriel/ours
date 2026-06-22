@@ -247,6 +247,90 @@ public sealed class FamilyServiceTests
     }
 
     [Fact]
+    public async Task UpdateFamily_AsAdmin_ReturnsUpdatedDto()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var family = new Domain.Entities.Family
+        {
+            Id = familyId,
+            Name = "Silva",
+            AdminId = userId,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership { UserId = userId, FamilyId = familyId, Role = FamilyRole.Admin });
+        _families
+            .Setup(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(family);
+        _families
+            .Setup(x => x.UpdateFamilyAsync(family, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await _sut.UpdateFamilyAsync(userId, familyId, "  Costa  ");
+
+        Assert.Equal(familyId.ToString(), result.Id);
+        Assert.Equal("Costa", result.Name);
+        Assert.Equal("Costa", family.Name);
+    }
+
+    [Fact]
+    public async Task UpdateFamily_AsMember_ThrowsFamilyForbiddenException()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership { UserId = userId, FamilyId = familyId, Role = FamilyRole.Member });
+
+        var act = () => _sut.UpdateFamilyAsync(userId, familyId, "Costa");
+
+        await Assert.ThrowsAsync<FamilyForbiddenException>(act);
+    }
+
+    [Fact]
+    public async Task DeleteFamily_WithMatchingConfirmName_DeletesFamily()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership { UserId = userId, FamilyId = familyId, Role = FamilyRole.Admin });
+        _families
+            .Setup(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Domain.Entities.Family { Id = familyId, Name = "Silva" });
+        _families
+            .Setup(x => x.DeleteFamilyAsync(familyId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await _sut.DeleteFamilyAsync(userId, familyId, " Silva ");
+
+        _families.Verify(x => x.DeleteFamilyAsync(familyId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteFamily_WithWrongConfirmName_ThrowsFamilyValidationException()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership { UserId = userId, FamilyId = familyId, Role = FamilyRole.Admin });
+        _families
+            .Setup(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Domain.Entities.Family { Id = familyId, Name = "Silva" });
+
+        var act = () => _sut.DeleteFamilyAsync(userId, familyId, "Outro Nome");
+
+        await Assert.ThrowsAsync<FamilyValidationException>(act);
+    }
+
+    [Fact]
     public void InviteCodeGenerator_GeneratesSixCharacterAlphanumericCode()
     {
         var generator = new InviteCodeGenerator();

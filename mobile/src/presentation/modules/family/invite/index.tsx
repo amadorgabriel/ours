@@ -1,6 +1,6 @@
 import * as Clipboard from 'expo-clipboard';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, Share, Text, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, Share, Text, View } from 'react-native';
 
 import type { CreateInviteResponse } from '@/core/domain/family';
 import { useCreateInvite } from '@/core/services/usecases/family/index.hooks';
@@ -8,6 +8,7 @@ import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 
 import { getFamilyErrorMessage } from '../family-api-error';
+import { buildInviteUrl, buildWhatsAppInviteUrl } from './invite-link';
 
 type InviteSheetProps = {
   visible: boolean;
@@ -60,10 +61,20 @@ export function InviteSheet({ visible, onClose }: InviteSheetProps) {
 
     try {
       await Share.share({
-        message: `Junte-se à minha família no Ours! Código: ${invite.inviteCode}`,
+        message: `Junte-se à minha família no Ours!\n${buildInviteUrl(invite.inviteCode)}`,
       });
     } catch (error) {
       console.error('Failed to share invite code:', error);
+    }
+  }
+
+  async function handleWhatsApp() {
+    if (!invite?.inviteCode) return;
+
+    try {
+      await Linking.openURL(buildWhatsAppInviteUrl(invite.inviteCode));
+    } catch (error) {
+      console.error('Failed to open WhatsApp invite:', error);
     }
   }
 
@@ -105,6 +116,9 @@ export function InviteSheet({ visible, onClose }: InviteSheetProps) {
           <Text className="mt-2 font-sans text-sm text-mindful-brown/70">
             Válido até {formatExpiresAt(invite.expiresAt)}
           </Text>
+          <Text className="mt-2 font-sans text-xs text-mindful-brown/60">
+            {buildInviteUrl(invite.inviteCode)}
+          </Text>
           <View className="mt-4 flex-row gap-3">
             <Pressable
               accessibilityRole="button"
@@ -118,13 +132,21 @@ export function InviteSheet({ visible, onClose }: InviteSheetProps) {
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Compartilhar código"
+              accessibilityLabel="Compartilhar link"
               className="flex-1 items-center rounded-xl bg-serenity-green py-3"
-              onPress={handleShare}
+              onPress={() => void handleShare()}
             >
               <Text className="font-sans-semibold text-light">Compartilhar</Text>
             </Pressable>
           </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Convidar via WhatsApp"
+            className="mt-3 items-center rounded-xl bg-trust-blue py-3"
+            onPress={() => void handleWhatsApp()}
+          >
+            <Text className="font-sans-semibold text-light">Convidar via WhatsApp</Text>
+          </Pressable>
         </View>
       )}
     </BottomSheet>

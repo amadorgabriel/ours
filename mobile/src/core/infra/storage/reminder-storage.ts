@@ -1,7 +1,13 @@
 import * as SecureStore from 'expo-secure-store';
 
-import type { ReminderSettings, ReminderTime } from '@/core/domain/device';
-import { DEFAULT_REMINDER_TIME } from '@/core/domain/device';
+import type { ReminderFrequency, ReminderSettings, ReminderTime } from '@/core/domain/device';
+import {
+  DEFAULT_CUSTOM_INTERVAL_DAYS,
+  DEFAULT_DAY_OF_MONTH,
+  DEFAULT_REMINDER_FREQUENCY,
+  DEFAULT_REMINDER_TIME,
+  DEFAULT_WEEKDAY,
+} from '@/core/domain/device';
 
 const REMINDER_SETTINGS_KEY = 'po_reminder_settings';
 
@@ -18,23 +24,43 @@ function isReminderTime(value: unknown): value is ReminderTime {
   );
 }
 
+function isReminderFrequency(value: unknown): value is ReminderFrequency {
+  return value === 'daily' || value === 'weekly' || value === 'monthly' || value === 'custom';
+}
+
+function normalizeSettings(parsed: Partial<ReminderSettings>): ReminderSettings {
+  return {
+    enabled: Boolean(parsed.enabled),
+    time: isReminderTime(parsed.time) ? parsed.time : DEFAULT_REMINDER_TIME,
+    frequency: isReminderFrequency(parsed.frequency) ? parsed.frequency : DEFAULT_REMINDER_FREQUENCY,
+    customIntervalDays: parsed.customIntervalDays ?? DEFAULT_CUSTOM_INTERVAL_DAYS,
+    weekday: parsed.weekday ?? DEFAULT_WEEKDAY,
+    dayOfMonth: parsed.dayOfMonth ?? DEFAULT_DAY_OF_MONTH,
+    lastAcknowledgedAt: parsed.lastAcknowledgedAt,
+  };
+}
+
 export async function getReminderSettings(): Promise<ReminderSettings> {
   try {
     const raw = await SecureStore.getItemAsync(REMINDER_SETTINGS_KEY);
     if (!raw) {
-      return { enabled: false, time: DEFAULT_REMINDER_TIME };
+      return normalizeSettings({ enabled: false, time: DEFAULT_REMINDER_TIME });
     }
 
     const parsed = JSON.parse(raw) as Partial<ReminderSettings>;
-    return {
-      enabled: Boolean(parsed.enabled),
-      time: isReminderTime(parsed.time) ? parsed.time : DEFAULT_REMINDER_TIME,
-    };
+    return normalizeSettings(parsed);
   } catch {
-    return { enabled: false, time: DEFAULT_REMINDER_TIME };
+    return normalizeSettings({ enabled: false, time: DEFAULT_REMINDER_TIME });
   }
 }
 
 export async function setReminderSettings(settings: ReminderSettings): Promise<void> {
   await SecureStore.setItemAsync(REMINDER_SETTINGS_KEY, JSON.stringify(settings));
+}
+
+export async function acknowledgeReminderNow(): Promise<ReminderSettings> {
+  const current = await getReminderSettings();
+  const next = { ...current, lastAcknowledgedAt: new Date().toISOString() };
+  await setReminderSettings(next);
+  return next;
 }

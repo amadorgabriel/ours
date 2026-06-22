@@ -5,7 +5,7 @@ import type { DevicePlatform, ReminderSettings, ReminderTime } from '@/core/doma
 
 import {
   buildDailyReminderContent,
-  buildDailyReminderTrigger,
+  buildReminderTrigger,
   getDailyReminderIdentifier,
 } from './local-reminder';
 import { getReminderSettings, setReminderSettings } from '../storage/reminder-storage';
@@ -54,16 +54,24 @@ export async function saveReminderSettings(settings: ReminderSettings): Promise<
     return;
   }
 
-  await scheduleDailyCallReminder(settings.time);
+  await scheduleCallReminder(settings);
 }
 
-export async function scheduleDailyCallReminder(time: ReminderTime): Promise<void> {
+export async function scheduleCallReminder(settings: ReminderSettings): Promise<void> {
   await cancelDailyCallReminder();
 
   await Notifications.scheduleNotificationAsync({
     identifier: getDailyReminderIdentifier(),
     content: buildDailyReminderContent(),
-    trigger: buildDailyReminderTrigger(time),
+    trigger: buildReminderTrigger(settings),
+  });
+}
+
+export async function scheduleDailyCallReminder(time: ReminderTime): Promise<void> {
+  await scheduleCallReminder({
+    enabled: true,
+    time,
+    frequency: 'daily',
   });
 }
 

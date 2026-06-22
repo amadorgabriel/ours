@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { View } from 'react-native';
 
 import { AppHeader } from '@/presentation/modules/app-shell/AppHeader';
+import { InAppReminderBannerHost } from '@/presentation/modules/app-shell/InAppReminderBanner';
 import { TabPagerLayout } from '@/presentation/modules/app-shell/TabPager/TabPagerLayout';
 import { FamilySelectGuard } from '@/presentation/modules/family/family-select-guard';
 import { colors } from '@/presentation/styles/tokens';
@@ -12,6 +13,7 @@ export default function AppTabsLayout() {
     <FamilySelectGuard>
       <View className="flex-1 bg-cream">
         <AppHeader />
+        <InAppReminderBannerHost />
         <View className="flex-1">
           <Tabs
             layout={({ state, navigation, descriptors }) => (

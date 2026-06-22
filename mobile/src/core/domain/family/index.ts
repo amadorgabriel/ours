@@ -36,3 +36,13 @@ export type JoinFamilyResponse = {
   familyName: string;
   role: 'Member';
 };
+
+export type UpdateFamilyRequest = {
+  name: string;
+};
+
+export type DeleteFamilyRequest = {
+  confirmName: string;
+};
+
+export type UpdateFamilyResponse = FamilyModel;

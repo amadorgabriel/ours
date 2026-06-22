@@ -1,0 +1,164 @@
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
+
+import { useDeleteFamily, useUpdateFamily } from '@/core/services/usecases/family/index.hooks';
+import { colors } from '@/presentation/styles/tokens';
+import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+
+import { getFamilyErrorMessage } from '@/presentation/modules/family/family-api-error';
+
+type FamilyAdminSheetProps = {
+  visible: boolean;
+  familyName: string;
+  onClose: () => void;
+  onDeleted: () => void;
+};
+
+export function FamilyAdminSheet({
+  visible,
+  familyName,
+  onClose,
+  onDeleted,
+}: FamilyAdminSheetProps) {
+  const updateFamily = useUpdateFamily();
+  const deleteFamily = useDeleteFamily();
+  const [name, setName] = useState(familyName);
+  const [deleteStep, setDeleteStep] = useState<0 | 1 | 2>(0);
+  const [confirmName, setConfirmName] = useState('');
+
+  useEffect(() => {
+    setName(familyName);
+  }, [familyName]);
+
+  function handleClose() {
+    setName(familyName);
+    setDeleteStep(0);
+    setConfirmName('');
+    updateFamily.reset();
+    deleteFamily.reset();
+    onClose();
+  }
+
+  function handleSaveName() {
+    updateFamily.mutate(
+      { name: name.trim() },
+      {
+        onSuccess: () => handleClose(),
+      }
+    );
+  }
+
+  function handleDelete() {
+    deleteFamily.mutate(
+      { confirmName: confirmName.trim() },
+      {
+        onSuccess: () => {
+          handleClose();
+          onDeleted();
+        },
+      }
+    );
+  }
+
+  return (
+    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Administrar família">
+      <Text className="font-sans-semibold text-xl text-mindful-brown">Família</Text>
+
+      {deleteStep === 0 ? (
+        <>
+          <Text className="mt-4 font-sans text-sm text-mindful-brown/70">Nome da família</Text>
+          <TextInput
+            accessibilityLabel="Nome da família"
+            className="mt-2 rounded-xl border border-mindful-brown/20 bg-cream px-4 py-3 font-sans text-mindful-brown"
+            maxLength={100}
+            value={name}
+            onChangeText={setName}
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Salvar nome da família"
+            className="mt-4 items-center rounded-xl bg-serenity-green py-3"
+            disabled={updateFamily.isPending || !name.trim()}
+            onPress={handleSaveName}
+          >
+            {updateFamily.isPending ? (
+              <ActivityIndicator color={colors.textLight} />
+            ) : (
+              <Text className="font-sans-semibold text-light">Salvar</Text>
+            )}
+          </Pressable>
+          {updateFamily.isError ? (
+            <Text className="mt-3 font-sans text-sm text-red-600">
+              {getFamilyErrorMessage(updateFamily.error, 'create')}
+            </Text>
+          ) : null}
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Excluir família"
+            className="mt-6 items-center rounded-xl border border-red-500 py-3"
+            onPress={() => setDeleteStep(1)}
+          >
+            <Text className="font-sans-semibold text-red-600">Excluir família</Text>
+          </Pressable>
+        </>
+      ) : null}
+
+      {deleteStep === 1 ? (
+        <>
+          <Text className="mt-4 font-sans text-sm text-mindful-brown/80">
+            Esta ação é permanente e remove todos os dados da família. Deseja continuar?
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Continuar exclusão"
+            className="mt-4 items-center rounded-xl border border-red-500 py-3"
+            onPress={() => setDeleteStep(2)}
+          >
+            <Text className="font-sans-semibold text-red-600">Continuar</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Cancelar exclusão"
+            className="mt-3 items-center py-2"
+            onPress={() => setDeleteStep(0)}
+          >
+            <Text className="font-sans-semibold text-mindful-brown">Cancelar</Text>
+          </Pressable>
+        </>
+      ) : null}
+
+      {deleteStep === 2 ? (
+        <>
+          <Text className="mt-4 font-sans text-sm text-mindful-brown/80">
+            Digite <Text className="font-sans-semibold">{familyName}</Text> para confirmar.
+          </Text>
+          <TextInput
+            accessibilityLabel="Confirmar nome da família"
+            className="mt-2 rounded-xl border border-mindful-brown/20 bg-cream px-4 py-3 font-sans text-mindful-brown"
+            value={confirmName}
+            onChangeText={setConfirmName}
+          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Confirmar exclusão da família"
+            className="mt-4 items-center rounded-xl bg-red-600 py-3"
+            disabled={deleteFamily.isPending || confirmName.trim() !== familyName}
+            onPress={handleDelete}
+          >
+            {deleteFamily.isPending ? (
+              <ActivityIndicator color={colors.textLight} />
+            ) : (
+              <Text className="font-sans-semibold text-light">Excluir permanentemente</Text>
+            )}
+          </Pressable>
+          {deleteFamily.isError ? (
+            <Text className="mt-3 font-sans text-sm text-red-600">
+              {getFamilyErrorMessage(deleteFamily.error, 'create')}
+            </Text>
+          ) : null}
+        </>
+      ) : null}
+    </BottomSheet>
+  );
+}

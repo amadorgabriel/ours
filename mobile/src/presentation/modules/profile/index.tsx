@@ -1,7 +1,8 @@
 import { useRouter, type Href } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -9,25 +10,21 @@ import {
   View,
 } from 'react-native';
 
-import type { FamilyWithRoleModel } from '@/core/domain/family';
 import type { ParentSummary } from '@/core/domain/parent';
 import { useLogout } from '@/core/services/usecases/auth/index.hooks';
 import { useParents } from '@/core/services/usecases/parent/index.hooks';
 import { InviteSheet } from '@/presentation/modules/family/invite';
+import { roleLabel } from '@/presentation/modules/family/role-label';
 import { NotificationSettings } from '@/presentation/modules/profile/notification-settings';
+import { FamilyAdminSheet } from '@/presentation/modules/profile/family-admin-sheet';
 import { CreateParentSheet } from '@/presentation/modules/parents/create-parent-sheet';
 import { EditParentSheet } from '@/presentation/modules/parents/edit-parent-sheet';
 import { ParentDetailSheet } from '@/presentation/modules/parents/parent-detail-sheet';
-import { mobileRoutes } from '@/presentation/modules/auth/auth-redirect';
-import { useAuth } from '@/presentation/providers/auth';
+import { mobileRoutes, resolvePostLoginRoute } from '@/presentation/modules/auth/auth-redirect';import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
 import { colors } from '@/presentation/styles/tokens';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
 import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
-
-function roleLabel(role: FamilyWithRoleModel['role']): string {
-  return role === 'Admin' ? 'Administrador' : 'Membro';
-}
 
 function ParentListItem({
   parent,
@@ -86,10 +83,17 @@ export function ProfileScreen() {
   const [createParentVisible, setCreateParentVisible] = useState(false);
   const [editParent, setEditParent] = useState<ParentSummary | null>(null);
   const [detailParentId, setDetailParentId] = useState<string | null>(null);
+  const [familyAdminVisible, setFamilyAdminVisible] = useState(false);
 
   const activeFamily = session?.families.find((family) => family.id === familyId);
   const isAdmin = activeFamily?.role === 'Admin';
   const userInitial = (session?.user.name ?? '?').charAt(0).toUpperCase();
+  const userPicture = session?.user.picture;
+
+  function handleFamilyDeleted() {
+    const nextCount = Math.max(0, (session?.familyCount ?? 1) - 1);
+    router.replace(resolvePostLoginRoute(nextCount) as Href);
+  }
 
   function handleLogout() {
     logoutMutation.mutate(undefined, {
@@ -116,9 +120,17 @@ export function ProfileScreen() {
 
         <View className="mt-8 rounded-2xl bg-white p-5">
           <View className="flex-row items-center">
-            <View className="h-14 w-14 items-center justify-center rounded-full bg-mindful-brown/15">
-              <Text className="font-sans-semibold text-xl text-mindful-brown">{userInitial}</Text>
-            </View>
+            {userPicture ? (
+              <Image
+                accessibilityLabel="Foto do perfil"
+                className="h-14 w-14 rounded-full"
+                source={{ uri: userPicture }}
+              />
+            ) : (
+              <View className="h-14 w-14 items-center justify-center rounded-full bg-mindful-brown/15">
+                <Text className="font-sans-semibold text-xl text-mindful-brown">{userInitial}</Text>
+              </View>
+            )}
             <View className="ml-4 flex-1">
               <Text className="font-sans-semibold text-lg text-mindful-brown">
                 {session?.user.name ?? 'Usuário'}
@@ -138,6 +150,16 @@ export function ProfileScreen() {
           <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
             {activeFamily ? roleLabel(activeFamily.role) : '—'}
           </Text>
+          {isAdmin ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Editar família"
+              className="mt-4 items-center rounded-xl border border-serenity-green py-3"
+              onPress={() => setFamilyAdminVisible(true)}
+            >
+              <Text className="font-sans-semibold text-serenity-green">Editar família</Text>
+            </Pressable>
+          ) : null}
         </View>
 
         <View className="mt-4 rounded-2xl bg-white p-5">
@@ -248,6 +270,14 @@ export function ProfileScreen() {
         isAdmin={isAdmin}
         onClose={() => setDetailParentId(null)}
       />
+      {activeFamily ? (
+        <FamilyAdminSheet
+          familyName={activeFamily.name}
+          visible={familyAdminVisible}
+          onClose={() => setFamilyAdminVisible(false)}
+          onDeleted={handleFamilyDeleted}
+        />
+      ) : null}
     </>
   );
 }

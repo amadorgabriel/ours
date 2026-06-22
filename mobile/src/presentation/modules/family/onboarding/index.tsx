@@ -1,5 +1,5 @@
-import { useRouter, type Href } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -36,6 +36,7 @@ function validateCode(code: string): string | null {
 
 export function OnboardingScreen() {
   const router = useRouter();
+  const { invite } = useLocalSearchParams<{ invite?: string }>();
   const createFamily = useCreateFamily();
   const joinFamily = useJoinFamily();
 
@@ -43,6 +44,12 @@ export function OnboardingScreen() {
   const [inviteCode, setInviteCode] = useState('');
   const [createValidationError, setCreateValidationError] = useState<string | null>(null);
   const [joinValidationError, setJoinValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof invite === 'string' && invite.trim()) {
+      setInviteCode(invite.trim().toUpperCase());
+    }
+  }, [invite]);
 
   function navigateHome() {
     router.replace(mobileRoutes.home as Href);

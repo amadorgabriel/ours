@@ -13,3 +13,7 @@ public sealed record InviteDto(string InviteCode, DateTimeOffset ExpiresAt);
 public sealed record JoinRequest(string InviteCode);
 
 public sealed record JoinResponse(string FamilyId, string FamilyName, string Role);
+
+public sealed record UpdateFamilyRequest(string Name);
+
+public sealed record DeleteFamilyRequest(string ConfirmName);
