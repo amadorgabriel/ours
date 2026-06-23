@@ -13,6 +13,10 @@ import {
 } from 'react-native';
 
 import { useRegisterVisit } from '@/core/services/usecases/activity/index.hooks';
+import {
+  formatLocalDateInput,
+  parseLocalDateInput,
+} from '@/core/services/usecases/activity/month-range';
 import { useAssistido } from '@/presentation/providers/assistido';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
@@ -23,7 +27,7 @@ type VisitSheetProps = {
 };
 
 function toIsoDateInput(date: Date): string {
-  return date.toISOString().slice(0, 10);
+  return formatLocalDateInput(date);
 }
 
 async function pickCompressedPhoto(): Promise<{ base64: string; mimeType: string } | null> {
@@ -89,21 +93,57 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
   }
 
   async function handlePickPhoto() {
-    const photo = await pickCompressedPhoto();
-    if (!photo) return;
+    try {
+      const photo = await pickCompressedPhoto();
+      if (!photo) return;
 
-    setPhotoPreview(photo.base64);
-    setPhotoBase64(photo.base64);
-    setPhotoMimeType(photo.mimeType);
+      setPhotoPreview(photo.base64);
+      setPhotoBase64(photo.base64);
+      setPhotoMimeType(photo.mimeType);
+    } catch {
+      Alert.alert('Erro', 'Não foi possível processar a foto. Tente outra imagem.');
+    }
   }
 
   function handleSubmit() {
-    const startAt = new Date(`${startDate}T00:00:00`);
-    const endAt = allDay ? undefined : new Date(`${endDate}T23:59:59`);
+    if (!parentId || !activeParent) {
+      Alert.alert(
+        'Assistido necessário',
+        'Selecione um assistido no header antes de registrar a visita.'
+      );
+      return;
+    }
+
+    const start = parseLocalDateInput(startDate);
+    if (!start) {
+      Alert.alert('Data inválida', 'Informe uma data de início válida (AAAA-MM-DD).');
+      return;
+    }
+
+    let end: Date | undefined;
+    if (!allDay) {
+      const parsedEnd = parseLocalDateInput(endDate);
+      if (!parsedEnd) {
+        Alert.alert('Data inválida', 'Informe uma data de fim válida (AAAA-MM-DD).');
+        return;
+      }
+
+      if (parsedEnd < start) {
+        Alert.alert('Data inválida', 'A data de fim deve ser igual ou posterior à data de início.');
+        return;
+      }
+
+      end = parsedEnd;
+    }
+
+    const startAt = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0, 0);
+    const endAt = end
+      ? new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59, 999)
+      : undefined;
 
     registerVisit.mutate(
       {
-        parentId: parentId ?? undefined,
+        parentId,
         allDay,
         startAt: startAt.toISOString(),
         endAt: endAt?.toISOString(),
@@ -118,7 +158,8 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
     );
   }
 
-  const assistidoLabel = activeParent?.name ?? 'Todos os assistidos';
+  const assistidoLabel = activeParent?.name ?? 'Nenhum assistido selecionado';
+  const canSubmit = Boolean(activeParent) && !registerVisit.isPending;
 
   return (
     <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Registrar visita">
@@ -131,6 +172,11 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
         <Text className="font-sans text-sm text-mindful-brown">Assistido</Text>
         <View className="mt-2 rounded-xl bg-white px-4 py-3">
           <Text className="font-sans-semibold text-mindful-brown">{assistidoLabel}</Text>
+          {!activeParent ? (
+            <Text className="mt-1 font-sans text-xs text-mindful-brown/60">
+              Selecione um assistido no header para registrar a visita.
+            </Text>
+          ) : null}
         </View>
       </View>
 
@@ -198,8 +244,8 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Registrar visita"
-        className="mt-4 items-center rounded-xl bg-serenity-green py-3"
-        disabled={registerVisit.isPending}
+        className={`mt-4 items-center rounded-xl py-3 ${canSubmit ? 'bg-serenity-green' : 'bg-mindful-brown/30'}`}
+        disabled={!canSubmit}
         onPress={handleSubmit}
       >
         {registerVisit.isPending ? (

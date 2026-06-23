@@ -133,14 +133,29 @@ describe('AssistidoProvider', () => {
 
   it('hydrates parent id from storage when family is set', async () => {
     mockGetStoredAssistidoFilter.mockResolvedValue('parent-1');
+    useParents.mockImplementation((familyId: string | null) => ({
+      data: familyId
+        ? [{ id: 'parent-1', name: 'João', relationship: 'Pai' }]
+        : [],
+      isLoading: false,
+    }));
 
     const { getAssistido } = await renderAssistido('family-1');
+
+    await waitForAssistido(getAssistido, (value) => value.parentId === 'parent-1');
 
     expect(mockGetStoredAssistidoFilter).toHaveBeenCalledWith('family-1');
     expect(getAssistido().parentId).toBe('parent-1');
   });
 
   it('persists parent id when setParentId is called', async () => {
+    useParents.mockImplementation((familyId: string | null) => ({
+      data: familyId
+        ? [{ id: 'parent-2', name: 'Maria', relationship: 'Mãe' }]
+        : [],
+      isLoading: false,
+    }));
+
     const { getAssistido } = await renderAssistido('family-1');
 
     act(() => {
@@ -153,7 +168,7 @@ describe('AssistidoProvider', () => {
     expect(getAssistido().parentId).toBe('parent-2');
   });
 
-  it('clears invalid parent id when parents list does not contain it', async () => {
+  it('clears stale parent id when parents list does not contain it', async () => {
     const parents: ParentSummary[] = [
       { id: 'parent-valid', name: 'Maria', relationship: 'Mãe' },
     ];
@@ -192,5 +207,47 @@ describe('AssistidoProvider', () => {
     expect(getAssistido().parentId).toBe('parent-1');
     expect(mockSetStoredParentId).toHaveBeenCalledWith('family-1', 'parent-1');
     expect(getAssistido().activeParent).toEqual(parents[0]);
+  });
+
+  it('is not loading when familyId is null', async () => {
+    const client = createTestQueryClient();
+    const holder: { current: AssistidoContextValue | null } = { current: null };
+
+    function Capture() {
+      holder.current = useAssistido();
+      return null;
+    }
+
+    await act(async () => {
+      renderer.create(
+        <QueryClientProvider client={client}>
+          <FamilyProvider>
+            <AssistidoProvider>
+              <Capture />
+            </AssistidoProvider>
+          </FamilyProvider>
+        </QueryClientProvider>
+      );
+    });
+
+    await flushEffects();
+
+    expect(holder.current?.isLoading).toBe(false);
+    expect(holder.current?.parentId).toBeNull();
+  });
+
+  it('clears parent id when parents list is empty', async () => {
+    mockGetStoredAssistidoFilter.mockResolvedValue('parent-stale');
+    useParents.mockImplementation((familyId: string | null) => ({
+      data: familyId ? [] : [],
+      isLoading: false,
+    }));
+
+    const { getAssistido } = await renderAssistido('family-1');
+
+    await waitForAssistido(getAssistido, (value) => !value.isLoading);
+
+    expect(mockClearStoredParentId).toHaveBeenCalledWith('family-1');
+    expect(getAssistido().parentId).toBeNull();
   });
 });

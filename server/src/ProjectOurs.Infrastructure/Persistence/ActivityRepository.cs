@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using ProjectOurs.Application.Abstractions.Persistence;
 using ProjectOurs.Domain.Entities;
+using ProjectOurs.Domain.Enums;
 
 namespace ProjectOurs.Infrastructure.Persistence;
 
@@ -50,7 +51,9 @@ public sealed class ActivityRepository(ApplicationDbContext db) : IActivityRepos
 
         if (parentId is not null)
         {
-            query = query.Where(x => x.ParentId == parentId);
+            query = query.Where(x =>
+                x.ParentId == parentId
+                || (x.ParentId == null && x.Type == ActivityType.Contribution));
         }
 
         return await query
@@ -202,7 +205,10 @@ public sealed class ActivityRepository(ApplicationDbContext db) : IActivityRepos
 
         if (parentId.HasValue)
         {
-            query = query.Where(x => x.ParentId == parentId.Value);
+            var filterParentId = parentId.Value;
+            query = query.Where(x =>
+                x.ParentId == filterParentId
+                || (x.ParentId == null && x.Type == ActivityType.Contribution));
         }
 
         return await query.CountAsync(cancellationToken);

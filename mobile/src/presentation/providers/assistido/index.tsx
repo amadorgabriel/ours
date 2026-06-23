@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -32,6 +33,7 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
   const [parentId, setParentIdState] = useState<ParentId | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const skipAutoSelectRef = useRef(false);
+  const allowAutoSelectRef = useRef(false);
 
   useEffect(() => {
     if (!familyId) {
@@ -41,13 +43,23 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
     void prefetchParentsForFamily(queryClient, familyId);
   }, [familyId, queryClient]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setIsHydrated(false);
+  useLayoutEffect(() => {
     skipAutoSelectRef.current = false;
+    allowAutoSelectRef.current = false;
 
     if (!familyId) {
       setParentIdState(null);
+      setIsHydrated(true);
+      return;
+    }
+
+    setIsHydrated(false);
+  }, [familyId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!familyId) {
       return;
     }
 
@@ -58,9 +70,16 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
 
       if (stored === 'all') {
         skipAutoSelectRef.current = true;
+        allowAutoSelectRef.current = false;
         setParentIdState(null);
-      } else {
+      } else if (stored !== null) {
+        skipAutoSelectRef.current = true;
+        allowAutoSelectRef.current = false;
         setParentIdState(stored);
+      } else {
+        skipAutoSelectRef.current = false;
+        allowAutoSelectRef.current = true;
+        setParentIdState(null);
       }
 
       setIsHydrated(true);
@@ -72,26 +91,43 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
   }, [familyId]);
 
   useEffect(() => {
-    if (!isHydrated || isLoading || !familyId || parents.length === 0) return;
+    if (!isHydrated || isLoading || !familyId) return;
+    if (parents.length > 0) return;
 
     if (parentId !== null) {
-      const isValid = parents.some((parent) => parent.id === parentId);
-      if (isValid) {
-        skipAutoSelectRef.current = true;
-        return;
-      }
-
       void clearStoredParentId(familyId);
       setParentIdState(null);
     }
+  }, [isHydrated, isLoading, familyId, parents.length, parentId]);
 
-    if (skipAutoSelectRef.current) return;
+  useEffect(() => {
+    if (!isHydrated || isLoading || !familyId || parents.length === 0) return;
 
-    skipAutoSelectRef.current = true;
-    const first = parents[0];
-    setParentIdState(first.id);
-    void setStoredParentId(familyId, first.id);
-  }, [isHydrated, isLoading, familyId, parents, parentId]);
+    setParentIdState((currentParentId) => {
+      if (currentParentId !== null) {
+        const isValid = parents.some((parent) => parent.id === currentParentId);
+        if (isValid) {
+          skipAutoSelectRef.current = true;
+          allowAutoSelectRef.current = false;
+          return currentParentId;
+        }
+
+        void clearStoredParentId(familyId);
+        skipAutoSelectRef.current = false;
+        allowAutoSelectRef.current = true;
+      }
+
+      if (!allowAutoSelectRef.current || skipAutoSelectRef.current) {
+        return currentParentId;
+      }
+
+      allowAutoSelectRef.current = false;
+      skipAutoSelectRef.current = true;
+      const first = parents[0];
+      void setStoredParentId(familyId, first.id);
+      return first.id;
+    });
+  }, [isHydrated, isLoading, familyId, parents]);
 
   const setParentId = useCallback(
     (id: ParentId | null) => {
@@ -119,14 +155,14 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
       parentId,
       activeParent,
       parents,
-      isLoading: isLoading || !isHydrated,
+      isLoading: familyId ? isLoading || !isHydrated : false,
       isError,
       refetch: () => {
         void refetch();
       },
       setParentId,
     }),
-    [parentId, activeParent, parents, isLoading, isHydrated, isError, refetch, setParentId]
+    [parentId, activeParent, parents, isLoading, isHydrated, isError, refetch, setParentId, familyId]
   );
 
   return <AssistidoContext.Provider value={value}>{children}</AssistidoContext.Provider>;
