@@ -47,7 +47,7 @@ export function CallNowSheet({ visible, onClose }: CallNowSheetProps) {
   const assistidoLabel = activeParent?.name ?? 'Nenhum assistido selecionado';
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Registrar ligação">
+    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Registrar ligação" scrollable>
       <Text className="font-sans-semibold text-xl text-mindful-brown">Liguei agora</Text>
       <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
         Registre que você ligou para o assistido agora.

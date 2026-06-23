@@ -98,7 +98,7 @@ export function ParentDetailSheet({
   }
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Ficha do assistido">
+    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Ficha do assistido" scrollable>
       {isLoading ? (
         <View className="items-center py-10">
           <ActivityIndicator color={colors.serenityGreen60} />

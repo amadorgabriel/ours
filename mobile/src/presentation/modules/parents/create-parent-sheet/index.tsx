@@ -79,7 +79,7 @@ export function CreateParentSheet({ visible, onClose }: CreateParentSheetProps) 
   const isValid = name.trim().length > 0 && name.trim().length <= MAX_NAME_LENGTH;
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Novo assistido">
+    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Novo assistido" scrollable>
       <Text className="font-sans-semibold text-xl text-mindful-brown">Novo assistido</Text>
       <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
         Cadastre quem a família cuida (Pai, Mãe ou outro).

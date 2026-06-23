@@ -213,6 +213,16 @@ npm run lint      # opcional
 
 Gate documentado nos changes: [007](../.specs/archive/007-mobile-scaffold/) · [008](../.specs/changes/008-mobile-app-shell/) · [009](../.specs/changes/009-mobile-feed/)
 
+### Ícones e splash
+
+Fonte versionada: `assets/images/logo-master.png` (logo 021, 1024px). Após alterar o master, regenere os derivados:
+
+```bash
+python scripts/generate-icons.py
+```
+
+Gera `icon.png`, `splash-icon.png`, `favicon.png`, `logo-ours.png` (login) e adaptive icons Android (`android-icon-*.png`) com padding cream `#FCF8F4` (AD-001).
+
 ## Variáveis de ambiente
 
 | Variável | Descrição |

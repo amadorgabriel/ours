@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   Text,
@@ -17,8 +16,11 @@ import {
   type ParentSummary,
 } from '@/core/domain/parent';
 import { useUpdateParent, useUpdateParentPhoto } from '@/core/services/usecases/parent/index.hooks';
+import { useTranslation } from '@/presentation/hooks/use-translation';
+import { useAppAlert } from '@/presentation/providers/alert';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { DatePickerField } from '@/ui/Forms/DatePickerField';
 
 import { getParentErrorMessage } from '../parents-api-error';
 
@@ -57,6 +59,8 @@ function RelationshipOption({
 }
 
 export function EditParentSheet({ parent, visible, onClose }: EditParentSheetProps) {
+  const { t } = useTranslation();
+  const { alert } = useAppAlert();
   const updateParent = useUpdateParent(parent?.id ?? '');
   const updatePhoto = useUpdateParentPhoto(parent?.id ?? '');
   const [name, setName] = useState('');
@@ -82,9 +86,9 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
 
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert(
-        'Permissão necessária',
-        'Permita o acesso à galeria nas configurações do dispositivo para alterar a foto.'
+      alert(
+        t('alerts.galleryPermission.title'),
+        t('alerts.galleryPermission.parentMessage')
       );
       return;
     }
@@ -112,7 +116,10 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
       {
         onError: (error) => {
           setPhotoPreview(parent.photoData ?? null);
-          Alert.alert('Erro ao salvar foto', getParentErrorMessage(error, 'update'));
+          alert(
+            t('alerts.photoError.saveMessage'),
+            getParentErrorMessage(error, 'update')
+          );
         },
       }
     );
@@ -127,7 +134,10 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
       {
         onError: (error) => {
           setPhotoPreview(parent.photoData ?? null);
-          Alert.alert('Erro ao remover foto', getParentErrorMessage(error, 'update'));
+          alert(
+            t('alerts.photoError.removeMessage'),
+            getParentErrorMessage(error, 'update')
+          );
         },
       }
     );
@@ -156,13 +166,17 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
   }
 
   const isValid = name.trim().length > 0 && name.trim().length <= MAX_NAME_LENGTH;
+  const today = new Date();
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Editar assistido">
-      <Text className="font-sans-semibold text-xl text-mindful-brown">Editar assistido</Text>
-      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
-        Atualize nome, relação, foto ou data de nascimento.
-      </Text>
+    <BottomSheet
+      visible={visible}
+      onClose={handleClose}
+      accessibilityLabel={t('parents.editTitle')}
+      scrollable
+    >
+      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('parents.editTitle')}</Text>
+      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{t('parents.editDescription')}</Text>
 
       <View className="mt-6 items-center">
         {photoPreview ? (
@@ -181,29 +195,31 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
         <View className="mt-3 flex-row gap-3">
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Alterar foto"
+            accessibilityLabel={t('parents.changePhoto')}
             className="rounded-lg border border-serenity-green px-3 py-2"
             onPress={() => void handlePickPhoto()}
           >
-            <Text className="font-sans-semibold text-sm text-serenity-green">Alterar foto</Text>
+            <Text className="font-sans-semibold text-sm text-serenity-green">
+              {t('parents.changePhoto')}
+            </Text>
           </Pressable>
           {photoPreview ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Remover foto"
+              accessibilityLabel={t('parents.removePhoto')}
               className="rounded-lg px-3 py-2"
               onPress={handleRemovePhoto}
             >
-              <Text className="font-sans-semibold text-sm text-red-600">Remover</Text>
+              <Text className="font-sans-semibold text-sm text-red-600">{t('parents.removePhoto')}</Text>
             </Pressable>
           ) : null}
         </View>
       </View>
 
       <View className="mt-6">
-        <Text className="font-sans text-sm text-mindful-brown">Nome</Text>
+        <Text className="font-sans text-sm text-mindful-brown">{t('parents.name')}</Text>
         <TextInput
-          accessibilityLabel="Nome do assistido"
+          accessibilityLabel={t('parents.name')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           maxLength={MAX_NAME_LENGTH}
           placeholder="Ex.: João Silva"
@@ -214,7 +230,7 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
       </View>
 
       <View className="mt-4">
-        <Text className="font-sans text-sm text-mindful-brown">Relação</Text>
+        <Text className="font-sans text-sm text-mindful-brown">{t('parents.relationship')}</Text>
         <View className="mt-2 flex-row flex-wrap">
           {PARENT_RELATIONSHIPS.map((option) => (
             <RelationshipOption
@@ -228,14 +244,12 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
       </View>
 
       <View className="mt-4">
-        <Text className="font-sans text-sm text-mindful-brown">Data de nascimento (opcional)</Text>
-        <TextInput
-          accessibilityLabel="Data de nascimento"
-          className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
-          placeholder="AAAA-MM-DD"
-          placeholderTextColor={colors.mindfulBrown60}
+        <DatePickerField
+          accessibilityLabel={t('parents.birthDate')}
+          label={t('parents.birthDate')}
+          maximumDate={today}
           value={birthDate}
-          onChangeText={setBirthDate}
+          onChange={setBirthDate}
         />
       </View>
 
@@ -247,7 +261,7 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Salvar assistido"
+        accessibilityLabel={t('parents.save')}
         className="mt-4 items-center rounded-xl bg-serenity-green py-3"
         disabled={!isValid || updateParent.isPending || !parent}
         onPress={handleSubmit}
@@ -255,7 +269,7 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
         {updateParent.isPending ? (
           <ActivityIndicator color={colors.textLight} />
         ) : (
-          <Text className="font-sans-semibold text-light">Salvar</Text>
+          <Text className="font-sans-semibold text-light">{t('common.save')}</Text>
         )}
       </Pressable>
     </BottomSheet>

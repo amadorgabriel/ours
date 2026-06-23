@@ -1,10 +1,11 @@
-import { Alert, Text } from 'react-native';
+import { Text } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
 import { ProfileScreen } from '../index';
 
 const mockReplace = jest.fn();
 const mockMutateAsync = jest.fn();
+const mockAlert = jest.fn();
 
 function getAllText(tree: renderer.ReactTestRenderer): string {
   return tree.root
@@ -102,6 +103,10 @@ jest.mock('@/presentation/providers/auth', () => ({
 
 jest.mock('@/presentation/providers/family', () => ({
   useFamily: jest.fn(),
+}));
+
+jest.mock('@/presentation/providers/alert', () => ({
+  useAppAlert: () => ({ alert: mockAlert }),
 }));
 
 jest.mock('@/core/infra/notifications/notification-service', () => ({
@@ -238,8 +243,8 @@ describe('ProfileScreen', () => {
   });
 
   it('calls logout and navigates to login', async () => {
-    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
-      const confirm = buttons?.find((button) => button.text === 'Sair');
+    mockAlert.mockImplementation((_title, _message, buttons) => {
+      const confirm = buttons?.find((button: { text: string }) => button.text === 'Sair');
       void confirm?.onPress?.();
     });
 
@@ -250,10 +255,8 @@ describe('ProfileScreen', () => {
       logoutButton.props.onPress();
     });
 
-    expect(alertSpy).toHaveBeenCalled();
+    expect(mockAlert).toHaveBeenCalled();
     expect(mockMutateAsync).toHaveBeenCalled();
     expect(mockReplace).toHaveBeenCalledWith('/(auth)/login');
-
-    alertSpy.mockRestore();
   });
 });

@@ -38,7 +38,7 @@ export function CreateFamilySheet({ visible, onClose }: CreateFamilySheetProps) 
   }
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Nova família">
+    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Nova família" scrollable>
       <Text className="font-sans-semibold text-xl text-mindful-brown">Nova família</Text>
       <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
         Crie outra família e alterne entre elas pelo header.

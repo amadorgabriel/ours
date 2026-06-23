@@ -3,12 +3,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   Switch,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
@@ -17,9 +15,12 @@ import {
   formatLocalDateInput,
   parseLocalDateInput,
 } from '@/core/services/usecases/activity/month-range';
+import { useTranslation } from '@/presentation/hooks/use-translation';
+import { useAppAlert } from '@/presentation/providers/alert';
 import { useAssistido } from '@/presentation/providers/assistido';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { DatePickerField } from '@/ui/Forms/DatePickerField';
 
 type VisitSheetProps = {
   visible: boolean;
@@ -30,13 +31,12 @@ function toIsoDateInput(date: Date): string {
   return formatLocalDateInput(date);
 }
 
-async function pickCompressedPhoto(): Promise<{ base64: string; mimeType: string } | null> {
+async function pickCompressedPhoto(
+  onPermissionDenied: () => void
+): Promise<{ base64: string; mimeType: string } | null> {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permission.granted) {
-    Alert.alert(
-      'Permissão necessária',
-      'Permita o acesso à galeria nas configurações do dispositivo para adicionar uma foto.'
-    );
+    onPermissionDenied();
     return null;
   }
 
@@ -68,6 +68,8 @@ async function pickCompressedPhoto(): Promise<{ base64: string; mimeType: string
 }
 
 export function VisitSheet({ visible, onClose }: VisitSheetProps) {
+  const { t } = useTranslation();
+  const { alert } = useAppAlert();
   const { parentId, activeParent } = useAssistido();
   const registerVisit = useRegisterVisit();
   const [allDay, setAllDay] = useState(true);
@@ -94,29 +96,37 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
 
   async function handlePickPhoto() {
     try {
-      const photo = await pickCompressedPhoto();
+      const photo = await pickCompressedPhoto(() => {
+        alert(
+          t('alerts.galleryPermission.title'),
+          t('alerts.galleryPermission.visitMessage')
+        );
+      });
       if (!photo) return;
 
       setPhotoPreview(photo.base64);
       setPhotoBase64(photo.base64);
       setPhotoMimeType(photo.mimeType);
     } catch {
-      Alert.alert('Erro', 'Não foi possível processar a foto. Tente outra imagem.');
+      alert(t('alerts.photoError.title'), t('alerts.photoError.processMessage'));
     }
   }
 
   function handleSubmit() {
     if (!parentId || !activeParent) {
-      Alert.alert(
-        'Assistido necessário',
-        'Selecione um assistido no header antes de registrar a visita.'
+      alert(
+        t('alerts.visit.assistidoRequired.title'),
+        t('alerts.visit.assistidoRequired.message')
       );
       return;
     }
 
     const start = parseLocalDateInput(startDate);
     if (!start) {
-      Alert.alert('Data inválida', 'Informe uma data de início válida (AAAA-MM-DD).');
+      alert(
+        t('alerts.visit.invalidStartDate.title'),
+        t('alerts.visit.invalidStartDate.message')
+      );
       return;
     }
 
@@ -124,12 +134,18 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
     if (!allDay) {
       const parsedEnd = parseLocalDateInput(endDate);
       if (!parsedEnd) {
-        Alert.alert('Data inválida', 'Informe uma data de fim válida (AAAA-MM-DD).');
+        alert(
+          t('alerts.visit.invalidEndDate.title'),
+          t('alerts.visit.invalidEndDate.message')
+        );
         return;
       }
 
       if (parsedEnd < start) {
-        Alert.alert('Data inválida', 'A data de fim deve ser igual ou posterior à data de início.');
+        alert(
+          t('alerts.visit.endBeforeStart.title'),
+          t('alerts.visit.endBeforeStart.message')
+        );
         return;
       }
 
@@ -158,71 +174,69 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
     );
   }
 
-  const assistidoLabel = activeParent?.name ?? 'Nenhum assistido selecionado';
+  const assistidoLabel = activeParent?.name ?? t('visit.noAssistido');
   const canSubmit = Boolean(activeParent) && !registerVisit.isPending;
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Registrar visita">
-      <Text className="font-sans-semibold text-xl text-mindful-brown">Registrar visita</Text>
-      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
-        Registre uma visita presencial com período e foto opcional.
-      </Text>
+    <BottomSheet
+      visible={visible}
+      onClose={handleClose}
+      accessibilityLabel={t('visit.title')}
+      scrollable
+    >
+      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('visit.title')}</Text>
+      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{t('visit.description')}</Text>
 
       <View className="mt-6">
-        <Text className="font-sans text-sm text-mindful-brown">Assistido</Text>
+        <Text className="font-sans text-sm text-mindful-brown">{t('visit.assistido')}</Text>
         <View className="mt-2 rounded-xl bg-white px-4 py-3">
           <Text className="font-sans-semibold text-mindful-brown">{assistidoLabel}</Text>
           {!activeParent ? (
             <Text className="mt-1 font-sans text-xs text-mindful-brown/60">
-              Selecione um assistido no header para registrar a visita.
+              {t('visit.selectAssistidoHint')}
             </Text>
           ) : null}
         </View>
       </View>
 
       <View className="mt-4 flex-row items-center justify-between rounded-xl bg-white px-4 py-3">
-        <Text className="font-sans text-sm text-mindful-brown">Dia inteiro</Text>
+        <Text className="font-sans text-sm text-mindful-brown">{t('visit.allDay')}</Text>
         <Switch
-          accessibilityLabel="Visita dia inteiro"
+          accessibilityLabel={t('visit.allDay')}
           value={allDay}
           onValueChange={setAllDay}
         />
       </View>
 
       <View className="mt-4">
-        <Text className="font-sans text-sm text-mindful-brown">Início</Text>
-        <TextInput
-          accessibilityLabel="Data de início"
-          className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
-          placeholder="AAAA-MM-DD"
-          placeholderTextColor={colors.mindfulBrown60}
+        <DatePickerField
+          accessibilityLabel={t('visit.start')}
+          label={t('visit.start')}
           value={startDate}
-          onChangeText={setStartDate}
+          onChange={setStartDate}
         />
       </View>
 
       {!allDay ? (
         <View className="mt-4">
-          <Text className="font-sans text-sm text-mindful-brown">Fim</Text>
-          <TextInput
-            accessibilityLabel="Data de fim"
-            className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
-            placeholder="AAAA-MM-DD"
-            placeholderTextColor={colors.mindfulBrown60}
+          <DatePickerField
+            accessibilityLabel={t('visit.end')}
+            label={t('visit.end')}
+            minimumDate={parseLocalDateInput(startDate) ?? undefined}
             value={endDate}
-            onChangeText={setEndDate}
+            onChange={setEndDate}
           />
         </View>
       ) : null}
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Escolher foto da galeria"
+        accessibilityLabel={photoPreview ? t('visit.changePhoto') : t('visit.addPhoto')}
         className="mt-4 items-center rounded-xl border border-serenity-green py-3"
         onPress={() => void handlePickPhoto()}
       >
         <Text className="font-sans-semibold text-serenity-green">
-          {photoPreview ? 'Trocar foto' : 'Adicionar foto'}
+          {photoPreview ? t('visit.changePhoto') : t('visit.addPhoto')}
         </Text>
       </Pressable>
 
@@ -236,14 +250,12 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
       ) : null}
 
       {registerVisit.isError ? (
-        <Text className="mt-2 font-sans text-sm text-red-600">
-          Não foi possível registrar a visita. Tente novamente.
-        </Text>
+        <Text className="mt-2 font-sans text-sm text-red-600">{t('visit.registerError')}</Text>
       ) : null}
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Registrar visita"
+        accessibilityLabel={t('visit.register')}
         className={`mt-4 items-center rounded-xl py-3 ${canSubmit ? 'bg-serenity-green' : 'bg-mindful-brown/30'}`}
         disabled={!canSubmit}
         onPress={handleSubmit}
@@ -251,7 +263,7 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
         {registerVisit.isPending ? (
           <ActivityIndicator color={colors.textLight} />
         ) : (
-          <Text className="font-sans-semibold text-light">Registrar</Text>
+          <Text className="font-sans-semibold text-light">{t('visit.register')}</Text>
         )}
       </Pressable>
     </BottomSheet>

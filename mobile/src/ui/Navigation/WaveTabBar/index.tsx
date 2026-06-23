@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
 
 import { colors } from '@/presentation/styles/tokens';
+import { useTranslation } from '@/presentation/hooks/use-translation';
 
 import {
   ACTIVE_TAB_CIRCLE_SIZE,
@@ -32,6 +33,7 @@ function formatBadgeLabel(badge: string | number): string {
 
 export function WaveTabBar({ state, navigation, descriptors }: WaveTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   function renderTab(routeIndex: number) {
     const route = state.routes[routeIndex];
@@ -40,13 +42,14 @@ export function WaveTabBar({ state, navigation, descriptors }: WaveTabBarProps) 
 
     const isFocused = state.index === routeIndex;
     const iconName = (isFocused ? tab.activeIcon : tab.icon) as TabIconName;
+    const label = t(tab.labelKey);
     const badge = descriptors[route.key]?.options?.tabBarBadge;
     const showBadge = typeof badge === 'number' ? badge > 0 : Boolean(badge);
 
     return (
       <Pressable
         key={route.key}
-        accessibilityLabel={tab.label}
+        accessibilityLabel={label}
         accessibilityRole="button"
         accessibilityState={isFocused ? { selected: true } : {}}
         className="min-h-[44px] min-w-[44px] flex-1 items-center justify-center"
@@ -90,7 +93,7 @@ export function WaveTabBar({ state, navigation, descriptors }: WaveTabBarProps) 
                 </View>
               ) : null}
             </View>
-            <Text className="mt-0.5 font-sans text-[10px] text-mindful-brown/70">{tab.label}</Text>
+            <Text className="mt-0.5 font-sans text-[10px] text-mindful-brown/70">{label}</Text>
           </View>
         )}
       </Pressable>

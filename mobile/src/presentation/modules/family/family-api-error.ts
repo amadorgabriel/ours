@@ -1,62 +1,47 @@
 import { HttpClientError } from '@/core/infra/http/http-error';
+import { t } from '@/core/infra/i18n';
 
 type FamilyErrorContext = 'create' | 'join' | 'invite';
 
-const messages = {
-  createFailed: 'Não foi possível criar a família. Tente novamente.',
-  joinFailed: 'Não foi possível entrar na família. Tente novamente.',
-  inviteFailed: 'Não foi possível gerar o convite. Tente novamente.',
-  invalidName: 'Nome inválido. Verifique e tente novamente.',
-  inviteExpired: 'Código expirado ou inválido.',
-  codeNotFound: 'Código não encontrado.',
-  alreadyMember: 'Você já faz parte desta família.',
-  notAdmin: 'Apenas administradores podem convidar.',
-  missingFamilyId: 'Selecione uma família ativa antes de convidar.',
-  generic: 'Algo deu errado. Tente novamente.',
-  removeMemberFailed: 'Não foi possível remover o membro. Tente novamente.',
-  lastAdmin: 'Não é possível remover o último administrador da família.',
-  memberNotFound: 'Membro não encontrado nesta família.',
-} as const;
-
 export function getFamilyErrorMessage(error: unknown, context: FamilyErrorContext): string {
   if (!(error instanceof HttpClientError)) {
-    if (context === 'create') return messages.createFailed;
-    if (context === 'join') return messages.joinFailed;
-    return messages.inviteFailed;
+    if (context === 'create') return t('errors.family.createFailed');
+    if (context === 'join') return t('errors.family.joinFailed');
+    return t('errors.family.inviteFailed');
   }
 
   switch (error.statusCode) {
     case 400:
-      if (context === 'create') return messages.invalidName;
-      if (context === 'join') return messages.inviteExpired;
-      if (context === 'invite') return messages.missingFamilyId;
-      return messages.generic;
+      if (context === 'create') return t('errors.family.invalidName');
+      if (context === 'join') return t('errors.family.inviteExpired');
+      if (context === 'invite') return t('errors.family.missingFamilyId');
+      return t('errors.family.generic');
     case 403:
-      return messages.notAdmin;
+      return t('errors.family.notAdmin');
     case 404:
-      return messages.codeNotFound;
+      return t('errors.family.codeNotFound');
     case 409:
-      return messages.alreadyMember;
+      return t('errors.family.alreadyMember');
     default:
-      if (context === 'create') return messages.createFailed;
-      if (context === 'join') return messages.joinFailed;
-      return messages.inviteFailed;
+      if (context === 'create') return t('errors.family.createFailed');
+      if (context === 'join') return t('errors.family.joinFailed');
+      return t('errors.family.inviteFailed');
   }
 }
 
 export function getRemoveMemberErrorMessage(error: unknown): string {
   if (!(error instanceof HttpClientError)) {
-    return messages.removeMemberFailed;
+    return t('errors.family.removeMemberFailed');
   }
 
   switch (error.statusCode) {
     case 403:
-      return messages.notAdmin;
+      return t('errors.family.notAdmin');
     case 404:
-      return messages.memberNotFound;
+      return t('errors.family.memberNotFound');
     case 409:
-      return messages.lastAdmin;
+      return t('errors.family.lastAdmin');
     default:
-      return messages.removeMemberFailed;
+      return t('errors.family.removeMemberFailed');
   }
 }

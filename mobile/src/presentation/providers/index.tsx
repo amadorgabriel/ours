@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import { AlertProvider } from './alert';
 import { AssistidoProvider } from './assistido';
 import { AuthProvider } from './auth';
 import { SessionBootstrap } from './auth/session-bootstrap';
@@ -14,7 +15,9 @@ export function RootProvider({ children }: { children: ReactNode }) {
         <FamilyProvider>
           <SessionBootstrap>
             <NotificationProvider>
-              <AssistidoProvider>{children}</AssistidoProvider>
+              <AssistidoProvider>
+                <AlertProvider>{children}</AlertProvider>
+              </AssistidoProvider>
             </NotificationProvider>
           </SessionBootstrap>
         </FamilyProvider>

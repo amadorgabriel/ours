@@ -61,7 +61,7 @@ export function FamilyAdminSheet({
   }
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Administrar família">
+    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Administrar família" scrollable>
       <Text className="font-sans-semibold text-xl text-mindful-brown">Família</Text>
 
       {deleteStep === 0 ? (

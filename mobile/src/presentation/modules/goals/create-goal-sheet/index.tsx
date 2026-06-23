@@ -57,7 +57,7 @@ export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
     parsedAmount >= MIN_TARGET_AMOUNT;
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Nova meta">
+    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Nova meta" scrollable>
       <Text className="font-sans-semibold text-xl text-mindful-brown">Nova meta</Text>
       <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
         Defina um objetivo financeiro para o cuidado da família.

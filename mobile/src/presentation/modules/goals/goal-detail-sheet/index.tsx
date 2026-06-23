@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -18,6 +17,8 @@ import {
   useGoals,
   useUpdateGoalContribution,
 } from '@/core/services/usecases/goal/index.hooks';
+import { useTranslation } from '@/presentation/hooks/use-translation';
+import { useAppAlert } from '@/presentation/providers/alert';
 import { useAuth } from '@/presentation/providers/auth';
 import { colors } from '@/presentation/styles/tokens';
 import { GoalCard } from '@/ui/DataDisplay/GoalCard';
@@ -96,10 +97,13 @@ function ContributionRow({
 }
 
 function ContributionsEmptyState() {
-  return <EmptyState title="Nenhuma contribuição ainda." variant="inline" />;
+  const { t } = useTranslation();
+  return <EmptyState title={t('goals.noContributions')} variant="inline" />;
 }
 
 export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps) {
+  const { t } = useTranslation();
+  const { alert } = useAppAlert();
   const { session } = useAuth();
   const [contributeVisible, setContributeVisible] = useState(false);
   const [editingContribution, setEditingContribution] = useState<GoalContribution | null>(null);
@@ -139,7 +143,7 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
 
     const amount = Number.parseFloat(editAmount.replace(',', '.'));
     if (!Number.isFinite(amount) || amount < 1) {
-      Alert.alert('Valor inválido', 'Informe um valor válido (mínimo R$ 1,00).');
+      alert(t('alerts.invalidAmount.title'), t('alerts.invalidAmount.message'));
       return;
     }
 
@@ -153,22 +157,22 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
           setEditingContribution(null);
         },
         onError: (error) => {
-          Alert.alert('Erro ao salvar', getContributionErrorMessage(error));
+          alert(t('alerts.deleteContribution.errorSave'), getContributionErrorMessage(error));
         },
       }
     );
   }
 
   function handleDelete(contribution: GoalContribution) {
-    Alert.alert('Excluir contribuição', 'Esta ação não pode ser desfeita.', [
-      { text: 'Cancelar', style: 'cancel' },
+    alert(t('alerts.deleteContribution.title'), t('alerts.deleteContribution.message'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Excluir',
+        text: t('alerts.deleteContribution.confirm'),
         style: 'destructive',
         onPress: () =>
           deleteContribution.mutate(contribution.id, {
             onError: (error) => {
-              Alert.alert('Erro ao excluir', getContributionErrorMessage(error));
+              alert(t('alerts.deleteContribution.errorDelete'), getContributionErrorMessage(error));
             },
           }),
       },

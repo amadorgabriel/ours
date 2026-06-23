@@ -7,7 +7,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGES = ROOT / "assets" / "images"
-SOURCE = IMAGES / "logo-glow.png"
+SOURCE = IMAGES / "logo-master.png"
 CANVAS = 1024
 BG_COLOR = (252, 248, 244, 255)  # #FCF8F4
 SAFE_RATIO = 0.58  # logo fits inside ~58% of canvas (Android adaptive safe zone)

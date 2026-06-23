@@ -7,12 +7,16 @@ import {
   useActivityFeed,
   useMarkActivitySeen,
 } from '@/core/services/usecases/activity/index.hooks';
+import { useListBottomPadding } from '@/presentation/modules/app-shell/list-bottom-padding';
+import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
 import { ActivityCard } from '@/ui/DataDisplay/ActivityCard';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
 import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
 
 export function FeedScreen() {
+  const { t } = useTranslation();
+  const listBottomPadding = useListBottomPadding();
   const { data, isLoading, isError, isRefetching, refetch } = useActivityFeed();
   const markSeen = useMarkActivitySeen();
   const markedIdsRef = useRef(new Set<string>());
@@ -58,7 +62,7 @@ export function FeedScreen() {
     return (
       <View className="flex-1 bg-cream">
         <QueryErrorState
-          message="Não foi possível carregar as atividades."
+          message={t('feed.loadError')}
           onRetry={() => {
             void refetch();
           }}
@@ -70,18 +74,24 @@ export function FeedScreen() {
   return (
     <View className="flex-1 bg-cream">
       <FlatList
-        contentContainerStyle={items.length === 0 ? { flexGrow: 1 } : { padding: 16, paddingBottom: 24 }}
+        contentContainerStyle={
+          items.length === 0
+            ? { flexGrow: 1 }
+            : { padding: 16, paddingBottom: listBottomPadding }
+        }
         data={items}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={
           <EmptyState
-            title="Nenhuma atividade ainda"
-            description="Toque no botão + para registrar sua primeira atividade."
+            title={t('feed.emptyTitle')}
+            description={t('feed.emptyDescription')}
           />
         }
         ListHeaderComponent={
           items.length > 0 ? (
-            <Text className="mb-4 font-sans-semibold text-xl text-mindful-brown">Atividades</Text>
+            <Text className="mb-4 font-sans-semibold text-xl text-mindful-brown">
+              {t('feed.title')}
+            </Text>
           ) : null
         }
         refreshControl={
@@ -100,7 +110,7 @@ export function FeedScreen() {
       {isError ? (
         <View className="px-4 pb-4">
           <QueryErrorState
-            message="Não foi possível atualizar as atividades."
+            message={t('feed.refreshError')}
             variant="inline"
             onRetry={() => {
               void refetch();

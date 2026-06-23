@@ -54,7 +54,7 @@ export function ContributeSheet({ visible, goalId, onClose }: ContributeSheetPro
   const isValid = !Number.isNaN(parsedAmount) && parsedAmount >= MIN_AMOUNT;
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Contribuir para meta">
+    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Contribuir para meta" scrollable>
       <Text className="font-sans-semibold text-xl text-mindful-brown">Contribuir</Text>
       <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
         Registre quanto você está contribuindo para esta meta.

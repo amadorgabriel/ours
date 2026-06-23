@@ -4,25 +4,25 @@ export const ACTIVE_TAB_CIRCLE_SIZE = 40;
 export const tabItems = [
   {
     name: 'index',
-    label: 'Ligações',
-    icon: 'call-outline',
-    activeIcon: 'call',
+    labelKey: 'tabs.activities',
+    icon: 'pulse-outline',
+    activeIcon: 'pulse',
   },
   {
     name: 'calendar',
-    label: 'Calendário',
+    labelKey: 'tabs.calendar',
     icon: 'calendar-outline',
     activeIcon: 'calendar',
   },
   {
     name: 'goals',
-    label: 'Metas',
+    labelKey: 'tabs.goals',
     icon: 'flag-outline',
     activeIcon: 'flag',
   },
   {
     name: 'profile',
-    label: 'Perfil',
+    labelKey: 'tabs.profile',
     icon: 'person-outline',
     activeIcon: 'person',
   },

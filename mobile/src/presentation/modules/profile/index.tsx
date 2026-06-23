@@ -2,7 +2,6 @@ import { useRouter, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   RefreshControl,
@@ -29,6 +28,8 @@ import { CreateParentSheet } from '@/presentation/modules/parents/create-parent-
 import { EditParentSheet } from '@/presentation/modules/parents/edit-parent-sheet';
 import { ParentDetailSheet } from '@/presentation/modules/parents/parent-detail-sheet';
 import { mobileRoutes, resolvePostLoginRoute } from '@/presentation/modules/auth/auth-redirect';
+import { useTranslation } from '@/presentation/hooks/use-translation';
+import { useAppAlert } from '@/presentation/providers/alert';
 import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
 import { colors } from '@/presentation/styles/tokens';
@@ -90,6 +91,8 @@ function ParentListItem({
 export function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
+  const { alert } = useAppAlert();
   const { session } = useAuth();
   const { familyId } = useFamily();
   const logoutMutation = useLogout();
@@ -126,48 +129,55 @@ export function ProfileScreen() {
   }
 
   function handleRemoveMember(memberUserId: string, memberName: string) {
-    Alert.alert('Remover membro', `Remover ${memberName} da família?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Continuar',
-        style: 'destructive',
-        onPress: () => {
-          Alert.alert(
-            'Confirmar remoção',
-            `${memberName} perderá acesso imediato à família. Esta ação não pode ser desfeita.`,
-            [
-              { text: 'Cancelar', style: 'cancel' },
-              {
-                text: 'Remover',
-                style: 'destructive',
-                onPress: () => {
-                  const removedSelf = memberUserId === session?.user.id;
-                  removeMember.mutate(memberUserId, {
-                    onSuccess: (updatedSession) => {
-                      if (removedSelf && updatedSession) {
-                        router.replace(
-                          resolvePostLoginRoute(updatedSession.familyCount) as Href
+    alert(
+      t('alerts.removeMember.title'),
+      t('alerts.removeMember.message', { name: memberName }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.continue'),
+          style: 'destructive',
+          onPress: () => {
+            alert(
+              t('alerts.removeMember.confirmTitle'),
+              t('alerts.removeMember.confirmMessage', { name: memberName }),
+              [
+                { text: t('common.cancel'), style: 'cancel' },
+                {
+                  text: t('common.remove'),
+                  style: 'destructive',
+                  onPress: () => {
+                    const removedSelf = memberUserId === session?.user.id;
+                    removeMember.mutate(memberUserId, {
+                      onSuccess: (updatedSession) => {
+                        if (removedSelf && updatedSession) {
+                          router.replace(
+                            resolvePostLoginRoute(updatedSession.familyCount) as Href
+                          );
+                        }
+                      },
+                      onError: (error) => {
+                        alert(
+                          t('alerts.removeMember.errorTitle'),
+                          getRemoveMemberErrorMessage(error)
                         );
-                      }
-                    },
-                    onError: (error) => {
-                      Alert.alert('Erro ao remover', getRemoveMemberErrorMessage(error));
-                    },
-                  });
+                      },
+                    });
+                  },
                 },
-              },
-            ]
-          );
+              ]
+            );
+          },
         },
-      },
-    ]);
+      ]
+    );
   }
 
   function handleLogout() {
-    Alert.alert('Sair da conta', 'Tem certeza que deseja sair?', [
-      { text: 'Cancelar', style: 'cancel' },
+    alert(t('alerts.logout.title'), t('alerts.logout.message'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Sair',
+        text: t('alerts.logout.confirm'),
         style: 'destructive',
         onPress: () => {
           void (async () => {
@@ -195,7 +205,7 @@ export function ProfileScreen() {
           />
         }
       >
-        <Text className="font-sans-semibold text-2xl text-mindful-brown">Perfil</Text>
+        <Text className="font-sans-semibold text-2xl text-mindful-brown">{t('profile.title')}</Text>
 
         <View className="mt-8 rounded-2xl bg-white p-5">
           <View className="flex-row items-center">
@@ -212,7 +222,7 @@ export function ProfileScreen() {
             )}
             <View className="ml-4 flex-1">
               <Text className="font-sans-semibold text-lg text-mindful-brown">
-                {session?.user.name ?? 'Usuário'}
+                {session?.user.name ?? t('profile.userFallback')}
               </Text>
               <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
                 {session?.user.email ?? '—'}
@@ -222,7 +232,7 @@ export function ProfileScreen() {
         </View>
 
         <View className="mt-4 rounded-2xl bg-white p-5">
-          <Text className="font-sans text-sm text-mindful-brown/70">Família ativa</Text>
+          <Text className="font-sans text-sm text-mindful-brown/70">{t('profile.activeFamily')}</Text>
           <Text className="mt-1 font-sans-semibold text-lg text-mindful-brown">
             {activeFamily?.name ?? '—'}
           </Text>
@@ -236,7 +246,7 @@ export function ProfileScreen() {
               className="mt-4 items-center rounded-xl border border-serenity-green py-3"
               onPress={() => setFamilyAdminVisible(true)}
             >
-              <Text className="font-sans-semibold text-serenity-green">Editar família</Text>
+              <Text className="font-sans-semibold text-serenity-green">{t('profile.editFamily')}</Text>
             </Pressable>
           ) : null}
           <Pressable
@@ -245,15 +255,15 @@ export function ProfileScreen() {
             className="mt-3 items-center rounded-xl border border-mindful-brown/20 py-3"
             onPress={() => setCreateFamilyVisible(true)}
           >
-            <Text className="font-sans-semibold text-mindful-brown">Nova família</Text>
+            <Text className="font-sans-semibold text-mindful-brown">{t('profile.newFamily')}</Text>
           </Pressable>
         </View>
 
         {isAdmin ? (
           <View className="mt-4 rounded-2xl bg-white p-5">
-            <Text className="font-sans-semibold text-lg text-mindful-brown">Membros</Text>
+            <Text className="font-sans-semibold text-lg text-mindful-brown">{t('profile.members')}</Text>
             <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
-              Pessoas com acesso a esta família.
+              {t('profile.membersDescription')}
             </Text>
             {membersLoading ? (
               <View className="mt-4 items-center py-4">
@@ -263,7 +273,7 @@ export function ProfileScreen() {
             {membersError ? (
               <View className="mt-4">
                 <QueryErrorState
-                  message="Não foi possível carregar os membros."
+                  message={t('profile.membersLoadError')}
                   variant="inline"
                   onRetry={() => {
                     void refetchMembers();
@@ -304,7 +314,7 @@ export function ProfileScreen() {
                   disabled={removeMember.isPending}
                   onPress={() => handleRemoveMember(member.userId, member.name)}
                 >
-                  <Text className="font-sans-semibold text-sm text-red-600">Remover</Text>
+                  <Text className="font-sans-semibold text-sm text-red-600">{t('profile.remove')}</Text>
                 </Pressable>
               </View>
             ))
@@ -313,9 +323,9 @@ export function ProfileScreen() {
         ) : null}
 
         <View className="mt-4 rounded-2xl bg-white p-5">
-          <Text className="font-sans-semibold text-lg text-mindful-brown">Assistidos</Text>
+          <Text className="font-sans-semibold text-lg text-mindful-brown">{t('profile.assistidos')}</Text>
           <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
-            Pais ou pessoas que a família cuida.
+            {t('profile.assistidosDescription')}
           </Text>
 
           {parentsLoading ? (
@@ -327,7 +337,7 @@ export function ProfileScreen() {
           {parentsError ? (
             <View className="mt-4">
               <QueryErrorState
-                message="Não foi possível carregar os assistidos."
+                message={t('profile.assistidosLoadError')}
                 variant="inline"
                 onRetry={() => {
                   void refetchParents();
@@ -339,13 +349,11 @@ export function ProfileScreen() {
           {!parentsLoading && !parentsError && parents.length === 0 ? (
             <View className="mt-4">
               <EmptyState
-                title="Nenhum assistido cadastrado"
+                title={t('profile.assistidosEmptyTitle')}
                 description={
-                  isAdmin
-                    ? 'Cadastre Pai, Mãe ou outro assistido para a família.'
-                    : 'Peça ao administrador para cadastrar os assistidos.'
+                  isAdmin ? t('profile.assistidosEmptyAdmin') : t('profile.assistidosEmptyMember')
                 }
-                actionLabel={isAdmin ? 'Novo assistido' : undefined}
+                actionLabel={isAdmin ? t('profile.newAssistido') : undefined}
                 onAction={isAdmin ? () => setCreateParentVisible(true) : undefined}
                 variant="inline"
               />
@@ -371,7 +379,7 @@ export function ProfileScreen() {
               className="mt-4 items-center rounded-xl border border-serenity-green py-3"
               onPress={() => setCreateParentVisible(true)}
             >
-              <Text className="font-sans-semibold text-serenity-green">Novo assistido</Text>
+              <Text className="font-sans-semibold text-serenity-green">{t('profile.newAssistido')}</Text>
             </Pressable>
           ) : null}
         </View>
@@ -385,7 +393,7 @@ export function ProfileScreen() {
             className="mt-4 items-center rounded-xl bg-serenity-green py-3"
             onPress={() => setInviteVisible(true)}
           >
-            <Text className="font-sans-semibold text-light">Convidar familiar</Text>
+            <Text className="font-sans-semibold text-light">{t('profile.invite')}</Text>
           </Pressable>
         )}
 
@@ -398,7 +406,7 @@ export function ProfileScreen() {
             onPress={handleLogout}
           >
             <Text className="font-sans-semibold text-mindful-brown">
-              {logoutMutation.isPending ? 'Saindo…' : 'Sair'}
+              {logoutMutation.isPending ? t('profile.loggingOut') : t('profile.logout')}
             </Text>
           </Pressable>
         </View>

@@ -7,11 +7,11 @@ import {
 describe('WaveTabBar tab-config', () => {
   it('defines four tabs matching mobile.md §2', () => {
     expect(tabItems).toHaveLength(4);
-    expect(tabItems.map((tab) => tab.label)).toEqual([
-      'Ligações',
-      'Calendário',
-      'Metas',
-      'Perfil',
+    expect(tabItems.map((tab) => tab.labelKey)).toEqual([
+      'tabs.activities',
+      'tabs.calendar',
+      'tabs.goals',
+      'tabs.profile',
     ]);
   });
 
