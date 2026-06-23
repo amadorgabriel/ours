@@ -207,7 +207,8 @@ public sealed class FamilyService(IFamilyRepository families, IInviteCodeGenerat
                 m.User.Name,
                 m.User.Email,
                 m.Role == FamilyRole.Admin ? "Admin" : "Member",
-                m.JoinedAt)).ToList());
+                m.JoinedAt,
+                m.User.Picture)).ToList());
     }
 
     public async Task RemoveMemberAsync(

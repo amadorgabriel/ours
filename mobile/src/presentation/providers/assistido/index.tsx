@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import type { ParentId } from '@/core/domain/parent';
 import {
@@ -16,6 +17,7 @@ import {
   setStoredParentId,
   clearStoredParentId,
 } from '@/core/infra/storage/assistido-storage';
+import { prefetchParentsForFamily } from '@/core/services/usecases/parent/prefetch-parents';
 import { useParents } from '@/core/services/usecases/parent/index.hooks';
 
 import { useFamily } from '../family';
@@ -25,10 +27,19 @@ const AssistidoContext = createContext<AssistidoContextValue | null>(null);
 
 export function AssistidoProvider({ children }: { children: ReactNode }) {
   const { familyId } = useFamily();
+  const queryClient = useQueryClient();
   const { data: parents = [], isLoading } = useParents(familyId);
   const [parentId, setParentIdState] = useState<ParentId | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const skipAutoSelectRef = useRef(false);
+
+  useEffect(() => {
+    if (!familyId) {
+      return;
+    }
+
+    void prefetchParentsForFamily(queryClient, familyId);
+  }, [familyId, queryClient]);
 
   useEffect(() => {
     let cancelled = false;

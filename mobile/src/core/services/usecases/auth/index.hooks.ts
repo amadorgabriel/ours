@@ -19,7 +19,7 @@ import { applyActiveFamilyFromSession } from './apply-active-family';
 import { AuthGetSessionUseCase } from './get-session.usecase';
 import { AuthLoginGoogleUseCase } from './login-google.usecase';
 import { AuthLogoutUseCase } from './logout.usecase';
-import { ListParentsUseCase } from '../parent/list-parents.usecase';
+import { prefetchParentsForFamily } from '../parent/prefetch-parents';
 
 export async function hydrateAuthTokenFromStorage(): Promise<string | null> {
   const token = await getStoredAuthToken();
@@ -51,15 +51,7 @@ export function useSession(enabled = true) {
         applyActiveFamilyFromSession(session, setFamilyId);
 
         if (session.familyCount === 1 && session.families[0]) {
-          const activeFamilyId = session.families[0].id;
-          await queryClient.prefetchQuery({
-            queryKey: queryKeys.parents.list(activeFamilyId),
-            queryFn: async () => {
-              const listUseCase = new ListParentsUseCase(httpClient);
-              const response = await listUseCase.listMine();
-              return response.items;
-            },
-          });
+          await prefetchParentsForFamily(queryClient, session.families[0].id);
         }
 
         return session;
@@ -97,6 +89,10 @@ export function useLoginWithGoogle() {
       setSession(session);
       applyActiveFamilyFromSession(session, setFamilyId);
       queryClient.setQueryData(queryKeys.auth.session(), session);
+
+      if (session.familyCount === 1 && session.families[0]) {
+        await prefetchParentsForFamily(queryClient, session.families[0].id);
+      }
     },
   });
 }

@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { Text, View, Image } from 'react-native';
 
 import type { ActivityFeedItem } from '@/core/domain/activity';
 
@@ -102,6 +102,14 @@ export function ActivityCard({ item }: ActivityCardProps) {
             ? `Dia inteiro — ${new Date(item.startAt).toLocaleDateString('pt-BR')}`
             : `${new Date(item.startAt).toLocaleString('pt-BR')}${item.endAt ? ` até ${new Date(item.endAt).toLocaleString('pt-BR')}` : ''}`}
         </Text>
+      ) : null}
+      {item.type === 'Visit' && item.photoUrl ? (
+        <Image
+          accessibilityLabel="Foto da visita"
+          className="mt-3 h-40 w-full rounded-xl"
+          resizeMode="cover"
+          source={{ uri: item.photoUrl }}
+        />
       ) : null}
       <SeenByAvatars seenBy={item.seenBy} />
     </View>

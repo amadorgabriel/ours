@@ -23,6 +23,7 @@ public sealed record FamilyMemberDto(
     string Name,
     string? Email,
     string Role,
-    DateTimeOffset JoinedAt);
+    DateTimeOffset JoinedAt,
+    string? Picture = null);
 
 public sealed record FamilyMemberListResponse(IReadOnlyList<FamilyMemberDto> Items);

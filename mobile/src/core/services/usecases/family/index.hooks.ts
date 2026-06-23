@@ -160,18 +160,26 @@ export function useFamilyMembers() {
 }
 
 export function useRemoveFamilyMember() {
-  const { familyId } = useFamily();
+  const { familyId, setFamilyId } = useFamily();
+  const { setSession } = useAuth();
   const queryClient = useQueryClient();
   const httpClient = HttpClientFactory.create();
   const useCase = new RemoveFamilyMemberUseCase(httpClient);
 
   return useMutation({
-    mutationFn: (memberUserId: string) => {
+    mutationFn: async (memberUserId: string) => {
       if (!familyId) {
         throw new Error('No active family selected.');
       }
 
-      return useCase.removeMember(familyId, memberUserId);
+      await useCase.removeMember(familyId, memberUserId);
+
+      const session = queryClient.getQueryData<AuthSessionModel>(queryKeys.auth.session());
+      if (session?.user.id !== memberUserId) {
+        return null;
+      }
+
+      return refreshAuthSession(httpClient, setSession, setFamilyId, queryClient);
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.families.members(familyId) });

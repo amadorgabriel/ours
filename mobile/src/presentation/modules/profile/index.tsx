@@ -120,20 +120,38 @@ export function ProfileScreen() {
   }
 
   function handleRemoveMember(memberUserId: string, memberName: string) {
-    Alert.alert(
-      'Remover membro',
-      `Remover ${memberName} da família?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: () => {
-            removeMember.mutate(memberUserId);
-          },
+    Alert.alert('Remover membro', `Remover ${memberName} da família?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Continuar',
+        style: 'destructive',
+        onPress: () => {
+          Alert.alert(
+            'Confirmar remoção',
+            `${memberName} perderá acesso imediato à família. Esta ação não pode ser desfeita.`,
+            [
+              { text: 'Cancelar', style: 'cancel' },
+              {
+                text: 'Remover',
+                style: 'destructive',
+                onPress: () => {
+                  const removedSelf = memberUserId === session?.user.id;
+                  removeMember.mutate(memberUserId, {
+                    onSuccess: (updatedSession) => {
+                      if (removedSelf && updatedSession) {
+                        router.replace(
+                          resolvePostLoginRoute(updatedSession.familyCount) as Href
+                        );
+                      }
+                    },
+                  });
+                },
+              },
+            ]
+          );
         },
-      ]
-    );
+      },
+    ]);
   }
 
   function handleLogout() {
@@ -232,6 +250,19 @@ export function ProfileScreen() {
                 key={member.userId}
                 className="mt-3 flex-row items-center justify-between border-b border-mindful-brown/10 pb-3"
               >
+                <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-mindful-brown/15">
+                  {member.picture ? (
+                    <Image
+                      accessibilityLabel={`Foto de ${member.name}`}
+                      className="h-10 w-10 rounded-full"
+                      source={{ uri: member.picture }}
+                    />
+                  ) : (
+                    <Text className="font-sans-semibold text-mindful-brown">
+                      {member.name.charAt(0).toUpperCase()}
+                    </Text>
+                  )}
+                </View>
                 <View className="flex-1 pr-3">
                   <Text className="font-sans-semibold text-mindful-brown">{member.name}</Text>
                   <Text className="font-sans text-sm text-mindful-brown/70">

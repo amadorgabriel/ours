@@ -7,9 +7,3 @@ export function getInviteBaseUrl(): string {
 export function buildInviteUrl(inviteCode: string): string {
   return `${getInviteBaseUrl()}/join/${inviteCode}`;
 }
-
-export function buildWhatsAppInviteUrl(inviteCode: string): string {
-  const inviteUrl = buildInviteUrl(inviteCode);
-  const message = `Olá! Estou te convidando para cuidar da nossa família no Ours.\nToque no link para entrar:\n${inviteUrl}`;
-  return `https://wa.me/?text=${encodeURIComponent(message)}`;
-}

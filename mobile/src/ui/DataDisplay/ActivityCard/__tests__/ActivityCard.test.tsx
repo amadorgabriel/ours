@@ -28,4 +28,28 @@ describe('ActivityCard', () => {
     expect(json).toContain('Pai');
     expect(json).toContain('Conversa tranquila');
   });
+
+  it('renders visit activity with photo', () => {
+    const item: ActivityFeedItem = {
+      id: 'act-2',
+      type: 'Visit',
+      createdAt: new Date().toISOString(),
+      userId: 'user-1',
+      userName: 'Ana',
+      parentName: 'Pai',
+      allDay: true,
+      startAt: new Date().toISOString(),
+      photoUrl: 'data:image/jpeg;base64,abc',
+    };
+
+    let tree!: renderer.ReactTestRenderer;
+
+    act(() => {
+      tree = renderer.create(<ActivityCard item={item} />);
+    });
+
+    const json = JSON.stringify(tree.toJSON());
+    expect(json).toContain('Visita');
+    expect(json).toContain('Foto da visita');
+  });
 });

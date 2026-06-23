@@ -349,7 +349,7 @@ public sealed class FamilyServiceTests
                     FamilyId = familyId,
                     Role = FamilyRole.Admin,
                     JoinedAt = DateTimeOffset.UtcNow,
-                    User = new User { Id = memberId, Name = "Admin", Email = "admin@test.com" },
+                    User = new User { Id = memberId, Name = "Admin", Email = "admin@test.com", Picture = "https://example.com/p.jpg" },
                 },
             ]);
 
@@ -358,6 +358,7 @@ public sealed class FamilyServiceTests
         Assert.Single(result.Items);
         Assert.Equal("Admin", result.Items[0].Name);
         Assert.Equal("Admin", result.Items[0].Role);
+        Assert.Equal("https://example.com/p.jpg", result.Items[0].Picture);
     }
 
     [Fact]

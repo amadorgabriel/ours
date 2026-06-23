@@ -53,6 +53,7 @@ export type FamilyMember = {
   email?: string;
   role: 'Admin' | 'Member';
   joinedAt: string;
+  picture?: string;
 };
 
 export type FamilyMemberListResponse = {

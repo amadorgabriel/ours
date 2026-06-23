@@ -58,7 +58,7 @@ Spec: [`.specs/changes/008-mobile-app-shell/`](../.specs/changes/008-mobile-app-
 | Área | Rotas / módulos |
 |------|-----------------|
 | Feed cronológico de atividades | `/(app)/(tabs)/index` · `presentation/modules/feed` |
-| Registrar ligação ("Liguei agora") | `CallNowSheet` · botão central WaveTabBar |
+| Registrar ligação ("Liguei agora") | `CallNowSheet` · FAB `RegisterActivityFab` (Change 025) |
 | API activities | `GET /activities/feed` · `POST /activities/call` (server) |
 
 Spec: [`.specs/changes/009-mobile-feed/`](../.specs/changes/009-mobile-feed/)
@@ -124,6 +124,19 @@ Spec: [`.specs/changes/014-mobile-parent-detail/`](../.specs/changes/014-mobile-
 
 Spec: [`.specs/changes/015-mobile-polish/`](../.specs/changes/015-mobile-polish/)
 
+## Implementado (Change 025 — Refinement 2.0)
+
+| Área | Rotas / módulos |
+|------|-----------------|
+| Assistido: prefetch, auto-select, filtro feed/calendário | `AssistidoProvider` · `AssistidoSheet` ("Todos os assistidos") |
+| Shell: 4 tabs + swipe + FAB | `TabPagerLayout` · `WaveTabBar` · `RegisterActivityFab` |
+| Feed: badge não lidas, ticks "visto", visita com foto | `ActivityCard` · `VisitSheet` · `POST /activities/visit` |
+| Perfil: membros (foto/remover), nova família, foto assistido | `CreateFamilySheet` · `EditParentSheet` (foto) |
+| Auth: `GoogleSignin.signOut` · confirmação logout | `useLogout` · Perfil |
+| UX: teclado nos drawers · loading calendário localizado | `BottomSheet` · `CalendarGrid` |
+
+Spec: [`.specs/changes/025-refinement-2.0/`](../.specs/changes/025-refinement-2.0/)
+
 ## Desenvolvimento
 
 Este projeto usa **development builds** via **EAS** (não Expo Go).
@@ -177,7 +190,7 @@ cd mobile
 npm run start                # Metro com --dev-client
 ```
 
-Abra o app **Project Ours** (dev client) no celular — conecta ao Metro na sua rede.
+Abra o app **Ours** (dev client) no celular — conecta ao Metro na sua rede.
 
 **Android emulador:** use `10.0.2.2` em vez de `localhost` na `EXPO_PUBLIC_API_URL`.
 
