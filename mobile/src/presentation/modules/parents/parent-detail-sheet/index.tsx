@@ -130,13 +130,15 @@ export function ParentDetailSheet({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl
-              refreshing={isRefetching}
-              tintColor={colors.serenityGreen60}
-              onRefresh={() => {
-                void refetch();
-              }}
-            />
+            isEditing ? undefined : (
+              <RefreshControl
+                refreshing={isRefetching}
+                tintColor={colors.serenityGreen60}
+                onRefresh={() => {
+                  void refetch();
+                }}
+              />
+            )
           }
         >
           <View className="flex-row items-start justify-between">

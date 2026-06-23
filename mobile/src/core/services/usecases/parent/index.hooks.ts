@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CreateParentRequest, ParentId, UpdateParentPhotoRequest, UpdateParentRequest } from '@/core/domain/parent';
+import type {
+  CreateParentRequest,
+  ParentId,
+  ParentSummary,
+  UpdateParentPhotoRequest,
+  UpdateParentRequest,
+} from '@/core/domain/parent';
 import { HttpClientFactory } from '@/core/infra/http/http-client-factory';
 import { queryKeys } from '@/core/infra/query/query-keys';
 import { useFamily } from '@/presentation/providers/family';
@@ -60,7 +66,18 @@ export function useUpdateParent(parentId: ParentId) {
 
   return useMutation({
     mutationFn: (data: UpdateParentRequest) => useCase.updateParent(parentId, data),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      queryClient.setQueryData(
+        queryKeys.parents.detail(familyId, parentId),
+        updated
+      );
+
+      queryClient.setQueryData<ParentSummary[]>(
+        queryKeys.parents.list(familyId),
+        (items) =>
+          items?.map((item) => (item.id === parentId ? { ...item, ...updated } : item))
+      );
+
       void queryClient.invalidateQueries({ queryKey: queryKeys.parents.all });
     },
     meta: { familyId, parentId },

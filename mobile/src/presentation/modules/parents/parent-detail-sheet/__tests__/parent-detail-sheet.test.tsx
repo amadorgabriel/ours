@@ -146,6 +146,49 @@ describe('ParentDetailSheet', () => {
     expect(getAllText(tree)).toContain('Cancelar');
   });
 
+  it('restores original values when canceling edit (MS-190)', () => {
+    const tree = renderSheet({
+      isAdmin: true,
+      parent: {
+        id: 'p1',
+        name: 'Maria',
+        relationship: 'Mãe',
+        medicalInfo: 'Hipertensão',
+        emergencyBriefing: 'Ligar filho',
+      },
+    });
+
+    const editButton = tree.root.find(
+      (node) => node.props.accessibilityLabel === 'Editar ficha'
+    );
+
+    act(() => {
+      editButton.props.onPress();
+    });
+
+    const [medicalInput, briefingInput] = tree.root.findAllByType(TextInput);
+
+    act(() => {
+      medicalInput.props.onChangeText('Diabetes');
+      briefingInput.props.onChangeText('Ligar sobrinho');
+    });
+
+    const cancelButton = tree.root.find(
+      (node) => node.props.accessibilityLabel === 'Cancelar edição'
+    );
+
+    act(() => {
+      cancelButton.props.onPress();
+    });
+
+    expect(tree.root.findAllByType(TextInput)).toHaveLength(0);
+    expect(getAllText(tree)).toContain('Hipertensão');
+    expect(getAllText(tree)).toContain('Ligar filho');
+    expect(getAllText(tree)).not.toContain('Diabetes');
+    expect(getAllText(tree)).not.toContain('Ligar sobrinho');
+    expect(getAllText(tree)).toContain('Editar');
+  });
+
   it('preserves edit mode when parent refetches (MS-190)', () => {
     const parent = {
       id: 'p1',
