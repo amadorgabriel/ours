@@ -31,7 +31,7 @@ public sealed class ActivityService(
                 $"Notes must be at most {ActivityRules.MaxNotesLength} characters.");
         }
 
-        var parentId = await ResolveParentIdAsync(request.ParentId, familyId, cancellationToken);
+        var parentId = await ResolveRequiredParentIdAsync(request.ParentId, familyId, cancellationToken);
         var now = DateTimeOffset.UtcNow;
         var metadata = string.IsNullOrWhiteSpace(request.Notes)
             ? null
@@ -60,7 +60,7 @@ public sealed class ActivityService(
     {
         await EnsureMembershipAsync(userId, familyId, cancellationToken);
 
-        var parentId = await ResolveParentIdAsync(request.ParentId, familyId, cancellationToken);
+        var parentId = await ResolveRequiredParentIdAsync(request.ParentId, familyId, cancellationToken);
         ValidateVisitDates(request);
 
         string? photoUrl = null;
@@ -151,6 +151,45 @@ public sealed class ActivityService(
         await activities.UpsertViewAsync(activityId, userId, DateTimeOffset.UtcNow, cancellationToken);
     }
 
+    public async Task<ActivityFeedItemDto> UpdateAsync(
+        Guid userId,
+        Guid familyId,
+        Guid activityId,
+        UpdateActivityRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureMembershipAsync(userId, familyId, cancellationToken);
+
+        var activity = await GetEditableActivityAsync(userId, familyId, activityId, cancellationToken);
+
+        switch (activity.Type)
+        {
+            case ActivityType.Call:
+                ApplyCallUpdate(activity, request);
+                break;
+            case ActivityType.Visit:
+                await ApplyVisitUpdateAsync(activity, request, cancellationToken);
+                break;
+            default:
+                throw new ActivityForbiddenException("This activity type cannot be edited here.");
+        }
+
+        await activities.UpdateAsync(activity, cancellationToken);
+        return MapToDto(activity);
+    }
+
+    public async Task DeleteAsync(
+        Guid userId,
+        Guid familyId,
+        Guid activityId,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureMembershipAsync(userId, familyId, cancellationToken);
+
+        var activity = await GetEditableActivityAsync(userId, familyId, activityId, cancellationToken);
+        await activities.DeleteAsync(activity, cancellationToken);
+    }
+
     public async Task<ActivityFeedItemDto> CreateContributionActivityAsync(
         Guid userId,
         Guid familyId,
@@ -158,6 +197,7 @@ public sealed class ActivityService(
         string goalTitle,
         Guid contributionId,
         decimal amount,
+        Guid? parentId = null,
         CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow;
@@ -170,6 +210,7 @@ public sealed class ActivityService(
             Id = Guid.NewGuid(),
             FamilyId = familyId,
             UserId = userId,
+            ParentId = parentId,
             Type = ActivityType.Contribution,
             Metadata = metadata,
             CreatedAt = now,
@@ -237,6 +278,12 @@ public sealed class ActivityService(
         }
     }
 
+    public Task<Guid> EnsureParentAsync(
+        string? parentId,
+        Guid familyId,
+        CancellationToken cancellationToken = default) =>
+        ResolveRequiredParentIdAsync(parentId, familyId, cancellationToken);
+
     private async Task EnsureMembershipAsync(
         Guid userId,
         Guid familyId,
@@ -247,6 +294,115 @@ public sealed class ActivityService(
         {
             throw new ActivityForbiddenException("You are not a member of this family.");
         }
+    }
+
+    private async Task<ActivityEntity> GetEditableActivityAsync(
+        Guid userId,
+        Guid familyId,
+        Guid activityId,
+        CancellationToken cancellationToken)
+    {
+        var activity = await activities.GetByIdAndFamilyIdAsync(activityId, familyId, cancellationToken);
+        if (activity is null)
+        {
+            throw new ActivityNotFoundException("Activity not found.");
+        }
+
+        if (activity.Type == ActivityType.Contribution)
+        {
+            throw new ActivityForbiddenException("Use goal endpoints to edit contributions.");
+        }
+
+        if (!ActivityRules.IsAuthor(activity.UserId, userId))
+        {
+            throw new ActivityForbiddenException("Only the author can edit this activity.");
+        }
+
+        if (!ActivityRules.IsWithinEditWindow(activity.CreatedAt, DateTimeOffset.UtcNow))
+        {
+            throw new ActivityForbiddenException("Activities can only be edited within 24 hours of creation.");
+        }
+
+        return activity;
+    }
+
+    private static void ApplyCallUpdate(ActivityEntity activity, UpdateActivityRequest request)
+    {
+        if (request.Notes is not null && !ActivityRules.IsValidNotes(request.Notes))
+        {
+            throw new ActivityValidationException(
+                $"Notes must be at most {ActivityRules.MaxNotesLength} characters.");
+        }
+
+        var notes = request.Notes?.Trim();
+        activity.Metadata = string.IsNullOrWhiteSpace(notes)
+            ? null
+            : JsonSerializer.Serialize(new CallActivityMetadata(notes), JsonOptions);
+    }
+
+    private async Task ApplyVisitUpdateAsync(
+        ActivityEntity activity,
+        UpdateActivityRequest request,
+        CancellationToken cancellationToken)
+    {
+        var existing = DeserializeVisitMetadata(activity.Metadata);
+        var allDay = request.AllDay ?? existing.AllDay;
+        var startAt = request.StartAt ?? existing.StartAt;
+        var endAt = allDay ? null : request.EndAt ?? existing.EndAt;
+
+        ValidateVisitDates(new RegisterVisitRequest(
+            activity.ParentId?.ToString(),
+            allDay,
+            startAt,
+            endAt,
+            null,
+            null));
+
+        string? photoUrl = existing.PhotoBase64;
+        string? mimeType = existing.MimeType;
+
+        if (request.RemovePhoto)
+        {
+            photoUrl = null;
+            mimeType = null;
+        }
+        else if (!string.IsNullOrWhiteSpace(request.PhotoBase64))
+        {
+            var resolvedMimeType = string.IsNullOrWhiteSpace(request.MimeType) ? "image/jpeg" : request.MimeType;
+            var bytes = DecodeBase64Image(request.PhotoBase64);
+            await using var stream = new MemoryStream(bytes);
+            photoUrl = await mediaStorage.StoreAsync(stream, resolvedMimeType, cancellationToken);
+            mimeType = resolvedMimeType;
+        }
+
+        activity.Metadata = JsonSerializer.Serialize(
+            new VisitActivityMetadata(allDay, startAt, endAt, photoUrl, mimeType),
+            JsonOptions);
+    }
+
+    private static VisitActivityMetadata DeserializeVisitMetadata(string? metadata)
+    {
+        if (string.IsNullOrWhiteSpace(metadata))
+        {
+            return new VisitActivityMetadata(true, DateTimeOffset.UtcNow, null, null, null);
+        }
+
+        return JsonSerializer.Deserialize<VisitActivityMetadata>(metadata, JsonOptions)
+            ?? new VisitActivityMetadata(true, DateTimeOffset.UtcNow, null, null, null);
+    }
+
+    private async Task<Guid> ResolveRequiredParentIdAsync(
+        string? parentId,
+        Guid familyId,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(parentId))
+        {
+            throw new ActivityValidationException("Assistido is required.");
+        }
+
+        var resolved = await ResolveParentIdAsync(parentId, familyId, cancellationToken);
+        return resolved!.Value;
     }
 
     private async Task<Guid?> ResolveParentIdAsync(

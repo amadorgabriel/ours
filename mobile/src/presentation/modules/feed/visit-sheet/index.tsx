@@ -1,6 +1,6 @@
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 
+import type { ParentId } from '@/core/domain/parent';
 import { useRegisterVisit } from '@/core/services/usecases/activity/index.hooks';
 import {
   formatLocalDateInput,
@@ -21,6 +22,10 @@ import { useAssistido } from '@/presentation/providers/assistido';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 import { DatePickerField } from '@/ui/Forms/DatePickerField';
+import {
+  AssistidoPickerField,
+  resolveInitialFormParentId,
+} from '@/ui/Forms/AssistidoPickerField';
 
 type VisitSheetProps = {
   visible: boolean;
@@ -70,14 +75,21 @@ async function pickCompressedPhoto(
 export function VisitSheet({ visible, onClose }: VisitSheetProps) {
   const { t } = useTranslation();
   const { alert } = useAppAlert();
-  const { parentId, activeParent } = useAssistido();
+  const { parentId, parents } = useAssistido();
   const registerVisit = useRegisterVisit();
+  const [formParentId, setFormParentId] = useState<ParentId | null>(null);
   const [allDay, setAllDay] = useState(true);
   const [startDate, setStartDate] = useState(toIsoDateInput(new Date()));
   const [endDate, setEndDate] = useState(toIsoDateInput(new Date()));
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [photoMimeType, setPhotoMimeType] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (visible) {
+      setFormParentId(resolveInitialFormParentId(parentId, parents));
+    }
+  }, [visible, parentId, parents]);
 
   function resetForm() {
     setAllDay(true);
@@ -113,11 +125,7 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
   }
 
   function handleSubmit() {
-    if (!parentId || !activeParent) {
-      alert(
-        t('alerts.visit.assistidoRequired.title'),
-        t('alerts.visit.assistidoRequired.message')
-      );
+    if (!formParentId) {
       return;
     }
 
@@ -159,7 +167,7 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
 
     registerVisit.mutate(
       {
-        parentId,
+        parentId: formParentId,
         allDay,
         startAt: startAt.toISOString(),
         endAt: endAt?.toISOString(),
@@ -174,8 +182,7 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
     );
   }
 
-  const assistidoLabel = activeParent?.name ?? t('visit.noAssistido');
-  const canSubmit = Boolean(activeParent) && !registerVisit.isPending;
+  const canSubmit = Boolean(formParentId) && !registerVisit.isPending;
 
   return (
     <BottomSheet
@@ -188,15 +195,13 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
       <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{t('visit.description')}</Text>
 
       <View className="mt-6">
-        <Text className="font-sans text-sm text-mindful-brown">{t('visit.assistido')}</Text>
-        <View className="mt-2 rounded-xl bg-white px-4 py-3">
-          <Text className="font-sans-semibold text-mindful-brown">{assistidoLabel}</Text>
-          {!activeParent ? (
-            <Text className="mt-1 font-sans text-xs text-mindful-brown/60">
-              {t('visit.selectAssistidoHint')}
-            </Text>
-          ) : null}
-        </View>
+        <AssistidoPickerField
+          label={t('visit.assistido')}
+          parents={parents}
+          requiredHint={t('assistidoPicker.requiredHint')}
+          value={formParentId}
+          onChange={setFormParentId}
+        />
       </View>
 
       <View className="mt-4 flex-row items-center justify-between rounded-xl bg-white px-4 py-3">

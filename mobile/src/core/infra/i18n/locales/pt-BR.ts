@@ -173,6 +173,28 @@ export const ptBR = {
     emptyTitle: 'Nenhuma atividade ainda',
     emptyDescription: 'Toque no botão + para registrar sua primeira atividade.',
   },
+  activityDetail: {
+    title: 'Detalhe da atividade',
+    editTitle: 'Editar atividade',
+    sheetAccessibility: 'Detalhe da atividade',
+    editAccessibility: 'Editar atividade',
+    deleteAccessibility: 'Excluir atividade',
+    saveAccessibility: 'Salvar alterações',
+    removePhotoAccessibility: 'Remover foto da visita',
+    removePhoto: 'Remover foto',
+    deleteTitle: 'Excluir atividade?',
+    deleteMessage: 'Esta ação não pode ser desfeita.',
+    saveError: 'Não foi possível salvar as alterações. Tente novamente.',
+  },
+  assistidoPicker: {
+    noneSelected: 'Selecione um assistido',
+    requiredHint: 'Escolha para quem é esta atividade antes de registrar.',
+    openAccessibility: 'Selecionar assistido',
+    sheetAccessibility: 'Escolher assistido',
+    sheetTitle: 'Assistido',
+    selectAccessibility: 'Selecionar {{name}}',
+    emptyDescription: 'Cadastre um assistido na família para continuar.',
+  },
   call: {
     title: 'Liguei agora',
     description: 'Registre que você ligou para o assistido agora.',
@@ -491,6 +513,8 @@ export const ptBR = {
     seen: 'Visto',
     seenBy: 'Visto por {{count}}',
     visitPhotoAccessibility: 'Foto da visita',
+    editableHint: 'Toque para editar ou excluir (até 24 h)',
+    openAccessibility: 'Abrir {{type}}',
   },
 } as const;
 

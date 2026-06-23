@@ -124,7 +124,37 @@ public sealed class ActivityServiceTests
     {
         var userId = Guid.NewGuid();
         var familyId = Guid.NewGuid();
+        var parentId = Guid.NewGuid();
         var notes = new string('a', ActivityRules.MaxNotesLength + 1);
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FamilyId = familyId,
+                Role = FamilyRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow,
+            });
+
+        _activities
+            .Setup(x => x.ParentBelongsToFamilyAsync(parentId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var act = () => _sut.RegisterCallAsync(
+            userId,
+            familyId,
+            new RegisterCallRequest(parentId.ToString(), notes));
+
+        await Assert.ThrowsAsync<ActivityValidationException>(act);
+    }
+
+    [Fact]
+    public async Task RegisterCall_WithoutParent_ThrowsValidation()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
 
         _families
             .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
@@ -140,9 +170,159 @@ public sealed class ActivityServiceTests
         var act = () => _sut.RegisterCallAsync(
             userId,
             familyId,
-            new RegisterCallRequest(null, notes));
+            new RegisterCallRequest(null, null));
 
         await Assert.ThrowsAsync<ActivityValidationException>(act);
+    }
+
+    [Fact]
+    public async Task UpdateCall_WithAuthorWithinWindow_UpdatesNotes()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var activityId = Guid.NewGuid();
+        var createdAt = DateTimeOffset.UtcNow.AddHours(-1);
+
+        SetupMembership(userId, familyId);
+
+        _activities
+            .Setup(x => x.GetByIdAndFamilyIdAsync(activityId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Activity
+            {
+                Id = activityId,
+                FamilyId = familyId,
+                UserId = userId,
+                Type = ActivityType.Call,
+                Metadata = """{"notes":"old"}""",
+                CreatedAt = createdAt,
+                User = new User { Id = userId, Name = "Ana" },
+            });
+
+        _activities
+            .Setup(x => x.UpdateAsync(It.IsAny<Activity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await _sut.UpdateAsync(
+            userId,
+            familyId,
+            activityId,
+            new UpdateActivityRequest("new note", null, null, null, null, null));
+
+        Assert.Equal("new note", result.Notes);
+    }
+
+    [Fact]
+    public async Task UpdateCall_WhenNotAuthor_ThrowsForbidden()
+    {
+        var userId = Guid.NewGuid();
+        var authorId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var activityId = Guid.NewGuid();
+
+        SetupMembership(userId, familyId);
+
+        _activities
+            .Setup(x => x.GetByIdAndFamilyIdAsync(activityId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Activity
+            {
+                Id = activityId,
+                FamilyId = familyId,
+                UserId = authorId,
+                Type = ActivityType.Call,
+                CreatedAt = DateTimeOffset.UtcNow,
+            });
+
+        var act = () => _sut.UpdateAsync(
+            userId,
+            familyId,
+            activityId,
+            new UpdateActivityRequest("note", null, null, null, null, null));
+
+        await Assert.ThrowsAsync<ActivityForbiddenException>(act);
+    }
+
+    [Fact]
+    public async Task UpdateCall_WhenOlderThan24h_ThrowsForbidden()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var activityId = Guid.NewGuid();
+
+        SetupMembership(userId, familyId);
+
+        _activities
+            .Setup(x => x.GetByIdAndFamilyIdAsync(activityId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Activity
+            {
+                Id = activityId,
+                FamilyId = familyId,
+                UserId = userId,
+                Type = ActivityType.Call,
+                CreatedAt = DateTimeOffset.UtcNow.AddHours(-25),
+            });
+
+        var act = () => _sut.UpdateAsync(
+            userId,
+            familyId,
+            activityId,
+            new UpdateActivityRequest("note", null, null, null, null, null));
+
+        await Assert.ThrowsAsync<ActivityForbiddenException>(act);
+    }
+
+    [Fact]
+    public async Task UpdateContribution_ThrowsForbidden()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var activityId = Guid.NewGuid();
+
+        SetupMembership(userId, familyId);
+
+        _activities
+            .Setup(x => x.GetByIdAndFamilyIdAsync(activityId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Activity
+            {
+                Id = activityId,
+                FamilyId = familyId,
+                UserId = userId,
+                Type = ActivityType.Contribution,
+                CreatedAt = DateTimeOffset.UtcNow,
+            });
+
+        var act = () => _sut.UpdateAsync(
+            userId,
+            familyId,
+            activityId,
+            new UpdateActivityRequest(null, null, null, null, null, null));
+
+        await Assert.ThrowsAsync<ActivityForbiddenException>(act);
+    }
+
+    [Fact]
+    public async Task DeleteCall_WithAuthorWithinWindow_DeletesActivity()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var activityId = Guid.NewGuid();
+        var activity = new Activity
+        {
+            Id = activityId,
+            FamilyId = familyId,
+            UserId = userId,
+            Type = ActivityType.Call,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+
+        SetupMembership(userId, familyId);
+
+        _activities
+            .Setup(x => x.GetByIdAndFamilyIdAsync(activityId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(activity);
+
+        await _sut.DeleteAsync(userId, familyId, activityId);
+
+        _activities.Verify(x => x.DeleteAsync(activity, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -152,16 +332,7 @@ public sealed class ActivityServiceTests
         var familyId = Guid.NewGuid();
         var activityId = Guid.NewGuid();
 
-        _families
-            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new FamilyMembership
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                FamilyId = familyId,
-                Role = FamilyRole.Member,
-                JoinedAt = DateTimeOffset.UtcNow,
-            });
+        SetupMembership(userId, familyId);
 
         _activities
             .Setup(x => x.ListByFamilyIdAsync(familyId, 50, null, null, null, It.IsAny<CancellationToken>()))
@@ -321,5 +492,19 @@ public sealed class ActivityServiceTests
         var act = () => _sut.GetFeedAsync(userId, familyId, null, from, to, null);
 
         await Assert.ThrowsAsync<ActivityValidationException>(act);
+    }
+
+    private void SetupMembership(Guid userId, Guid familyId)
+    {
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FamilyId = familyId,
+                Role = FamilyRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow,
+            });
     }
 }

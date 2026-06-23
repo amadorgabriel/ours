@@ -39,6 +39,7 @@ export type GoalContributionListResponse = {
 export type CreateGoalContributionRequest = {
   amount: number;
   isPrivate: boolean;
+  parentId?: string;
 };
 
 export type CreateGoalContributionResponse = GoalContribution;

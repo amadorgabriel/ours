@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -8,10 +8,16 @@ import {
   View,
 } from 'react-native';
 
+import type { ParentId } from '@/core/domain/parent';
 import { useCreateGoalContribution } from '@/core/services/usecases/goal/index.hooks';
 import { useTranslation } from '@/presentation/hooks/use-translation';
+import { useAssistido } from '@/presentation/providers/assistido';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import {
+  AssistidoPickerField,
+  resolveInitialFormParentId,
+} from '@/ui/Forms/AssistidoPickerField';
 
 import { getContributionErrorMessage } from '../goals-api-error';
 
@@ -25,9 +31,17 @@ const MIN_AMOUNT = 1;
 
 export function ContributeSheet({ visible, goalId, onClose }: ContributeSheetProps) {
   const { t } = useTranslation();
+  const { parentId, parents } = useAssistido();
   const createContribution = useCreateGoalContribution(goalId);
   const [amount, setAmount] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
+  const [formParentId, setFormParentId] = useState<ParentId | null>(null);
+
+  useEffect(() => {
+    if (visible) {
+      setFormParentId(resolveInitialFormParentId(parentId, parents));
+    }
+  }, [visible, parentId, parents]);
 
   function handleClose() {
     setAmount('');
@@ -37,12 +51,17 @@ export function ContributeSheet({ visible, goalId, onClose }: ContributeSheetPro
   }
 
   function handleSubmit() {
+    if (!formParentId) {
+      return;
+    }
+
     const parsedAmount = Number(amount.replace(',', '.'));
 
     createContribution.mutate(
       {
         amount: parsedAmount,
         isPrivate,
+        parentId: formParentId,
       },
       {
         onSuccess: () => {
@@ -53,7 +72,8 @@ export function ContributeSheet({ visible, goalId, onClose }: ContributeSheetPro
   }
 
   const parsedAmount = Number(amount.replace(',', '.'));
-  const isValid = !Number.isNaN(parsedAmount) && parsedAmount >= MIN_AMOUNT;
+  const isValidAmount = !Number.isNaN(parsedAmount) && parsedAmount >= MIN_AMOUNT;
+  const canSubmit = isValidAmount && Boolean(formParentId) && !createContribution.isPending;
 
   return (
     <BottomSheet
@@ -68,6 +88,15 @@ export function ContributeSheet({ visible, goalId, onClose }: ContributeSheetPro
       </Text>
 
       <View className="mt-6">
+        <AssistidoPickerField
+          parents={parents}
+          requiredHint={t('assistidoPicker.requiredHint')}
+          value={formParentId}
+          onChange={setFormParentId}
+        />
+      </View>
+
+      <View className="mt-4">
         <Text className="font-sans text-sm text-mindful-brown">{t('goals.amount')}</Text>
         <TextInput
           accessibilityLabel={t('goals.amountAccessibility')}
@@ -108,8 +137,8 @@ export function ContributeSheet({ visible, goalId, onClose }: ContributeSheetPro
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('goals.registerContributionAccessibility')}
-        className="mt-4 items-center rounded-xl bg-serenity-green py-3"
-        disabled={!isValid || createContribution.isPending}
+        className={`mt-4 items-center rounded-xl py-3 ${canSubmit ? 'bg-serenity-green' : 'bg-mindful-brown/30'}`}
+        disabled={!canSubmit}
         onPress={handleSubmit}
       >
         {createContribution.isPending ? (

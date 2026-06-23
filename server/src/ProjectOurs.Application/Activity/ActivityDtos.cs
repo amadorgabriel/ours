@@ -33,3 +33,12 @@ public sealed record ActivityFeedItemDto(
 public sealed record ActivityFeedResponse(
     IReadOnlyList<ActivityFeedItemDto> Items,
     int UnreadCount);
+
+public sealed record UpdateActivityRequest(
+    string? Notes,
+    bool? AllDay,
+    DateTimeOffset? StartAt,
+    DateTimeOffset? EndAt,
+    string? PhotoBase64,
+    string? MimeType,
+    bool RemovePhoto = false);

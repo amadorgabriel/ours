@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -7,11 +7,16 @@ import {
   View,
 } from 'react-native';
 
+import type { ParentId } from '@/core/domain/parent';
 import { useRegisterCall } from '@/core/services/usecases/activity/index.hooks';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { useAssistido } from '@/presentation/providers/assistido';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import {
+  AssistidoPickerField,
+  resolveInitialFormParentId,
+} from '@/ui/Forms/AssistidoPickerField';
 
 type CallNowSheetProps = {
   visible: boolean;
@@ -22,9 +27,16 @@ const MAX_NOTES_LENGTH = 500;
 
 export function CallNowSheet({ visible, onClose }: CallNowSheetProps) {
   const { t } = useTranslation();
-  const { parentId, activeParent } = useAssistido();
+  const { parentId, parents } = useAssistido();
   const registerCall = useRegisterCall();
   const [notes, setNotes] = useState('');
+  const [formParentId, setFormParentId] = useState<ParentId | null>(null);
+
+  useEffect(() => {
+    if (visible) {
+      setFormParentId(resolveInitialFormParentId(parentId, parents));
+    }
+  }, [visible, parentId, parents]);
 
   function handleClose() {
     setNotes('');
@@ -33,9 +45,13 @@ export function CallNowSheet({ visible, onClose }: CallNowSheetProps) {
   }
 
   function handleSubmit() {
+    if (!formParentId) {
+      return;
+    }
+
     registerCall.mutate(
       {
-        parentId: parentId ?? undefined,
+        parentId: formParentId,
         notes: notes.trim() || undefined,
       },
       {
@@ -46,7 +62,7 @@ export function CallNowSheet({ visible, onClose }: CallNowSheetProps) {
     );
   }
 
-  const assistidoLabel = activeParent?.name ?? t('call.noAssistido');
+  const canSubmit = Boolean(formParentId) && !registerCall.isPending;
 
   return (
     <BottomSheet
@@ -59,15 +75,12 @@ export function CallNowSheet({ visible, onClose }: CallNowSheetProps) {
       <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{t('call.description')}</Text>
 
       <View className="mt-6">
-        <Text className="font-sans text-sm text-mindful-brown">{t('common.assistido')}</Text>
-        <View className="mt-2 rounded-xl bg-white px-4 py-3">
-          <Text className="font-sans-semibold text-mindful-brown">{assistidoLabel}</Text>
-          {!activeParent ? (
-            <Text className="mt-1 font-sans text-xs text-mindful-brown/60">
-              {t('call.selectAssistidoHint')}
-            </Text>
-          ) : null}
-        </View>
+        <AssistidoPickerField
+          parents={parents}
+          requiredHint={t('assistidoPicker.requiredHint')}
+          value={formParentId}
+          onChange={setFormParentId}
+        />
       </View>
 
       <View className="mt-4">
@@ -97,8 +110,8 @@ export function CallNowSheet({ visible, onClose }: CallNowSheetProps) {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('call.sheetAccessibility')}
-        className="mt-4 items-center rounded-xl bg-serenity-green py-3"
-        disabled={registerCall.isPending}
+        className={`mt-4 items-center rounded-xl py-3 ${canSubmit ? 'bg-serenity-green' : 'bg-mindful-brown/30'}`}
+        disabled={!canSubmit}
         onPress={handleSubmit}
       >
         {registerCall.isPending ? (

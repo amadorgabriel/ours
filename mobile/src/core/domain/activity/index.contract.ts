@@ -5,6 +5,8 @@ import type {
   RegisterCallResponse,
   RegisterVisitRequest,
   RegisterVisitResponse,
+  UpdateActivityRequest,
+  UpdateActivityResponse,
 } from './index';
 
 export interface IActivity {
@@ -12,4 +14,6 @@ export interface IActivity {
   registerCall(params: RegisterCallRequest): Promise<RegisterCallResponse>;
   registerVisit(params: RegisterVisitRequest): Promise<RegisterVisitResponse>;
   markSeen(activityId: string): Promise<void>;
+  updateActivity(activityId: string, params: UpdateActivityRequest): Promise<UpdateActivityResponse>;
+  deleteActivity(activityId: string): Promise<void>;
 }

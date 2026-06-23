@@ -1,14 +1,17 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native';
 import type { ViewToken } from 'react-native';
 
 import type { ActivityFeedItem } from '@/core/domain/activity';
+import { canEditActivity } from '@/core/services/usecases/activity/activity-edit-window';
 import {
   useActivityFeed,
   useMarkActivitySeen,
 } from '@/core/services/usecases/activity/index.hooks';
 import { useListBottomPadding } from '@/presentation/modules/app-shell/list-bottom-padding';
+import { ActivityDetailSheet } from '@/presentation/modules/feed/activity-detail-sheet';
 import { useTranslation } from '@/presentation/hooks/use-translation';
+import { useAuth } from '@/presentation/providers/auth';
 import { colors } from '@/presentation/styles/tokens';
 import { ActivityCard } from '@/ui/DataDisplay/ActivityCard';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
@@ -16,12 +19,15 @@ import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
 
 export function FeedScreen() {
   const { t } = useTranslation();
+  const { session } = useAuth();
   const listBottomPadding = useListBottomPadding();
   const { data, isLoading, isError, isRefetching, refetch } = useActivityFeed();
   const markSeen = useMarkActivitySeen();
   const markedIdsRef = useRef(new Set<string>());
   const pendingSeenIdsRef = useRef(new Set<string>());
+  const [selectedActivity, setSelectedActivity] = useState<ActivityFeedItem | null>(null);
   const items = data?.items ?? [];
+  const currentUserId = session?.user.id;
 
   const handleViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
@@ -103,7 +109,25 @@ export function FeedScreen() {
             }}
           />
         }
-        renderItem={({ item }: { item: ActivityFeedItem }) => <ActivityCard item={item} />}
+        renderItem={({ item }: { item: ActivityFeedItem }) => {
+          const editable =
+            (item.type === 'Call' || item.type === 'Visit') &&
+            canEditActivity(item.userId, currentUserId, item.createdAt);
+
+          return (
+            <ActivityCard
+              editable={editable}
+              item={item}
+              onPress={
+                editable
+                  ? (activity) => {
+                      setSelectedActivity(activity);
+                    }
+                  : undefined
+              }
+            />
+          );
+        }}
         viewabilityConfig={{ itemVisiblePercentThreshold: 60 }}
         onViewableItemsChanged={handleViewableItemsChanged}
       />
@@ -118,6 +142,11 @@ export function FeedScreen() {
           />
         </View>
       ) : null}
+      <ActivityDetailSheet
+        item={selectedActivity}
+        visible={selectedActivity !== null}
+        onClose={() => setSelectedActivity(null)}
+      />
     </View>
   );
 }

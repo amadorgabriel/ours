@@ -1,10 +1,12 @@
-import { Text, View, Image } from 'react-native';
+import { Text, View, Image, Pressable } from 'react-native';
 
 import type { ActivityFeedItem } from '@/core/domain/activity';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 
 type ActivityCardProps = {
   item: ActivityFeedItem;
+  onPress?: (item: ActivityFeedItem) => void;
+  editable?: boolean;
 };
 
 function useRelativeTime(isoDate: string): string {
@@ -79,7 +81,7 @@ function SeenByAvatars({ seenBy }: { seenBy: ActivityFeedItem['seenBy'] }) {
   );
 }
 
-export function ActivityCard({ item }: ActivityCardProps) {
+export function ActivityCard({ item, onPress, editable = false }: ActivityCardProps) {
   const { t } = useTranslation();
   const typeLabel = useActivityTypeLabel(item.type);
   const relativeTime = useRelativeTime(item.createdAt);
@@ -112,8 +114,8 @@ export function ActivityCard({ item }: ActivityCardProps) {
           })
       : null;
 
-  return (
-    <View className="mb-3 rounded-2xl bg-white/80 p-4">
+  const content = (
+    <>
       <View className="flex-row items-center justify-between">
         <Text className="font-sans-semibold text-mindful-brown">{typeLabel}</Text>
         <Text className="font-sans text-xs text-mindful-brown/60">{relativeTime}</Text>
@@ -142,6 +144,24 @@ export function ActivityCard({ item }: ActivityCardProps) {
         />
       ) : null}
       <SeenByAvatars seenBy={item.seenBy} />
-    </View>
+      {editable ? (
+        <Text className="mt-2 font-sans text-xs text-serenity-green">{t('activityCard.editableHint')}</Text>
+      ) : null}
+    </>
   );
+
+  if (onPress) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('activityCard.openAccessibility', { type: typeLabel })}
+        className="mb-3 rounded-2xl bg-white/80 p-4"
+        onPress={() => onPress(item)}
+      >
+        {content}
+      </Pressable>
+    );
+  }
+
+  return <View className="mb-3 rounded-2xl bg-white/80 p-4">{content}</View>;
 }

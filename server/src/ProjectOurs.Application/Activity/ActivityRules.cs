@@ -5,6 +5,12 @@ public static class ActivityRules
     public const int MaxNotesLength = 500;
     public const int DefaultFeedLimit = 50;
     public const int MaxFeedLimit = 100;
+    public static readonly TimeSpan EditWindow = TimeSpan.FromHours(24);
+
+    public static bool IsAuthor(Guid activityUserId, Guid userId) => activityUserId == userId;
+
+    public static bool IsWithinEditWindow(DateTimeOffset createdAt, DateTimeOffset now) =>
+        now - createdAt <= EditWindow;
 
     public static bool IsValidNotes(string? notes) =>
         notes is null || notes.Length <= MaxNotesLength;

@@ -151,6 +151,113 @@ public sealed class ActivitiesController(
         }
     }
 
+    [HttpPatch("{activityId:guid}")]
+    [ProducesResponseType(typeof(ActivityFeedItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateActivity(
+        Guid activityId,
+        [FromBody] UpdateActivityRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (!TryGetFamilyId(out var familyId, out var familyError))
+        {
+            return familyError!;
+        }
+
+        try
+        {
+            var activity = await activityService.UpdateAsync(
+                userId,
+                familyId,
+                activityId,
+                request,
+                cancellationToken);
+            return Ok(activity);
+        }
+        catch (ActivityNotFoundException ex)
+        {
+            return new NotFoundObjectResult(new { message = ex.Message });
+        }
+        catch (ActivityValidationException ex)
+        {
+            return MapActivityException(ex);
+        }
+        catch (ActivityForbiddenException ex)
+        {
+            return MapActivityException(ex);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return new BadRequestObjectResult(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to update activity {ActivityId} for user {UserId} in family {FamilyId}.",
+                activityId,
+                userId,
+                familyId);
+            return MapActivityException(ex);
+        }
+    }
+
+    [HttpDelete("{activityId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteActivity(
+        Guid activityId,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (!TryGetFamilyId(out var familyId, out var familyError))
+        {
+            return familyError!;
+        }
+
+        try
+        {
+            await activityService.DeleteAsync(userId, familyId, activityId, cancellationToken);
+            return NoContent();
+        }
+        catch (ActivityNotFoundException ex)
+        {
+            return new NotFoundObjectResult(new { message = ex.Message });
+        }
+        catch (ActivityValidationException ex)
+        {
+            return MapActivityException(ex);
+        }
+        catch (ActivityForbiddenException ex)
+        {
+            return MapActivityException(ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to delete activity {ActivityId} for user {UserId} in family {FamilyId}.",
+                activityId,
+                userId,
+                familyId);
+            return MapActivityException(ex);
+        }
+    }
+
     [HttpPost("{activityId:guid}/seen")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

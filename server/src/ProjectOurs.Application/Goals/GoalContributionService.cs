@@ -40,6 +40,16 @@ public sealed class GoalContributionService(
                 $"Contribution amount must be at least R$ {GoalRules.MinimumContributionAmount:F2}.");
         }
 
+        Guid parentId;
+        try
+        {
+            parentId = await activityService.EnsureParentAsync(request.ParentId, familyId, cancellationToken);
+        }
+        catch (ActivityValidationException ex)
+        {
+            throw new GoalValidationException(ex.Message);
+        }
+
         var now = DateTimeOffset.UtcNow;
         var contribution = new GoalContributionEntity
         {
@@ -62,6 +72,7 @@ public sealed class GoalContributionService(
                 goal.Title,
                 created.Id,
                 created.Amount,
+                parentId,
                 cancellationToken);
         }
 

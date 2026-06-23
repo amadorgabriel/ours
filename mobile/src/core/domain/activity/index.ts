@@ -62,3 +62,15 @@ export type ActivityFeedResponse = {
   items: ActivityFeedItem[];
   unreadCount: number;
 };
+
+export type UpdateActivityRequest = {
+  notes?: string;
+  allDay?: boolean;
+  startAt?: string;
+  endAt?: string;
+  photoBase64?: string;
+  mimeType?: string;
+  removePhoto?: boolean;
+};
+
+export type UpdateActivityResponse = ActivityFeedItem;

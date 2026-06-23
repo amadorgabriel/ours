@@ -1,16 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { RegisterCallRequest, RegisterVisitRequest } from '@/core/domain/activity';
+import type { RegisterCallRequest, RegisterVisitRequest, UpdateActivityRequest } from '@/core/domain/activity';
 import { HttpClientFactory } from '@/core/infra/http/http-client-factory';
 import { queryKeys } from '@/core/infra/query/query-keys';
 import { useAssistido } from '@/presentation/providers/assistido';
 import { useFamily } from '@/presentation/providers/family';
 
+import { DeleteActivityUseCase } from './delete-activity.usecase';
 import { ListActivityFeedUseCase } from './list-activity-feed.usecase';
 import { MarkActivitySeenUseCase } from './mark-activity-seen.usecase';
 import { getMonthRange } from './month-range';
 import { RegisterCallUseCase } from './register-call.usecase';
 import { RegisterVisitUseCase } from './register-visit.usecase';
+import { UpdateActivityUseCase } from './update-activity.usecase';
 
 export function useActivityFeed(limit = 50) {
   const { familyId } = useFamily();
@@ -83,6 +85,38 @@ export function useMarkActivitySeen() {
 
   return useMutation({
     mutationFn: (activityId: string) => useCase.markSeen(activityId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.activities.all });
+    },
+  });
+}
+
+export function useUpdateActivity() {
+  const queryClient = useQueryClient();
+  const httpClient = HttpClientFactory.create();
+  const useCase = new UpdateActivityUseCase(httpClient);
+
+  return useMutation({
+    mutationFn: ({
+      activityId,
+      data,
+    }: {
+      activityId: string;
+      data: UpdateActivityRequest;
+    }) => useCase.updateActivity(activityId, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.activities.all });
+    },
+  });
+}
+
+export function useDeleteActivity() {
+  const queryClient = useQueryClient();
+  const httpClient = HttpClientFactory.create();
+  const useCase = new DeleteActivityUseCase(httpClient);
+
+  return useMutation({
+    mutationFn: (activityId: string) => useCase.deleteActivity(activityId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.activities.all });
     },

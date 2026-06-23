@@ -21,8 +21,13 @@ jest.mock('@/core/services/usecases/activity/index.hooks', () => ({
 jest.mock('@/presentation/providers/assistido', () => ({
   useAssistido: () => ({
     parentId: 'parent-1',
-    activeParent: { id: 'parent-1', name: 'Pai', relationship: 'Pai' },
+    parents: [{ id: 'parent-1', name: 'Pai', relationship: 'Pai' }],
   }),
+}));
+
+jest.mock('@/ui/Forms/AssistidoPickerField', () => ({
+  AssistidoPickerField: 'AssistidoPickerField',
+  resolveInitialFormParentId: () => 'parent-1',
 }));
 
 describe('CallNowSheet', () => {

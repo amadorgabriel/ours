@@ -19,6 +19,16 @@ jest.mock('@/core/services/usecases/activity/index.hooks', () => ({
   }),
 }));
 
+jest.mock('@/presentation/providers/auth', () => ({
+  useAuth: () => ({
+    session: { user: { id: 'user-1' } },
+  }),
+}));
+
+jest.mock('@/presentation/modules/feed/activity-detail-sheet', () => ({
+  ActivityDetailSheet: 'ActivityDetailSheet',
+}));
+
 describe('FeedScreen', () => {
   it('shows empty state when there are no activities', () => {
     let tree!: renderer.ReactTestRenderer;

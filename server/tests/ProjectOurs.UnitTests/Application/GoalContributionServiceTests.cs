@@ -37,9 +37,11 @@ public sealed class GoalContributionServiceTests
         var familyId = Guid.NewGuid();
         var goalId = Guid.NewGuid();
         var contributionId = Guid.NewGuid();
+        var parentId = Guid.NewGuid();
 
         SetupMembership(userId, familyId);
         SetupGoal(goalId, familyId);
+        SetupParent(parentId, familyId);
 
         _contributions
             .Setup(x => x.AddWithGoalUpdateAsync(It.IsAny<GoalContribution>(), It.IsAny<CancellationToken>()))
@@ -71,7 +73,7 @@ public sealed class GoalContributionServiceTests
             userId,
             familyId,
             goalId,
-            new CreateGoalContributionRequest(50m, false));
+            new CreateGoalContributionRequest(50m, false, parentId.ToString()));
 
         Assert.Equal(contributionId.ToString(), result.Id);
         Assert.Equal(50m, result.Amount);
@@ -90,7 +92,7 @@ public sealed class GoalContributionServiceTests
         SetupGoal(goalId, familyId);
 
         await Assert.ThrowsAsync<GoalValidationException>(() =>
-            _sut.CreateAsync(userId, familyId, goalId, new CreateGoalContributionRequest(0.5m, false)));
+            _sut.CreateAsync(userId, familyId, goalId, new CreateGoalContributionRequest(0.5m, false, null)));
     }
 
     [Fact]
@@ -107,7 +109,7 @@ public sealed class GoalContributionServiceTests
             .ReturnsAsync((Goal?)null);
 
         await Assert.ThrowsAsync<GoalNotFoundException>(() =>
-            _sut.CreateAsync(userId, familyId, goalId, new CreateGoalContributionRequest(10m, false)));
+            _sut.CreateAsync(userId, familyId, goalId, new CreateGoalContributionRequest(10m, false, null)));
     }
 
     [Fact]
@@ -183,6 +185,13 @@ public sealed class GoalContributionServiceTests
                 Role = FamilyRole.Member,
                 JoinedAt = DateTimeOffset.UtcNow,
             });
+    }
+
+    private void SetupParent(Guid parentId, Guid familyId)
+    {
+        _activityRepo
+            .Setup(x => x.ParentBelongsToFamilyAsync(parentId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
     }
 
     private void SetupGoal(Guid goalId, Guid familyId)
