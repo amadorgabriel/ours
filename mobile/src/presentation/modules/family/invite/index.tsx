@@ -1,6 +1,6 @@
 import * as Clipboard from 'expo-clipboard';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, Share, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, Share, Text, View } from 'react-native';
 
 import type { CreateInviteResponse } from '@/core/domain/family';
 import { useCreateInvite } from '@/core/services/usecases/family/index.hooks';
@@ -50,9 +50,8 @@ export function InviteSheet({ visible, onClose }: InviteSheetProps) {
     try {
       await Clipboard.setStringAsync(invite.inviteCode);
       setCopied(true);
-    } catch (error) {
-      setCopied(false);
-      console.error('Failed to copy invite code:', error);
+    } catch {
+      Alert.alert('Erro ao copiar', 'Não foi possível copiar o código. Tente novamente.');
     }
   }
 
@@ -63,8 +62,8 @@ export function InviteSheet({ visible, onClose }: InviteSheetProps) {
       await Share.share({
         message: `Junte-se à minha família no Ours!\n${buildInviteUrl(invite.inviteCode)}`,
       });
-    } catch (error) {
-      console.error('Failed to share invite code:', error);
+    } catch {
+      Alert.alert('Erro ao compartilhar', 'Não foi possível abrir o compartilhamento.');
     }
   }
 

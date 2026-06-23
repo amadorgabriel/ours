@@ -17,11 +17,20 @@ type TabBarProps = Parameters<
   Extract<NonNullable<ComponentProps<typeof Tabs>['tabBar']>, (...args: never[]) => unknown>
 >[0];
 
-export type WaveTabBarProps = Pick<TabBarProps, 'state' | 'navigation'>;
+export type WaveTabBarProps = Pick<TabBarProps, 'state' | 'navigation' | 'descriptors'>;
 
 type TabIconName = keyof typeof Ionicons.glyphMap;
 
-export function WaveTabBar({ state, navigation }: WaveTabBarProps) {
+function formatBadgeLabel(badge: string | number): string {
+  const count = typeof badge === 'number' ? badge : Number.parseInt(badge, 10);
+  if (Number.isFinite(count) && count > 99) {
+    return '99+';
+  }
+
+  return String(badge);
+}
+
+export function WaveTabBar({ state, navigation, descriptors }: WaveTabBarProps) {
   const insets = useSafeAreaInsets();
 
   function renderTab(routeIndex: number) {
@@ -31,6 +40,8 @@ export function WaveTabBar({ state, navigation }: WaveTabBarProps) {
 
     const isFocused = state.index === routeIndex;
     const iconName = (isFocused ? tab.activeIcon : tab.icon) as TabIconName;
+    const badge = descriptors[route.key]?.options?.tabBarBadge;
+    const showBadge = typeof badge === 'number' ? badge > 0 : Boolean(badge);
 
     return (
       <Pressable
@@ -56,11 +67,29 @@ export function WaveTabBar({ state, navigation }: WaveTabBarProps) {
             className="items-center justify-center rounded-full bg-serenity-green/20"
             style={{ height: ACTIVE_TAB_CIRCLE_SIZE, width: ACTIVE_TAB_CIRCLE_SIZE }}
           >
-            <Ionicons color={colors.serenityGreen60} name={iconName} size={22} />
+            <View>
+              <Ionicons color={colors.serenityGreen60} name={iconName} size={22} />
+              {showBadge ? (
+                <View className="absolute -right-2 -top-2 min-h-[16px] min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1">
+                  <Text className="font-sans-semibold text-[10px] text-light">
+                    {formatBadgeLabel(badge as string | number)}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
           </View>
         ) : (
           <View className="items-center">
-            <Ionicons color={colors.mindfulBrown60} name={iconName} size={24} />
+            <View>
+              <Ionicons color={colors.mindfulBrown60} name={iconName} size={24} />
+              {showBadge ? (
+                <View className="absolute -right-2 -top-1 min-h-[16px] min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1">
+                  <Text className="font-sans-semibold text-[10px] text-light">
+                    {formatBadgeLabel(badge as string | number)}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
             <Text className="mt-0.5 font-sans text-[10px] text-mindful-brown/70">{tab.label}</Text>
           </View>
         )}

@@ -136,13 +136,28 @@ public sealed class ActivityRepository(ApplicationDbContext db) : IActivityRepos
                 UserId = userId,
                 SeenAt = seenAt,
             });
-        }
-        else
-        {
-            existing.SeenAt = seenAt;
-            db.ActivityViews.Update(existing);
+
+            try
+            {
+                await db.SaveChangesAsync(cancellationToken);
+                return;
+            }
+            catch (DbUpdateException)
+            {
+                db.ChangeTracker.Clear();
+            }
         }
 
+        var row = existing ?? await db.ActivityViews
+            .FirstOrDefaultAsync(x => x.ActivityId == activityId && x.UserId == userId, cancellationToken);
+
+        if (row is null)
+        {
+            return;
+        }
+
+        row.SeenAt = seenAt;
+        db.ActivityViews.Update(row);
         await db.SaveChangesAsync(cancellationToken);
     }
 
@@ -175,14 +190,21 @@ public sealed class ActivityRepository(ApplicationDbContext db) : IActivityRepos
     public async Task<int> CountUnreadAsync(
         Guid familyId,
         Guid userId,
+        Guid? parentId = null,
         CancellationToken cancellationToken = default)
     {
         var viewedActivityIds = db.ActivityViews
             .Where(x => x.UserId == userId)
             .Select(x => x.ActivityId);
 
-        return await db.Activities
-            .Where(x => x.FamilyId == familyId && !viewedActivityIds.Contains(x.Id))
-            .CountAsync(cancellationToken);
+        var query = db.Activities
+            .Where(x => x.FamilyId == familyId && !viewedActivityIds.Contains(x.Id));
+
+        if (parentId.HasValue)
+        {
+            query = query.Where(x => x.ParentId == parentId.Value);
+        }
+
+        return await query.CountAsync(cancellationToken);
     }
 }

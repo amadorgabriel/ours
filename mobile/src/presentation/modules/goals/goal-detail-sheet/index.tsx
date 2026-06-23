@@ -25,6 +25,7 @@ import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
 
 import { ContributeSheet } from '../contribute-sheet';
+import { getContributionErrorMessage } from '../goals-api-error';
 
 type GoalDetailSheetProps = {
   visible: boolean;
@@ -137,7 +138,10 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
     if (!editingContribution) return;
 
     const amount = Number.parseFloat(editAmount.replace(',', '.'));
-    if (!Number.isFinite(amount) || amount < 1) return;
+    if (!Number.isFinite(amount) || amount < 1) {
+      Alert.alert('Valor inválido', 'Informe um valor válido (mínimo R$ 1,00).');
+      return;
+    }
 
     updateContribution.mutate(
       {
@@ -147,6 +151,9 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
       {
         onSuccess: () => {
           setEditingContribution(null);
+        },
+        onError: (error) => {
+          Alert.alert('Erro ao salvar', getContributionErrorMessage(error));
         },
       }
     );
@@ -158,7 +165,12 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
       {
         text: 'Excluir',
         style: 'destructive',
-        onPress: () => deleteContribution.mutate(contribution.id),
+        onPress: () =>
+          deleteContribution.mutate(contribution.id, {
+            onError: (error) => {
+              Alert.alert('Erro ao excluir', getContributionErrorMessage(error));
+            },
+          }),
       },
     ]);
   }

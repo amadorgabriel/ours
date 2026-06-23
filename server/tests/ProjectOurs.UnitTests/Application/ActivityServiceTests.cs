@@ -182,7 +182,7 @@ public sealed class ActivityServiceTests
             .ReturnsAsync(new Dictionary<Guid, IReadOnlyList<ActivityViewInfo>>());
 
         _activities
-            .Setup(x => x.CountUnreadAsync(familyId, userId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.CountUnreadAsync(familyId, userId, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         var result = await _sut.GetFeedAsync(userId, familyId, null);
@@ -221,7 +221,7 @@ public sealed class ActivityServiceTests
             .ReturnsAsync(new Dictionary<Guid, IReadOnlyList<ActivityViewInfo>>());
 
         _activities
-            .Setup(x => x.CountUnreadAsync(familyId, userId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.CountUnreadAsync(familyId, userId, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(0);
 
         var result = await _sut.GetFeedAsync(userId, familyId, null, from, to);
@@ -263,7 +263,7 @@ public sealed class ActivityServiceTests
             .ReturnsAsync(new Dictionary<Guid, IReadOnlyList<ActivityViewInfo>>());
 
         _activities
-            .Setup(x => x.CountUnreadAsync(familyId, userId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.CountUnreadAsync(familyId, userId, parentId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(0);
 
         var result = await _sut.GetFeedAsync(userId, familyId, null, null, null, parentId.ToString());
@@ -271,6 +271,9 @@ public sealed class ActivityServiceTests
         Assert.Empty(result.Items);
         _activities.Verify(
             x => x.ListByFamilyIdAsync(familyId, 50, null, null, parentId, It.IsAny<CancellationToken>()),
+            Times.Once);
+        _activities.Verify(
+            x => x.CountUnreadAsync(familyId, userId, parentId, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 

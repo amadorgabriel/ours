@@ -3,6 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   Switch,
@@ -28,6 +29,10 @@ function toIsoDateInput(date: Date): string {
 async function pickCompressedPhoto(): Promise<{ base64: string; mimeType: string } | null> {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permission.granted) {
+    Alert.alert(
+      'Permissão necessária',
+      'Permita o acesso à galeria nas configurações do dispositivo para adicionar uma foto.'
+    );
     return null;
   }
 

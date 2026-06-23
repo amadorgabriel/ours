@@ -105,8 +105,14 @@ export function useLogout() {
   const useCase = new AuthLogoutUseCase(httpClient);
 
   return useMutation({
-    mutationFn: () => useCase.logout(),
-    onSuccess: async () => {
+    mutationFn: async () => {
+      try {
+        await useCase.logout();
+      } catch {
+        // Server logout is best-effort; local session must still clear.
+      }
+    },
+    onSettled: async () => {
       try {
         await GoogleSignin.signOut();
       } catch {

@@ -123,7 +123,11 @@ public sealed class ActivityService(
             items.Select(x => x.Id),
             cancellationToken);
 
-        var unreadCount = await activities.CountUnreadAsync(familyId, userId, cancellationToken);
+        var unreadCount = await activities.CountUnreadAsync(
+            familyId,
+            userId,
+            parsedParentId,
+            cancellationToken);
 
         return new ActivityFeedResponse(
             items.Select(activity => MapToDto(activity, viewsByActivity.GetValueOrDefault(activity.Id))).ToList(),

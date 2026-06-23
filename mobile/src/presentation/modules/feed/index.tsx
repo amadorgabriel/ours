@@ -16,18 +16,31 @@ export function FeedScreen() {
   const { data, isLoading, isError, isRefetching, refetch } = useActivityFeed();
   const markSeen = useMarkActivitySeen();
   const markedIdsRef = useRef(new Set<string>());
+  const pendingSeenIdsRef = useRef(new Set<string>());
   const items = data?.items ?? [];
 
   const handleViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
       for (const token of viewableItems) {
         const item = token.item as ActivityFeedItem;
-        if (!item?.id || markedIdsRef.current.has(item.id)) {
+        if (
+          !item?.id ||
+          markedIdsRef.current.has(item.id) ||
+          pendingSeenIdsRef.current.has(item.id)
+        ) {
           continue;
         }
 
-        markedIdsRef.current.add(item.id);
-        markSeen.mutate(item.id);
+        pendingSeenIdsRef.current.add(item.id);
+        markSeen.mutate(item.id, {
+          onSuccess: () => {
+            markedIdsRef.current.add(item.id);
+            pendingSeenIdsRef.current.delete(item.id);
+          },
+          onError: () => {
+            pendingSeenIdsRef.current.delete(item.id);
+          },
+        });
       }
     },
     [markSeen]

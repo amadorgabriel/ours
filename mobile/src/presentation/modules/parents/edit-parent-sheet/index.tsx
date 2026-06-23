@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   Text,
@@ -80,7 +81,13 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
     if (!parent) return;
 
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) return;
+    if (!permission.granted) {
+      Alert.alert(
+        'Permissão necessária',
+        'Permita o acesso à galeria nas configurações do dispositivo para alterar a foto.'
+      );
+      return;
+    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
@@ -100,14 +107,30 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
 
     const photoBase64 = `data:image/jpeg;base64,${manipulated.base64}`;
     setPhotoPreview(photoBase64);
-    updatePhoto.mutate({ photoBase64, mimeType: 'image/jpeg' });
+    updatePhoto.mutate(
+      { photoBase64, mimeType: 'image/jpeg' },
+      {
+        onError: (error) => {
+          setPhotoPreview(parent.photoData ?? null);
+          Alert.alert('Erro ao salvar foto', getParentErrorMessage(error, 'update'));
+        },
+      }
+    );
   }
 
   function handleRemovePhoto() {
     if (!parent) return;
 
     setPhotoPreview(null);
-    updatePhoto.mutate({ photoBase64: null });
+    updatePhoto.mutate(
+      { photoBase64: null },
+      {
+        onError: (error) => {
+          setPhotoPreview(parent.photoData ?? null);
+          Alert.alert('Erro ao remover foto', getParentErrorMessage(error, 'update'));
+        },
+      }
+    );
   }
 
   function handleClose() {

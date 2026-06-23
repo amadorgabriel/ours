@@ -252,8 +252,14 @@ describe('ProfileScreen', () => {
 
     expect(alertSpy).toHaveBeenCalled();
     expect(mockMutate).toHaveBeenCalledWith(undefined, expect.objectContaining({
-      onSuccess: expect.any(Function),
+      onSettled: expect.any(Function),
     }));
+
+    const onSettled = mockMutate.mock.calls[0]?.[1]?.onSettled;
+    act(() => {
+      onSettled?.();
+    });
+    expect(mockReplace).toHaveBeenCalledWith('/(auth)/login');
 
     alertSpy.mockRestore();
   });

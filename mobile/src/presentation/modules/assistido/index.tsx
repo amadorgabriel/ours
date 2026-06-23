@@ -1,11 +1,13 @@
 import { useRouter, type Href } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 import { useAuth } from '@/presentation/providers/auth';
 import { useAssistido } from '@/presentation/providers/assistido';
 import { useFamily } from '@/presentation/providers/family';
+import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
+import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
 
 type AssistidoSheetProps = {
   visible: boolean;
@@ -48,7 +50,7 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
   const router = useRouter();
   const { session } = useAuth();
   const { familyId } = useFamily();
-  const { parents, parentId, isLoading, setParentId } = useAssistido();
+  const { parents, parentId, isLoading, isError, refetch, setParentId } = useAssistido();
 
   const activeFamily = session?.families.find((family) => family.id === familyId);
   const isAdmin = activeFamily?.role === 'Admin';
@@ -94,10 +96,23 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
       ) : null}
 
       {isLoading && (
-        <Text className="mt-6 font-sans text-sm text-mindful-brown/70">Carregando...</Text>
+        <View className="mt-6 items-center py-4">
+          <ActivityIndicator color={colors.serenityGreen60} />
+          <Text className="mt-2 font-sans text-sm text-mindful-brown/70">Carregando...</Text>
+        </View>
       )}
 
-      {!isLoading && parents.length === 0 ? (
+      {isError && !isLoading ? (
+        <View className="mt-6">
+          <QueryErrorState
+            message="Não foi possível carregar os assistidos."
+            variant="inline"
+            onRetry={refetch}
+          />
+        </View>
+      ) : null}
+
+      {!isLoading && !isError && parents.length === 0 ? (
         <View className="mt-6">
           <EmptyState
             title="Nenhum assistido cadastrado"
@@ -114,6 +129,7 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
       ) : null}
 
       {!isLoading &&
+        !isError &&
         parents.map((parent) => (
           <ParentListItem
             key={parent.id}

@@ -47,6 +47,7 @@ public interface IActivityRepository
     Task<int> CountUnreadAsync(
         Guid familyId,
         Guid userId,
+        Guid? parentId = null,
         CancellationToken cancellationToken = default);
 }
 

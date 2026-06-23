@@ -5,5 +5,7 @@ export type AssistidoContextValue = {
   activeParent: ParentSummary | null;
   parents: ParentSummary[];
   isLoading: boolean;
+  isError: boolean;
+  refetch: () => void;
   setParentId: (id: ParentId | null) => void;
 };

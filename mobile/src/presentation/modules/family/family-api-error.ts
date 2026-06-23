@@ -13,6 +13,9 @@ const messages = {
   notAdmin: 'Apenas administradores podem convidar.',
   missingFamilyId: 'Selecione uma família ativa antes de convidar.',
   generic: 'Algo deu errado. Tente novamente.',
+  removeMemberFailed: 'Não foi possível remover o membro. Tente novamente.',
+  lastAdmin: 'Não é possível remover o último administrador da família.',
+  memberNotFound: 'Membro não encontrado nesta família.',
 } as const;
 
 export function getFamilyErrorMessage(error: unknown, context: FamilyErrorContext): string {
@@ -38,5 +41,22 @@ export function getFamilyErrorMessage(error: unknown, context: FamilyErrorContex
       if (context === 'create') return messages.createFailed;
       if (context === 'join') return messages.joinFailed;
       return messages.inviteFailed;
+  }
+}
+
+export function getRemoveMemberErrorMessage(error: unknown): string {
+  if (!(error instanceof HttpClientError)) {
+    return messages.removeMemberFailed;
+  }
+
+  switch (error.statusCode) {
+    case 403:
+      return messages.notAdmin;
+    case 404:
+      return messages.memberNotFound;
+    case 409:
+      return messages.lastAdmin;
+    default:
+      return messages.removeMemberFailed;
   }
 }

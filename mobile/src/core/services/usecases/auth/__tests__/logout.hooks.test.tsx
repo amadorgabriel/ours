@@ -79,4 +79,34 @@ describe('useLogout', () => {
 
     expect(mockGoogleSignOut).toHaveBeenCalledTimes(1);
   });
+
+  it('still calls GoogleSignin.signOut when server logout fails', async () => {
+    const client = createTestQueryClient();
+    let logoutMutation!: ReturnType<typeof useLogout>;
+
+    jest.spyOn(
+      require('@/core/infra/http/http-client-factory').HttpClientFactory,
+      'create'
+    ).mockReturnValue({
+      request: jest.fn().mockRejectedValue(new Error('Network error')),
+    });
+
+    await act(async () => {
+      renderer.create(
+        <QueryClientProvider client={client}>
+          <LogoutRunner
+            onReady={(logout) => {
+              logoutMutation = logout;
+            }}
+          />
+        </QueryClientProvider>
+      );
+    });
+
+    await act(async () => {
+      await logoutMutation.mutateAsync();
+    });
+
+    expect(mockGoogleSignOut).toHaveBeenCalledTimes(1);
+  });
 });

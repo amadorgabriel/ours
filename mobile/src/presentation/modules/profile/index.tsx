@@ -20,6 +20,7 @@ import {
 } from '@/core/services/usecases/family/index.hooks';
 import { useParents } from '@/core/services/usecases/parent/index.hooks';
 import { InviteSheet } from '@/presentation/modules/family/invite';
+import { getRemoveMemberErrorMessage } from '@/presentation/modules/family/family-api-error';
 import { roleLabel } from '@/presentation/modules/family/role-label';
 import { CreateFamilySheet } from '@/presentation/modules/profile/create-family-sheet';
 import { NotificationSettings } from '@/presentation/modules/profile/notification-settings';
@@ -105,7 +106,12 @@ export function ProfileScreen() {
   const [detailParentId, setDetailParentId] = useState<string | null>(null);
   const [familyAdminVisible, setFamilyAdminVisible] = useState(false);
   const [createFamilyVisible, setCreateFamilyVisible] = useState(false);
-  const { data: membersData } = useFamilyMembers();
+  const {
+    data: membersData,
+    isLoading: membersLoading,
+    isError: membersError,
+    refetch: refetchMembers,
+  } = useFamilyMembers();
   const removeMember = useRemoveFamilyMember();
   const members = membersData?.items ?? [];
 
@@ -144,6 +150,9 @@ export function ProfileScreen() {
                         );
                       }
                     },
+                    onError: (error) => {
+                      Alert.alert('Erro ao remover', getRemoveMemberErrorMessage(error));
+                    },
                   });
                 },
               },
@@ -162,7 +171,7 @@ export function ProfileScreen() {
         style: 'destructive',
         onPress: () => {
           logoutMutation.mutate(undefined, {
-            onSuccess: () => router.replace(mobileRoutes.login as Href),
+            onSettled: () => router.replace(mobileRoutes.login as Href),
           });
         },
       },
@@ -245,7 +254,24 @@ export function ProfileScreen() {
             <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
               Pessoas com acesso a esta família.
             </Text>
-            {members.map((member) => (
+            {membersLoading ? (
+              <View className="mt-4 items-center py-4">
+                <ActivityIndicator color={colors.serenityGreen60} />
+              </View>
+            ) : null}
+            {membersError ? (
+              <View className="mt-4">
+                <QueryErrorState
+                  message="Não foi possível carregar os membros."
+                  variant="inline"
+                  onRetry={() => {
+                    void refetchMembers();
+                  }}
+                />
+              </View>
+            ) : null}
+            {!membersLoading && !membersError
+              ? members.map((member) => (
               <View
                 key={member.userId}
                 className="mt-3 flex-row items-center justify-between border-b border-mindful-brown/10 pb-3"
@@ -280,7 +306,8 @@ export function ProfileScreen() {
                   <Text className="font-sans-semibold text-sm text-red-600">Remover</Text>
                 </Pressable>
               </View>
-            ))}
+            ))
+              : null}
           </View>
         ) : null}
 

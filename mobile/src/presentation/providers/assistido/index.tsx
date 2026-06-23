@@ -28,7 +28,7 @@ const AssistidoContext = createContext<AssistidoContextValue | null>(null);
 export function AssistidoProvider({ children }: { children: ReactNode }) {
   const { familyId } = useFamily();
   const queryClient = useQueryClient();
-  const { data: parents = [], isLoading } = useParents(familyId);
+  const { data: parents = [], isLoading, isError, refetch } = useParents(familyId);
   const [parentId, setParentIdState] = useState<ParentId | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const skipAutoSelectRef = useRef(false);
@@ -120,9 +120,13 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
       activeParent,
       parents,
       isLoading: isLoading || !isHydrated,
+      isError,
+      refetch: () => {
+        void refetch();
+      },
       setParentId,
     }),
-    [parentId, activeParent, parents, isLoading, isHydrated, setParentId]
+    [parentId, activeParent, parents, isLoading, isHydrated, isError, refetch, setParentId]
   );
 
   return <AssistidoContext.Provider value={value}>{children}</AssistidoContext.Provider>;
