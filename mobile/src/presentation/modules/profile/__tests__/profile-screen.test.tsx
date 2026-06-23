@@ -4,7 +4,7 @@ import renderer, { act } from 'react-test-renderer';
 import { ProfileScreen } from '../index';
 
 const mockReplace = jest.fn();
-const mockMutate = jest.fn();
+const mockMutateAsync = jest.fn();
 
 function getAllText(tree: renderer.ReactTestRenderer): string {
   return tree.root
@@ -151,7 +151,7 @@ function renderProfileScreen(options?: {
   });
 
   useLogout.mockReturnValue({
-    mutate: mockMutate,
+    mutateAsync: mockMutateAsync.mockResolvedValue(undefined),
     isPending: false,
   });
 
@@ -237,28 +237,21 @@ describe('ProfileScreen', () => {
     expect(text).not.toContain('Convidar familiar');
   });
 
-  it('calls logout and navigates to login', () => {
+  it('calls logout and navigates to login', async () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
       const confirm = buttons?.find((button) => button.text === 'Sair');
-      confirm?.onPress?.();
+      void confirm?.onPress?.();
     });
 
     const tree = renderProfileScreen();
     const logoutButton = tree.root.findByProps({ accessibilityLabel: 'Sair da conta' });
 
-    act(() => {
+    await act(async () => {
       logoutButton.props.onPress();
     });
 
     expect(alertSpy).toHaveBeenCalled();
-    expect(mockMutate).toHaveBeenCalledWith(undefined, expect.objectContaining({
-      onSettled: expect.any(Function),
-    }));
-
-    const onSettled = mockMutate.mock.calls[0]?.[1]?.onSettled;
-    act(() => {
-      onSettled?.();
-    });
+    expect(mockMutateAsync).toHaveBeenCalled();
     expect(mockReplace).toHaveBeenCalledWith('/(auth)/login');
 
     alertSpy.mockRestore();

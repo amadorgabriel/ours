@@ -170,9 +170,10 @@ export function ProfileScreen() {
         text: 'Sair',
         style: 'destructive',
         onPress: () => {
-          logoutMutation.mutate(undefined, {
-            onSettled: () => router.replace(mobileRoutes.login as Href),
-          });
+          void (async () => {
+            await logoutMutation.mutateAsync();
+            router.replace(mobileRoutes.login as Href);
+          })();
         },
       },
     ]);

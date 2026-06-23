@@ -1,6 +1,6 @@
-using System.Text;
 using System.Text.Json;
 using ProjectOurs.Application.Abstractions.Media;
+using ProjectOurs.Application.Common;
 using ProjectOurs.Application.Abstractions.Persistence;
 using ProjectOurs.Domain.Enums;
 using ActivityEntity = ProjectOurs.Domain.Entities.Activity;
@@ -306,20 +306,17 @@ public sealed class ActivityService(
 
     private static byte[] DecodeBase64Image(string photoBase64)
     {
-        var payload = photoBase64;
-        var commaIndex = photoBase64.IndexOf(',');
-        if (commaIndex >= 0)
-        {
-            payload = photoBase64[(commaIndex + 1)..];
-        }
-
         try
         {
-            return Convert.FromBase64String(payload);
+            return Base64ImageHelper.Decode(photoBase64);
         }
         catch (FormatException)
         {
             throw new ActivityValidationException("Invalid photo data.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new ActivityValidationException(ex.Message);
         }
     }
 

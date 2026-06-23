@@ -1,4 +1,5 @@
 using ProjectOurs.Application.Abstractions.Media;
+using ProjectOurs.Application.Common;
 using ProjectOurs.Application.Abstractions.Persistence;
 using ProjectOurs.Domain.Enums;
 using ParentEntity = ProjectOurs.Domain.Entities.Parent;
@@ -108,21 +109,19 @@ public sealed class ParentService(
         else
         {
             var mimeType = string.IsNullOrWhiteSpace(request.MimeType) ? "image/jpeg" : request.MimeType;
-            var payload = request.PhotoBase64;
-            var commaIndex = request.PhotoBase64.IndexOf(',');
-            if (commaIndex >= 0)
-            {
-                payload = request.PhotoBase64[(commaIndex + 1)..];
-            }
 
             byte[] bytes;
             try
             {
-                bytes = Convert.FromBase64String(payload);
+                bytes = Base64ImageHelper.Decode(request.PhotoBase64);
             }
             catch (FormatException)
             {
                 throw new ParentValidationException("Invalid photo data.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new ParentValidationException(ex.Message);
             }
 
             await using var stream = new MemoryStream(bytes);

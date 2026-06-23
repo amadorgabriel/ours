@@ -16,6 +16,12 @@ public sealed class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            // Base64 photo uploads (~512KB decoded) plus JSON envelope.
+            options.Limits.MaxRequestBodySize = 1024 * 1024;
+        });
+
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>

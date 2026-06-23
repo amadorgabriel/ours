@@ -1,10 +1,11 @@
 using ProjectOurs.Application.Abstractions.Media;
+using ProjectOurs.Application.Common;
 
 namespace ProjectOurs.Infrastructure.Media;
 
 public sealed class InlineBase64MediaStorage : IMediaStorage
 {
-    public const int MaxBytes = 512 * 1024;
+    public const int MaxBytes = Base64ImageHelper.MaxDecodedBytes;
 
     private static readonly HashSet<string> AllowedMimeTypes =
     [

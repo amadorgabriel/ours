@@ -1,7 +1,9 @@
 import {
+  formatLocalDateInput,
   getDaysWithActivities,
   getMonthRange,
   groupActivitiesByLocalDay,
+  parseLocalDateInput,
   toLocalDateKey,
 } from '../month-range';
 
@@ -34,5 +36,17 @@ describe('month-range', () => {
 
     expect(days.has(18)).toBe(true);
     expect(days.has(5)).toBe(true);
+  });
+
+  it('formats and parses local date input', () => {
+    const date = new Date(2026, 5, 18);
+    expect(formatLocalDateInput(date)).toBe('2026-06-18');
+    expect(parseLocalDateInput('2026-06-18')).toEqual(date);
+  });
+
+  it('rejects invalid local date input', () => {
+    expect(parseLocalDateInput('2026-13-01')).toBeNull();
+    expect(parseLocalDateInput('invalid')).toBeNull();
+    expect(parseLocalDateInput('2026-02-30')).toBeNull();
   });
 });
