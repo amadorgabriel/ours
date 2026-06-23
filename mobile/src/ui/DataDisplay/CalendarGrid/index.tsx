@@ -33,6 +33,7 @@ export type CalendarGridProps = {
   month: number;
   daysWithActivity: Set<number>;
   isLoading?: boolean;
+  isDayDisabled?: (day: number) => boolean;
   onDayPress: (day: number) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -61,6 +62,7 @@ export function CalendarGrid({
   month,
   daysWithActivity,
   isLoading = false,
+  isDayDisabled,
   onDayPress,
   onPrevMonth,
   onNextMonth,
@@ -103,22 +105,41 @@ export function CalendarGrid({
         {cells.map((day, index) => (
           <View key={`${year}-${month}-${index}`} className="w-[14.28%] items-center py-1">
             {day ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('calendar.dayAccessibility', { day })}
-                className="min-h-11 min-w-11 items-center justify-center rounded-full"
-                onPress={() => onDayPress(day)}
-              >
-                <Text className="font-sans text-mindful-brown">{day}</Text>
-                {daysWithActivity.has(day) ? (
-                  <View
-                    className="mt-0.5 h-1.5 w-1.5 rounded-full"
-                    style={{ backgroundColor: colors.serenityGreen60 }}
-                  />
-                ) : (
-                  <View className="mt-0.5 h-1.5 w-1.5" />
-                )}
-              </Pressable>
+              (() => {
+                const disabled = isDayDisabled?.(day) ?? false;
+                const hasActivity = daysWithActivity.has(day);
+
+                if (disabled) {
+                  return (
+                    <View
+                      accessibilityState={{ disabled: true }}
+                      className="min-h-11 min-w-11 items-center justify-center rounded-full opacity-40"
+                    >
+                      <Text className="font-sans text-mindful-brown/50">{day}</Text>
+                      <View className="mt-0.5 h-1.5 w-1.5" />
+                    </View>
+                  );
+                }
+
+                return (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('calendar.dayAccessibility', { day })}
+                    className="min-h-11 min-w-11 items-center justify-center rounded-full"
+                    onPress={() => onDayPress(day)}
+                  >
+                    <Text className="font-sans text-mindful-brown">{day}</Text>
+                    {hasActivity ? (
+                      <View
+                        className="mt-0.5 h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: colors.serenityGreen60 }}
+                      />
+                    ) : (
+                      <View className="mt-0.5 h-1.5 w-1.5" />
+                    )}
+                  </Pressable>
+                );
+              })()
             ) : (
               <View className="min-h-11 min-w-11" />
             )}

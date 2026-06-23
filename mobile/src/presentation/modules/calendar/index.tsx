@@ -1,45 +1,51 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 
 import type { ActivityFeedItem } from '@/core/domain/activity';
 import { useActivitiesByMonth } from '@/core/services/usecases/activity/index.hooks';
 import {
+  type CalendarDate,
+  isCalendarDayBeforeFamilyCreation,
+  isCalendarDayEnabled,
+  toCalendarDateKey,
+} from '@/core/services/usecases/activity/calendar-day';
+import {
   getDaysWithActivities,
   toLocalDateKey,
 } from '@/core/services/usecases/activity/month-range';
 import { useTranslation } from '@/presentation/hooks/use-translation';
+import { useAuth } from '@/presentation/providers/auth';
+import { useFamily } from '@/presentation/providers/family';
 import { colors } from '@/presentation/styles/tokens';
 import { CalendarGrid } from '@/ui/DataDisplay/CalendarGrid';
 import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
 
 import { DayDetailSheet } from './day-detail-sheet';
 
-function formatDayLabel(year: number, month: number, day: number): string {
-  const date = new Date(year, month - 1, day);
-  return date.toLocaleDateString('pt-BR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-}
-
-function filterItemsForDay(
-  items: ActivityFeedItem[],
-  year: number,
-  month: number,
-  day: number
-): ActivityFeedItem[] {
-  const key = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
+function filterItemsForDate(items: ActivityFeedItem[], date: CalendarDate): ActivityFeedItem[] {
+  const key = toCalendarDateKey(date);
   return items.filter((item) => toLocalDateKey(item.createdAt) === key);
 }
 
 export function CalendarScreen() {
   const { t } = useTranslation();
+  const { session } = useAuth();
+  const { familyId } = useFamily();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState<CalendarDate | null>(null);
+
+  const activeFamily = session?.families.find((family) => family.id === familyId);
+  const familyCreatedAt = activeFamily?.createdAt;
+
+  useEffect(() => {
+    if (familyCreatedAt || !familyId) {
+      return;
+    }
+
+    console.warn('[CalendarScreen] family.createdAt ausente — datas pré-família não serão desabilitadas');
+  }, [familyCreatedAt, familyId]);
 
   const { data, isLoading, isError, isRefetching, isFetching, refetch } = useActivitiesByMonth(
     year,
@@ -47,14 +53,20 @@ export function CalendarScreen() {
   );
   const items = data?.items ?? [];
 
+  const isDayDisabled = useCallback(
+    (day: number) =>
+      isCalendarDayBeforeFamilyCreation({ year, month, day }, familyCreatedAt),
+    [familyCreatedAt, month, year]
+  );
+
   const daysWithActivity = useMemo(() => getDaysWithActivities(items), [items]);
-  const selectedItems = selectedDay
-    ? filterItemsForDay(items, year, month, selectedDay)
-    : [];
-  const selectedDateLabel = selectedDay
-    ? formatDayLabel(year, month, selectedDay)
-    : '';
+  const selectedItems = selectedDate ? filterItemsForDate(items, selectedDate) : [];
   const showGridLoading = (isLoading || isFetching) && !isRefetching;
+
+  const getItemsForDate = useCallback(
+    (date: CalendarDate) => filterItemsForDate(items, date),
+    [items]
+  );
 
   function goToPreviousMonth() {
     if (month === 1) {
@@ -76,6 +88,24 @@ export function CalendarScreen() {
     setMonth((current) => current + 1);
   }
 
+  function handleDayPress(day: number) {
+    if (isDayDisabled(day)) {
+      return;
+    }
+
+    setSelectedDate({ year, month, day });
+  }
+
+  function handleDateChange(date: CalendarDate) {
+    if (!isCalendarDayEnabled(date, familyCreatedAt)) {
+      return;
+    }
+
+    setYear(date.year);
+    setMonth(date.month);
+    setSelectedDate(date);
+  }
+
   return (
     <View className="flex-1 bg-cream">
       <ScrollView
@@ -85,6 +115,7 @@ export function CalendarScreen() {
             refreshing={isRefetching}
             tintColor={colors.serenityGreen60}
             onRefresh={() => {
+              setSelectedDate(null);
               void refetch();
             }}
           />
@@ -107,7 +138,8 @@ export function CalendarScreen() {
             month={month}
             daysWithActivity={daysWithActivity}
             isLoading={showGridLoading}
-            onDayPress={(day) => setSelectedDay(day)}
+            isDayDisabled={isDayDisabled}
+            onDayPress={handleDayPress}
             onPrevMonth={goToPreviousMonth}
             onNextMonth={goToNextMonth}
           />
@@ -127,10 +159,13 @@ export function CalendarScreen() {
       </ScrollView>
 
       <DayDetailSheet
-        visible={selectedDay !== null}
-        dateLabel={selectedDateLabel}
+        visible={selectedDate !== null}
+        date={selectedDate ?? { year, month, day: 1 }}
         items={selectedItems}
-        onClose={() => setSelectedDay(null)}
+        familyCreatedAt={familyCreatedAt}
+        getItemsForDate={getItemsForDate}
+        onClose={() => setSelectedDate(null)}
+        onDateChange={handleDateChange}
       />
     </View>
   );

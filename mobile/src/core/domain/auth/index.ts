@@ -9,6 +9,7 @@ export type FamilyMembershipModel = {
   id: string;
   name: string;
   role: 'Admin' | 'Member';
+  createdAt?: string;
 };
 
 export type AuthSessionModel = {

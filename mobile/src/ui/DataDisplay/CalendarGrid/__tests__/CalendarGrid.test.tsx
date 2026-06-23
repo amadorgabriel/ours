@@ -33,4 +33,30 @@ describe('CalendarGrid', () => {
 
     expect(onDayPress).toHaveBeenCalledWith(18);
   });
+
+  it('does not call onDayPress for disabled days', () => {
+    const onDayPress = jest.fn();
+    let tree!: renderer.ReactTestRenderer;
+
+    act(() => {
+      tree = renderer.create(
+        <CalendarGrid
+          year={2026}
+          month={6}
+          daysWithActivity={new Set([5])}
+          isDayDisabled={(day) => day < 10}
+          onDayPress={onDayPress}
+          onPrevMonth={jest.fn()}
+          onNextMonth={jest.fn()}
+        />
+      );
+    });
+
+    const disabledDay = tree.root.findAll(
+      (node) => node.props?.accessibilityState?.disabled === true
+    );
+
+    expect(disabledDay.length).toBeGreaterThan(0);
+    expect(onDayPress).not.toHaveBeenCalled();
+  });
 });

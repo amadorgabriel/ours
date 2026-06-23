@@ -48,7 +48,8 @@ public sealed class AuthService(
             .Select(m => new FamilyMembershipDto(
                 m.FamilyId.ToString(),
                 m.Family.Name,
-                m.Role == FamilyRole.Admin ? "Admin" : "Member"))
+                m.Role == FamilyRole.Admin ? "Admin" : "Member",
+                m.Family.CreatedAt))
             .ToList();
 
         return new AuthSessionResponse(
