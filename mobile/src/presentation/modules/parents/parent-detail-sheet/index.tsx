@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Keyboard,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -64,12 +65,17 @@ export function ParentDetailSheet({
   const [emergencyBriefing, setEmergencyBriefing] = useState('');
 
   useEffect(() => {
-    if (!parent) return;
+    setIsEditing(false);
+    setMedicalInfo('');
+    setEmergencyBriefing('');
+  }, [parentId]);
+
+  useEffect(() => {
+    if (!parent || isEditing) return;
 
     setMedicalInfo(parent.medicalInfo ?? '');
     setEmergencyBriefing(parent.emergencyBriefing ?? '');
-    setIsEditing(false);
-  }, [parent]);
+  }, [parent, isEditing]);
 
   function handleClose() {
     updateParent.reset();
@@ -90,6 +96,7 @@ export function ParentDetailSheet({
       },
       {
         onSuccess: () => {
+          Keyboard.dismiss();
           setIsEditing(false);
         },
       }
@@ -105,7 +112,6 @@ export function ParentDetailSheet({
       visible={visible}
       onClose={handleClose}
       accessibilityLabel={t('parents.detailAccessibility')}
-      scrollable
     >
       {isLoading ? (
         <View className="items-center py-10">
@@ -121,6 +127,7 @@ export function ParentDetailSheet({
         />
       ) : (
         <ScrollView
+          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl

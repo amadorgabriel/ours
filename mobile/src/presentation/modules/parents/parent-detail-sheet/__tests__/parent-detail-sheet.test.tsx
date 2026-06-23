@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import { Text, TextInput } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
 import { ParentDetailSheet } from '../index';
@@ -120,5 +120,93 @@ describe('ParentDetailSheet', () => {
 
     expect(text).toContain('Nenhuma informação médica cadastrada ainda.');
     expect(text).toContain('Nenhum briefing de emergência cadastrado ainda.');
+  });
+
+  it('enters edit mode with text inputs for admin (MS-190)', () => {
+    const tree = renderSheet({
+      isAdmin: true,
+      parent: {
+        id: 'p1',
+        name: 'Maria',
+        relationship: 'Mãe',
+        medicalInfo: 'Hipertensão',
+        emergencyBriefing: 'Ligar filho',
+      },
+    });
+
+    const editButton = tree.root.find(
+      (node) => node.props.accessibilityLabel === 'Editar ficha'
+    );
+
+    act(() => {
+      editButton.props.onPress();
+    });
+
+    expect(tree.root.findAllByType(TextInput)).toHaveLength(2);
+    expect(getAllText(tree)).toContain('Cancelar');
+  });
+
+  it('preserves edit mode when parent refetches (MS-190)', () => {
+    const parent = {
+      id: 'p1',
+      name: 'Maria',
+      relationship: 'Mãe',
+      medicalInfo: 'Hipertensão',
+      emergencyBriefing: 'Ligar filho',
+    };
+
+    useParent.mockReturnValue({
+      data: parent,
+      isLoading: false,
+      isError: false,
+      isRefetching: false,
+      refetch: jest.fn(),
+    });
+
+    useUpdateParent.mockReturnValue({
+      mutate: jest.fn(),
+      reset: jest.fn(),
+      isPending: false,
+      isError: false,
+      error: null,
+    });
+
+    let tree!: renderer.ReactTestRenderer;
+
+    act(() => {
+      tree = renderer.create(
+        <ParentDetailSheet parentId="p1" visible isAdmin onClose={jest.fn()} />
+      );
+    });
+
+    const editButton = tree.root.find(
+      (node) => node.props.accessibilityLabel === 'Editar ficha'
+    );
+
+    act(() => {
+      editButton.props.onPress();
+    });
+
+    const medicalInput = tree.root.findAllByType(TextInput)[0];
+
+    act(() => {
+      medicalInput.props.onChangeText('Diabetes');
+    });
+
+    useParent.mockReturnValue({
+      data: { ...parent, medicalInfo: 'Hipertensão' },
+      isLoading: false,
+      isError: false,
+      isRefetching: true,
+      refetch: jest.fn(),
+    });
+
+    act(() => {
+      tree.update(<ParentDetailSheet parentId="p1" visible isAdmin onClose={jest.fn()} />);
+    });
+
+    expect(tree.root.findAllByType(TextInput)).toHaveLength(2);
+    expect(tree.root.findAllByType(TextInput)[0].props.value).toBe('Diabetes');
+    expect(getAllText(tree)).toContain('Cancelar');
   });
 });
