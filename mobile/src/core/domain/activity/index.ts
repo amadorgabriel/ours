@@ -24,6 +24,7 @@ export type ActivityFeedParams = {
   limit?: number;
   from?: string;
   to?: string;
+  parentId?: string;
 };
 
 export type ActivityFeedResponse = {

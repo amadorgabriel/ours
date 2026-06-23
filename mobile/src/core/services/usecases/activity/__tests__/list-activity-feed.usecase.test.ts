@@ -53,4 +53,19 @@ describe('ListActivityFeedUseCase', () => {
       },
     });
   });
+
+  it('loads feed with parentId param', async () => {
+    const feed: ActivityFeedResponse = { items: [] };
+    const request = jest.fn().mockResolvedValue({ statusCode: 200, data: feed });
+    const httpClient: IHttpClient = { request };
+
+    const useCase = new ListActivityFeedUseCase(httpClient);
+    await useCase.listFeed({ limit: 50, parentId: 'parent-1' });
+
+    expect(request).toHaveBeenCalledWith({
+      method: 'get',
+      url: '/activities/feed',
+      queryParams: { limit: 50, parentId: 'parent-1' },
+    });
+  });
 });

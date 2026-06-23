@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import type { FamilyId } from '@/core/domain/family';
 import {
@@ -11,12 +11,19 @@ import type { FamilyContextValue } from './index.types';
 const FamilyContext = createContext<FamilyContextValue | null>(null);
 
 export function FamilyProvider({ children }: { children: ReactNode }) {
-  const [familyId, setFamilyId] = useState<FamilyId | null>(null);
+  const [familyId, setFamilyIdState] = useState<FamilyId | null>(null);
+  const familyIdRef = useRef(familyId);
+  familyIdRef.current = familyId;
+
+  const setFamilyId = useCallback((id: FamilyId | null) => {
+    familyIdRef.current = id;
+    setFamilyIdState(id);
+  }, []);
 
   useEffect(() => {
-    registerFamilyIdGetter(() => familyId);
+    registerFamilyIdGetter(() => familyIdRef.current);
     return () => unregisterFamilyIdGetter();
-  }, [familyId]);
+  }, []);
 
   const value = useMemo<FamilyContextValue>(
     () => ({ familyId, setFamilyId }),

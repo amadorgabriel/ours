@@ -6,11 +6,12 @@ export class ListActivityFeedUseCase implements Pick<IActivity, 'listFeed'> {
   constructor(private readonly httpClient: IHttpClient) {}
 
   async listFeed(params: ActivityFeedParams = {}): Promise<ActivityFeedResponse> {
-    const { limit = 50, from, to } = params;
+    const { limit = 50, from, to, parentId } = params;
     const queryParams: Record<string, string | number> = { limit };
 
     if (from) queryParams.from = from;
     if (to) queryParams.to = to;
+    if (parentId) queryParams.parentId = parentId;
 
     const response = await this.httpClient.request<ActivityFeedResponse>({
       method: 'get',

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useEffect, type ReactNode } from 'react';
+import { useLayoutEffect } from 'react';
 import renderer, { act } from 'react-test-renderer';
 
 import type { ParentSummary } from '@/core/domain/parent';
@@ -36,26 +36,33 @@ function createTestQueryClient() {
   });
 }
 
-function FamilyScope({
-  familyId,
-  children,
-}: {
-  familyId: string;
-  children: ReactNode;
-}) {
+function SetFamilyId({ familyId }: { familyId: string }) {
   const { setFamilyId } = useFamily();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setFamilyId(familyId);
   }, [familyId, setFamilyId]);
 
-  return children;
+  return null;
 }
 
 async function flushEffects() {
   await act(async () => {
-    await Promise.resolve();
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
   });
+}
+
+async function waitForAssistido(
+  getAssistido: () => AssistidoContextValue,
+  predicate: (value: AssistidoContextValue) => boolean,
+  attempts = 10
+) {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    if (predicate(getAssistido())) return;
+    await flushEffects();
+  }
 }
 
 async function renderAssistido(
@@ -73,10 +80,9 @@ async function renderAssistido(
     renderer.create(
       <QueryClientProvider client={client}>
         <FamilyProvider>
+          <SetFamilyId familyId={familyId} />
           <AssistidoProvider>
-            <FamilyScope familyId={familyId}>
-              <Capture />
-            </FamilyScope>
+            <Capture />
           </AssistidoProvider>
         </FamilyProvider>
       </QueryClientProvider>
@@ -143,15 +149,39 @@ describe('AssistidoProvider', () => {
       { id: 'parent-valid', name: 'Maria', relationship: 'Mãe' },
     ];
 
-    useParents.mockReturnValue({ data: parents, isLoading: false });
+    useParents.mockImplementation((familyId: string | null) => ({
+      data: familyId ? parents : [],
+      isLoading: false,
+    }));
     mockGetStoredParentId.mockResolvedValue('parent-stale');
 
     const { getAssistido } = await renderAssistido('family-1');
 
-    await flushEffects();
+    await waitForAssistido(getAssistido, (value) => value.parentId === 'parent-valid');
 
-    expect(getAssistido().parentId).toBeNull();
     expect(mockClearStoredParentId).toHaveBeenCalledWith('family-1');
-    expect(getAssistido().activeParent).toBeNull();
+    expect(getAssistido().parentId).toBe('parent-valid');
+    expect(mockSetStoredParentId).toHaveBeenCalledWith('family-1', 'parent-valid');
+    expect(getAssistido().activeParent).toEqual(parents[0]);
+  });
+
+  it('auto-selects first parent when none is stored', async () => {
+    const parents: ParentSummary[] = [
+      { id: 'parent-1', name: 'João', relationship: 'Pai' },
+      { id: 'parent-2', name: 'Maria', relationship: 'Mãe' },
+    ];
+
+    useParents.mockImplementation((familyId: string | null) => ({
+      data: familyId ? parents : [],
+      isLoading: false,
+    }));
+
+    const { getAssistido } = await renderAssistido('family-1');
+
+    await waitForAssistido(getAssistido, (value) => value.parentId === 'parent-1');
+
+    expect(getAssistido().parentId).toBe('parent-1');
+    expect(mockSetStoredParentId).toHaveBeenCalledWith('family-1', 'parent-1');
+    expect(getAssistido().activeParent).toEqual(parents[0]);
   });
 });

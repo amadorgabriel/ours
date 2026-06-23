@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import type { GoogleAuthRequest } from '@/core/domain/auth';
 import { registerAuthTokenGetter, unregisterAuthTokenGetter } from '@/core/infra/http/auth-token-context';
@@ -18,6 +19,7 @@ import { applyActiveFamilyFromSession } from './apply-active-family';
 import { AuthGetSessionUseCase } from './get-session.usecase';
 import { AuthLoginGoogleUseCase } from './login-google.usecase';
 import { AuthLogoutUseCase } from './logout.usecase';
+import { ListParentsUseCase } from '../parent/list-parents.usecase';
 
 export async function hydrateAuthTokenFromStorage(): Promise<string | null> {
   const token = await getStoredAuthToken();
@@ -36,6 +38,7 @@ export function unregisterAuthTokenFromMemory(): void {
 export function useSession(enabled = true) {
   const { setSession, clearSession } = useAuth();
   const { setFamilyId } = useFamily();
+  const queryClient = useQueryClient();
   const httpClient = HttpClientFactory.create();
   const useCase = new AuthGetSessionUseCase(httpClient);
 
@@ -46,6 +49,19 @@ export function useSession(enabled = true) {
         const session = await useCase.getSession();
         setSession(session);
         applyActiveFamilyFromSession(session, setFamilyId);
+
+        if (session.familyCount === 1 && session.families[0]) {
+          const activeFamilyId = session.families[0].id;
+          await queryClient.prefetchQuery({
+            queryKey: queryKeys.parents.list(activeFamilyId),
+            queryFn: async () => {
+              const listUseCase = new ListParentsUseCase(httpClient);
+              const response = await listUseCase.listMine();
+              return response.items;
+            },
+          });
+        }
+
         return session;
       } catch (error) {
         if (error instanceof HttpClientError && error.statusCode === 401) {
@@ -95,6 +111,11 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => useCase.logout(),
     onSuccess: async () => {
+      try {
+        await GoogleSignin.signOut();
+      } catch {
+        // User may not have signed in with Google on this device.
+      }
       setInMemoryAuthToken(null);
       await clearStoredAuthToken();
       clearSession();

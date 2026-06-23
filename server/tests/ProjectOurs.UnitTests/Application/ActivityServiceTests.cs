@@ -162,7 +162,7 @@ public sealed class ActivityServiceTests
             });
 
         _activities
-            .Setup(x => x.ListByFamilyIdAsync(familyId, 50, null, null, It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListByFamilyIdAsync(familyId, 50, null, null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync([
                 new Activity
                 {
@@ -202,15 +202,71 @@ public sealed class ActivityServiceTests
             });
 
         _activities
-            .Setup(x => x.ListByFamilyIdAsync(familyId, 50, from, to, It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListByFamilyIdAsync(familyId, 50, from, to, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
 
         var result = await _sut.GetFeedAsync(userId, familyId, null, from, to);
 
         Assert.Empty(result.Items);
         _activities.Verify(
-            x => x.ListByFamilyIdAsync(familyId, 50, from, to, It.IsAny<CancellationToken>()),
+            x => x.ListByFamilyIdAsync(familyId, 50, from, to, null, It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    [Fact]
+    public async Task GetFeed_WithParentId_PassesParentFilterToRepository()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var parentId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FamilyId = familyId,
+                Role = FamilyRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow,
+            });
+
+        _activities
+            .Setup(x => x.ParentBelongsToFamilyAsync(parentId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        _activities
+            .Setup(x => x.ListByFamilyIdAsync(familyId, 50, null, null, parentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+
+        var result = await _sut.GetFeedAsync(userId, familyId, null, null, null, parentId.ToString());
+
+        Assert.Empty(result.Items);
+        _activities.Verify(
+            x => x.ListByFamilyIdAsync(familyId, 50, null, null, parentId, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetFeed_WithInvalidParentId_ThrowsValidation()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                FamilyId = familyId,
+                Role = FamilyRole.Member,
+                JoinedAt = DateTimeOffset.UtcNow,
+            });
+
+        var act = () => _sut.GetFeedAsync(userId, familyId, null, null, null, "not-a-guid");
+
+        await Assert.ThrowsAsync<ActivityValidationException>(act);
     }
 
     [Fact]
@@ -232,7 +288,7 @@ public sealed class ActivityServiceTests
                 JoinedAt = DateTimeOffset.UtcNow,
             });
 
-        var act = () => _sut.GetFeedAsync(userId, familyId, null, from, to);
+        var act = () => _sut.GetFeedAsync(userId, familyId, null, from, to, null);
 
         await Assert.ThrowsAsync<ActivityValidationException>(act);
     }

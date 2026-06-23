@@ -12,6 +12,7 @@ public interface IActivityRepository
         int limit,
         DateTimeOffset? from = null,
         DateTimeOffset? to = null,
+        Guid? parentId = null,
         CancellationToken cancellationToken = default);
 
     Task<bool> ParentBelongsToFamilyAsync(

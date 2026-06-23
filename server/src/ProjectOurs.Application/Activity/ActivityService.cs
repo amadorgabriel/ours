@@ -75,10 +75,32 @@ public sealed class ActivityService(
         int? limit,
         DateTimeOffset? from = null,
         DateTimeOffset? to = null,
+        string? parentId = null,
         CancellationToken cancellationToken = default)
     {
         await EnsureMembershipAsync(userId, familyId, cancellationToken);
         ActivityRules.ValidateFeedDateRange(from, to);
+
+        Guid? parsedParentId = null;
+        if (!string.IsNullOrWhiteSpace(parentId))
+        {
+            if (!Guid.TryParse(parentId, out var parentGuid))
+            {
+                throw new ActivityValidationException("Invalid parent id.");
+            }
+
+            var parentExists = await activities.ParentBelongsToFamilyAsync(
+                parentGuid,
+                familyId,
+                cancellationToken);
+
+            if (!parentExists)
+            {
+                throw new ActivityValidationException("Parent does not belong to this family.");
+            }
+
+            parsedParentId = parentGuid;
+        }
 
         var normalizedLimit = ActivityRules.NormalizeFeedLimit(limit);
         var items = await activities.ListByFamilyIdAsync(
@@ -86,6 +108,7 @@ public sealed class ActivityService(
             normalizedLimit,
             from,
             to,
+            parsedParentId,
             cancellationToken);
 
         return new ActivityFeedResponse(items.Select(MapToDto).ToList());

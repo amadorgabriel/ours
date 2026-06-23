@@ -21,6 +21,7 @@ public sealed class ActivitiesController(
         [FromQuery] int? limit,
         [FromQuery] DateTimeOffset? from,
         [FromQuery] DateTimeOffset? to,
+        [FromQuery] string? parentId,
         CancellationToken cancellationToken)
     {
         if (!ApiControllerHelper.TryGetUserId(User, out var userId))
@@ -41,6 +42,7 @@ public sealed class ActivitiesController(
                 limit,
                 from,
                 to,
+                parentId,
                 cancellationToken);
             return Ok(feed);
         }

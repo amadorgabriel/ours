@@ -23,6 +23,7 @@ public sealed class ActivityRepository(ApplicationDbContext db) : IActivityRepos
         int limit,
         DateTimeOffset? from = null,
         DateTimeOffset? to = null,
+        Guid? parentId = null,
         CancellationToken cancellationToken = default)
     {
         var query = db.Activities
@@ -39,6 +40,11 @@ public sealed class ActivityRepository(ApplicationDbContext db) : IActivityRepos
         if (to is not null)
         {
             query = query.Where(x => x.CreatedAt <= to);
+        }
+
+        if (parentId is not null)
+        {
+            query = query.Where(x => x.ParentId == parentId);
         }
 
         return await query
