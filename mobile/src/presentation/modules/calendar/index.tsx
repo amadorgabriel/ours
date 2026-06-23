@@ -1,9 +1,14 @@
+import { useQueries } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 
 import type { ActivityFeedItem } from '@/core/domain/activity';
-import { useActivitiesByMonth } from '@/core/services/usecases/activity/index.hooks';
 import {
+  getActivitiesByMonthQueryOptions,
+  useActivitiesByMonth,
+} from '@/core/services/usecases/activity/index.hooks';
+import {
+  addCalendarDays,
   type CalendarDate,
   isCalendarDayBeforeFamilyCreation,
   isCalendarDayEnabled,
@@ -14,6 +19,7 @@ import {
   toLocalDateKey,
 } from '@/core/services/usecases/activity/month-range';
 import { useTranslation } from '@/presentation/hooks/use-translation';
+import { useAssistido } from '@/presentation/providers/assistido';
 import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
 import { colors } from '@/presentation/styles/tokens';
@@ -31,6 +37,7 @@ export function CalendarScreen() {
   const { t } = useTranslation();
   const { session } = useAuth();
   const { familyId } = useFamily();
+  const { parentId } = useAssistido();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -60,13 +67,61 @@ export function CalendarScreen() {
   );
 
   const daysWithActivity = useMemo(() => getDaysWithActivities(items), [items]);
-  const selectedItems = selectedDate ? filterItemsForDate(items, selectedDate) : [];
   const showGridLoading = (isLoading || isFetching) && !isRefetching;
 
+  const adjacentMonths = useMemo(() => {
+    if (!selectedDate) {
+      return [] as { year: number; month: number }[];
+    }
+
+    const months: { year: number; month: number }[] = [];
+
+    for (const delta of [-1, 1] as const) {
+      const adjacent = addCalendarDays(selectedDate, delta);
+      if (adjacent.year === selectedDate.year && adjacent.month === selectedDate.month) {
+        continue;
+      }
+
+      const alreadyAdded = months.some(
+        (entry) => entry.year === adjacent.year && entry.month === adjacent.month
+      );
+      if (!alreadyAdded) {
+        months.push({ year: adjacent.year, month: adjacent.month });
+      }
+    }
+
+    return months;
+  }, [selectedDate]);
+
+  const adjacentMonthQueries = useQueries({
+    queries: adjacentMonths.map(({ year: adjacentYear, month: adjacentMonth }) =>
+      getActivitiesByMonthQueryOptions(familyId, parentId, adjacentYear, adjacentMonth)
+    ),
+  });
+
+  const monthItemsLookup = useMemo(() => {
+    const lookup = new Map<string, ActivityFeedItem[]>();
+    lookup.set(`${year}-${month}`, items);
+
+    adjacentMonths.forEach(({ year: adjacentYear, month: adjacentMonth }, index) => {
+      lookup.set(
+        `${adjacentYear}-${adjacentMonth}`,
+        adjacentMonthQueries[index]?.data?.items ?? []
+      );
+    });
+
+    return lookup;
+  }, [adjacentMonthQueries, adjacentMonths, items, month, year]);
+
   const getItemsForDate = useCallback(
-    (date: CalendarDate) => filterItemsForDate(items, date),
-    [items]
+    (date: CalendarDate) => {
+      const monthItems = monthItemsLookup.get(`${date.year}-${date.month}`) ?? items;
+      return filterItemsForDate(monthItems, date);
+    },
+    [items, monthItemsLookup]
   );
+
+  const selectedItems = selectedDate ? getItemsForDate(selectedDate) : [];
 
   function goToPreviousMonth() {
     if (month === 1) {

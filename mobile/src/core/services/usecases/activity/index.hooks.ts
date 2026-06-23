@@ -32,14 +32,17 @@ export function useActivityUnreadCount() {
   return data?.unreadCount ?? 0;
 }
 
-export function useActivitiesByMonth(year: number, month: number) {
-  const { familyId } = useFamily();
-  const { parentId } = useAssistido();
+export function getActivitiesByMonthQueryOptions(
+  familyId: string | null | undefined,
+  parentId: string | null | undefined,
+  year: number,
+  month: number
+) {
   const httpClient = HttpClientFactory.create();
   const useCase = new ListActivityFeedUseCase(httpClient);
   const range = getMonthRange(year, month);
 
-  return useQuery({
+  return {
     queryKey: queryKeys.activities.byMonth(familyId, year, month, parentId),
     queryFn: () =>
       useCase.listFeed({
@@ -49,7 +52,14 @@ export function useActivitiesByMonth(year: number, month: number) {
         parentId: parentId ?? undefined,
       }),
     enabled: Boolean(familyId),
-  });
+  };
+}
+
+export function useActivitiesByMonth(year: number, month: number) {
+  const { familyId } = useFamily();
+  const { parentId } = useAssistido();
+
+  return useQuery(getActivitiesByMonthQueryOptions(familyId, parentId, year, month));
 }
 
 export function useRegisterCall() {

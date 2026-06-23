@@ -13,8 +13,30 @@ jest.mock('@/core/services/usecases/activity/index.hooks', () => ({
     isLoading: false,
     isError: false,
     isRefetching: false,
+    isFetching: false,
     refetch: jest.fn(),
   }),
+  getActivitiesByMonthQueryOptions: jest.fn(),
+}));
+
+jest.mock('@/presentation/providers/auth', () => ({
+  useAuth: () => ({
+    session: {
+      families: [{ id: 'family-1', name: 'Família', role: 'Admin', createdAt: '2026-01-01T00:00:00.000Z' }],
+    },
+  }),
+}));
+
+jest.mock('@/presentation/providers/family', () => ({
+  useFamily: () => ({ familyId: 'family-1' }),
+}));
+
+jest.mock('@/presentation/providers/assistido', () => ({
+  useAssistido: () => ({ parentId: null }),
+}));
+
+jest.mock('@tanstack/react-query', () => ({
+  useQueries: () => [],
 }));
 
 describe('CalendarScreen', () => {

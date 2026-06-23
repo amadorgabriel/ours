@@ -25,6 +25,36 @@ type DayDetailSheetProps = {
 };
 
 const SHEET_HEADER_HEIGHT = 88;
+const EMPTY_STATE_HEIGHT = 100;
+const ACTIVITY_CARD_ESTIMATE = 100;
+
+function estimateSheetHeight(itemCount: number, listMaxHeight: number): number {
+  const maxSheetHeight = listMaxHeight + SHEET_HEADER_HEIGHT;
+
+  if (itemCount === 0) {
+    return Math.min(SHEET_HEADER_HEIGHT + EMPTY_STATE_HEIGHT, maxSheetHeight);
+  }
+
+  const estimatedListHeight = Math.min(itemCount * ACTIVITY_CARD_ESTIMATE, listMaxHeight);
+  return Math.min(SHEET_HEADER_HEIGHT + estimatedListHeight, maxSheetHeight);
+}
+
+function resolvePageItems(
+  pageDate: CalendarDate,
+  date: CalendarDate,
+  items: ActivityFeedItem[],
+  getItemsForDate: (date: CalendarDate) => ActivityFeedItem[]
+): ActivityFeedItem[] {
+  if (
+    pageDate.year === date.year &&
+    pageDate.month === date.month &&
+    pageDate.day === date.day
+  ) {
+    return items;
+  }
+
+  return getItemsForDate(pageDate);
+}
 
 function DayActivities({
   items,
@@ -106,6 +136,17 @@ export function DayDetailSheet({
 
   const currentPageIndex = canSwipePrev ? 1 : 0;
 
+  const sheetHeight = useMemo(() => {
+    const heights = pages.map((pageDate) =>
+      estimateSheetHeight(
+        resolvePageItems(pageDate, date, items, getItemsForDate).length,
+        listMaxHeight
+      )
+    );
+
+    return Math.max(...heights);
+  }, [date, getItemsForDate, items, listMaxHeight, pages]);
+
   useEffect(() => {
     if (!visible) {
       return;
@@ -124,7 +165,7 @@ export function DayDetailSheet({
         <PagerView
           ref={pagerRef}
           initialPage={currentPageIndex}
-          style={{ height: listMaxHeight + SHEET_HEADER_HEIGHT }}
+          style={{ height: sheetHeight }}
           onPageSelected={(event) => {
             const position = event.nativeEvent.position;
             if (position === currentPageIndex) {
@@ -144,13 +185,7 @@ export function DayDetailSheet({
             <View key={`${pageDate.year}-${pageDate.month}-${pageDate.day}`}>
               <DayPage
                 date={pageDate}
-                items={
-                  pageDate.year === date.year &&
-                  pageDate.month === date.month &&
-                  pageDate.day === date.day
-                    ? items
-                    : getItemsForDate(pageDate)
-                }
+                items={resolvePageItems(pageDate, date, items, getItemsForDate)}
                 listMaxHeight={listMaxHeight}
               />
             </View>
