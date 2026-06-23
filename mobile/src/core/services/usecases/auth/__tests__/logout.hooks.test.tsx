@@ -1,14 +1,13 @@
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
 import renderer, { act } from 'react-test-renderer';
 
+import { clearGoogleSignInSession } from '@/core/infra/auth/google-signin-session';
+
 import { useLogout } from '../index.hooks';
 
-jest.mock('@react-native-google-signin/google-signin', () => ({
-  GoogleSignin: {
-    signOut: jest.fn(),
-  },
+jest.mock('@/core/infra/auth/google-signin-session', () => ({
+  clearGoogleSignInSession: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@/core/infra/http/http-client-factory', () => ({
@@ -33,7 +32,9 @@ jest.mock('@/presentation/providers/family', () => ({
   useFamily: () => ({ setFamilyId: jest.fn() }),
 }));
 
-const mockGoogleSignOut = GoogleSignin.signOut as jest.MockedFunction<typeof GoogleSignin.signOut>;
+const mockClearGoogleSignInSession = clearGoogleSignInSession as jest.MockedFunction<
+  typeof clearGoogleSignInSession
+>;
 
 function createTestQueryClient() {
   return new QueryClient({
@@ -54,10 +55,10 @@ function LogoutRunner({ onReady }: { onReady: (logout: ReturnType<typeof useLogo
 describe('useLogout', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGoogleSignOut.mockResolvedValue(null);
+    mockClearGoogleSignInSession.mockResolvedValue(undefined);
   });
 
-  it('calls GoogleSignin.signOut on successful logout', async () => {
+  it('clears Google Sign-In session on successful logout', async () => {
     const client = createTestQueryClient();
     let logoutMutation!: ReturnType<typeof useLogout>;
 
@@ -77,10 +78,10 @@ describe('useLogout', () => {
       await logoutMutation.mutateAsync();
     });
 
-    expect(mockGoogleSignOut).toHaveBeenCalledTimes(1);
+    expect(mockClearGoogleSignInSession).toHaveBeenCalledTimes(1);
   });
 
-  it('still calls GoogleSignin.signOut when server logout fails', async () => {
+  it('still clears Google Sign-In session when server logout fails', async () => {
     const client = createTestQueryClient();
     let logoutMutation!: ReturnType<typeof useLogout>;
 
@@ -107,6 +108,6 @@ describe('useLogout', () => {
       await logoutMutation.mutateAsync();
     });
 
-    expect(mockGoogleSignOut).toHaveBeenCalledTimes(1);
+    expect(mockClearGoogleSignInSession).toHaveBeenCalledTimes(1);
   });
 });

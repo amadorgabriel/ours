@@ -21,6 +21,7 @@ import { useParents } from '@/core/services/usecases/parent/index.hooks';
 import { InviteSheet } from '@/presentation/modules/family/invite';
 import { getRemoveMemberErrorMessage } from '@/presentation/modules/family/family-api-error';
 import { roleLabel } from '@/presentation/modules/family/role-label';
+import { relationshipLabel } from '@/presentation/modules/family/relationship-label';
 import { CreateFamilySheet } from '@/presentation/modules/profile/create-family-sheet';
 import { NotificationSettings } from '@/presentation/modules/profile/notification-settings';
 import { FamilyAdminSheet } from '@/presentation/modules/profile/family-admin-sheet';
@@ -66,7 +67,9 @@ function ParentListItem({
       </View>
       <View className="flex-1">
         <Text className="font-sans-semibold text-mindful-brown">{parent.name}</Text>
-        <Text className="font-sans text-sm text-mindful-brown/70">{parent.relationship}</Text>
+        <Text className="font-sans text-sm text-mindful-brown/70">
+          {relationshipLabel(parent.relationship)}
+        </Text>
       </View>
       <Pressable
         accessibilityRole="button"
@@ -407,11 +410,11 @@ export function ProfileScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('profile.logoutAccessibility')}
-            className="items-center rounded-xl border border-mindful-brown/20 py-3"
+            className="items-center rounded-xl py-3"
             disabled={logoutMutation.isPending}
             onPress={handleLogout}
           >
-            <Text className="font-sans-semibold text-mindful-brown">
+            <Text className="font-sans-semibold text-red-600">
               {logoutMutation.isPending ? t('profile.loggingOut') : t('profile.logout')}
             </Text>
           </Pressable>

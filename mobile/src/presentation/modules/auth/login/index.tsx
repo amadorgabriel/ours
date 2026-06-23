@@ -3,58 +3,66 @@ import {
   isErrorWithCode,
   isSuccessResponse,
   statusCodes,
-} from "@react-native-google-signin/google-signin";
+} from '@react-native-google-signin/google-signin';
 
-import { useRouter, type Href } from "expo-router";
+import { useRouter, type Href } from 'expo-router';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-import { ActivityIndicator, Image, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 
 import {
   getGoogleIosClientId,
   getGoogleWebClientId,
   isGoogleSignInConfigured,
-} from "@/core/infra/auth/google-signin-config";
+} from '@/core/infra/auth/google-signin-config';
 
-import { HttpClientError } from "@/core/infra/http/http-error";
+import { prepareGoogleSignInForAccountPicker } from '@/core/infra/auth/google-signin-session';
 
-import { applyActiveFamilyFromSession } from "@/core/services/usecases/auth/apply-active-family";
+import { t } from '@/core/infra/i18n';
 
-import { useLoginWithGoogle } from "@/core/services/usecases/auth/index.hooks";
+import { HttpClientError } from '@/core/infra/http/http-error';
 
-import { resolvePostLoginRoute } from "@/presentation/modules/auth/auth-redirect";
-import { colors } from "@/presentation/styles/tokens";
+import { applyActiveFamilyFromSession } from '@/core/services/usecases/auth/apply-active-family';
 
-import { useFamily } from "@/presentation/providers/family";
+import { useLoginWithGoogle } from '@/core/services/usecases/auth/index.hooks';
+
+import { resolvePostLoginRoute } from '@/presentation/modules/auth/auth-redirect';
+import { useTranslation } from '@/presentation/hooks/use-translation';
+import { colors } from '@/presentation/styles/tokens';
+
+import { useFamily } from '@/presentation/providers/family';
 
 function getLoginErrorDetail(error: unknown): string {
   if (error instanceof HttpClientError) {
     const payload = error.data as { message?: string } | undefined;
 
     if (error.statusCode) {
-      return `API ${error.statusCode}: ${payload?.message ?? error.message}`;
+      return t('auth.apiError', {
+        status: error.statusCode,
+        message: payload?.message ?? error.message,
+      });
     }
 
     return error.message;
   }
 
   if (isErrorWithCode(error)) {
-    // Android Sign-In: código 10 = DEVELOPER_ERROR (não exposto em statusCodes do SDK)
-    if (error.code === "10") {
-      return "Google (10): SHA-1 ou pacote incorreto no Console — confira credencial Android";
+    if (error.code === '10') {
+      return t('auth.googleDeveloperError');
     }
-    return `Google (${error.code})`;
+    return t('auth.googleError', { code: error.code });
   }
 
   if (error instanceof Error) {
     return error.message;
   }
 
-  return "Erro desconhecido";
+  return t('auth.unknownError');
 }
 
 export function LoginScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
 
   const { setFamilyId } = useFamily();
@@ -79,11 +87,8 @@ export function LoginScreen() {
     });
   }, [isConfigured]);
 
-  function reportError(
-    error: unknown,
-    fallback = "Não foi possível entrar. Tente novamente.",
-  ) {
-    console.error("[Login]", error);
+  function reportError(error: unknown, fallback = t('auth.signInFailed')) {
+    console.error('[Login]', error);
 
     setHasError(true);
 
@@ -98,14 +103,12 @@ export function LoginScreen() {
     try {
       await GoogleSignin.hasPlayServices();
 
+      await prepareGoogleSignInForAccountPicker();
+
       const response = await GoogleSignin.signIn();
 
       if (!isSuccessResponse(response) || !response.data.idToken) {
-        reportError(
-          new Error(
-            "Google não retornou idToken — confira Web client ID e SHA-1 Android",
-          ),
-        );
+        reportError(new Error(t('auth.googleNoIdToken')));
 
         return;
       }
@@ -121,7 +124,7 @@ export function LoginScreen() {
           },
 
           onError: (error) => reportError(error),
-        },
+        }
       );
     } catch (error) {
       if (
@@ -138,24 +141,22 @@ export function LoginScreen() {
   return (
     <View className="flex-1 items-center justify-center bg-cream px-6">
       <Image
-        accessibilityLabel="Ours"
+        accessibilityLabel={t('auth.logoAccessibility')}
         className="mb-4"
         resizeMode="contain"
-        source={require("@/assets/images/logo-ours.png")}
+        source={require('@/assets/images/logo-ours.png')}
         style={{ height: 96, width: 96 }}
       />
-      <Text className="font-sans-semibold text-2xl text-mindful-brown">
-        Ours
-      </Text>
+      <Text className="font-sans-semibold text-2xl text-mindful-brown">{t('auth.appName')}</Text>
 
       <Text className="mt-2 text-center font-sans text-base text-mindful-brown/80">
-        Cuidado colaborativo entre irmãos
+        {t('auth.tagline')}
       </Text>
 
       <View className="mt-10 w-full max-w-xs">
         {!isConfigured ? (
           <Text className="text-center font-sans text-sm text-red-600">
-            Configure EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID em .env.local
+            {t('auth.googleNotConfigured')}
           </Text>
         ) : (
           <Pressable
@@ -167,16 +168,14 @@ export function LoginScreen() {
             {loginMutation.isPending ? (
               <ActivityIndicator color={colors.textLight} />
             ) : (
-              <Text className="font-sans-semibold text-light">
-                Entrar com Google
-              </Text>
+              <Text className="font-sans-semibold text-light">{t('auth.signInGoogle')}</Text>
             )}
           </Pressable>
         )}
 
         {(hasError || loginMutation.isError) && (
           <Text className="mt-3 text-center font-sans text-sm text-red-600">
-            {errorDetail ?? "Não foi possível entrar. Tente novamente."}
+            {errorDetail ?? t('auth.signInFailed')}
           </Text>
         )}
       </View>

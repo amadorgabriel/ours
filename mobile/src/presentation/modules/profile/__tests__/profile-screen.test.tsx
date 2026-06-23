@@ -259,4 +259,13 @@ describe('ProfileScreen', () => {
     expect(mockMutateAsync).toHaveBeenCalled();
     expect(mockReplace).toHaveBeenCalledWith('/(auth)/login');
   });
+
+  it('renders logout button as destructive text without border (MS-132)', () => {
+    const tree = renderProfileScreen();
+    const logoutButton = tree.root.findByProps({ accessibilityLabel: 'Sair da conta' });
+    const logoutLabel = logoutButton.findByType(Text);
+
+    expect(logoutButton.props.className).not.toContain('border');
+    expect(logoutLabel.props.className).toContain('text-red-600');
+  });
 });

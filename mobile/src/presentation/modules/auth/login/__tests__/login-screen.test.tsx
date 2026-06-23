@@ -1,6 +1,8 @@
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import renderer, { act } from 'react-test-renderer';
 
+import { prepareGoogleSignInForAccountPicker } from '@/core/infra/auth/google-signin-session';
+
 import { AuthProvider } from '@/presentation/providers/auth';
 import { FamilyProvider } from '@/presentation/providers/family';
 
@@ -25,6 +27,10 @@ jest.mock('@/core/services/usecases/auth/index.hooks', () => ({
     isPending: false,
     isError: false,
   }),
+}));
+
+jest.mock('@/core/infra/auth/google-signin-session', () => ({
+  prepareGoogleSignInForAccountPicker: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@react-native-google-signin/google-signin', () => ({
@@ -91,6 +97,7 @@ describe('LoginScreen', () => {
       await button.props.onPress();
     });
 
+    expect(prepareGoogleSignInForAccountPicker).toHaveBeenCalled();
     expect(GoogleSignin.signIn).toHaveBeenCalled();
     expect(mockMutate).toHaveBeenCalledWith(
       { idToken: 'google-id-token' },

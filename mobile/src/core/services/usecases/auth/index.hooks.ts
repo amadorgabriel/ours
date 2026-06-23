@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 import type { GoogleAuthRequest } from '@/core/domain/auth';
+import { clearGoogleSignInSession } from '@/core/infra/auth/google-signin-session';
 import { registerAuthTokenGetter, unregisterAuthTokenGetter } from '@/core/infra/http/auth-token-context';
 import { HttpClientFactory } from '@/core/infra/http/http-client-factory';
 import { HttpClientError } from '@/core/infra/http/http-error';
@@ -113,11 +113,7 @@ export function useLogout() {
       }
     },
     onSettled: async () => {
-      try {
-        await GoogleSignin.signOut();
-      } catch {
-        // User may not have signed in with Google on this device.
-      }
+      await clearGoogleSignInSession();
       setInMemoryAuthToken(null);
       await clearStoredAuthToken();
       clearSession();

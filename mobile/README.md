@@ -137,6 +137,16 @@ Spec: [`.specs/changes/015-mobile-polish/`](../.specs/changes/015-mobile-polish/
 
 Spec: [`.specs/changes/025-refinement-2.0/`](../.specs/changes/025-refinement-2.0/)
 
+## Implementado (Change 028 — Auth account switch)
+
+| Área | Rotas / módulos |
+|------|-----------------|
+| Logout Google: `signOut` + `revokeAccess` (best-effort) | `clearGoogleSignInSession` · `useLogout` |
+| Login: forçar seletor de conta | `prepareGoogleSignInForAccountPicker` · `LoginScreen` |
+| Perfil: botão sair destrutivo | `ProfileScreen` (texto vermelho, sem borda) |
+
+Spec: [`.specs/changes/028-mobile-auth-account-switch/`](../.specs/changes/028-mobile-auth-account-switch/)
+
 ## Desenvolvimento
 
 Este projeto usa **development builds** via **EAS** (não Expo Go).
