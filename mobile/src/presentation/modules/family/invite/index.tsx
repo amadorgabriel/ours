@@ -4,6 +4,7 @@ import { ActivityIndicator, Alert, Pressable, Share, Text, View } from 'react-na
 
 import type { CreateInviteResponse } from '@/core/domain/family';
 import { useCreateInvite } from '@/core/services/usecases/family/index.hooks';
+import { useFamily } from '@/presentation/providers/family';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 
@@ -26,9 +27,11 @@ function formatExpiresAt(expiresAt: string): string {
 }
 
 export function InviteSheet({ visible, onClose }: InviteSheetProps) {
+  const { familyId } = useFamily();
   const createInvite = useCreateInvite();
   const [invite, setInvite] = useState<CreateInviteResponse | null>(null);
   const [copied, setCopied] = useState(false);
+  const canGenerateInvite = Boolean(familyId);
 
   function handleClose() {
     setInvite(null);
@@ -38,6 +41,10 @@ export function InviteSheet({ visible, onClose }: InviteSheetProps) {
   }
 
   function handleGenerate() {
+    if (!familyId) {
+      return;
+    }
+
     setCopied(false);
     createInvite.mutate({}, {
       onSuccess: (result) => setInvite(result),
@@ -74,7 +81,13 @@ export function InviteSheet({ visible, onClose }: InviteSheetProps) {
         Gere um código de 6 caracteres válido por 24 horas.
       </Text>
 
-      {!invite && (
+      {!invite && !canGenerateInvite ? (
+        <Text className="mt-6 font-sans text-sm text-mindful-brown/80">
+          Selecione uma família ativa antes de gerar o convite.
+        </Text>
+      ) : null}
+
+      {!invite && canGenerateInvite ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Gerar código"
@@ -88,7 +101,7 @@ export function InviteSheet({ visible, onClose }: InviteSheetProps) {
             <Text className="font-sans-semibold text-light">Gerar código</Text>
           )}
         </Pressable>
-      )}
+      ) : null}
 
       {createInvite.isError && (
         <Text className="mt-4 font-sans text-sm text-red-600">

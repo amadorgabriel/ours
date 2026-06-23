@@ -19,7 +19,12 @@ jest.mock('@/core/services/usecases/family/index.hooks', () => ({
   useCreateInvite: jest.fn(),
 }));
 
+jest.mock('@/presentation/providers/family', () => ({
+  useFamily: jest.fn(() => ({ familyId: 'family-1' })),
+}));
+
 const { useCreateInvite } = jest.requireMock('@/core/services/usecases/family/index.hooks');
+const { useFamily } = jest.requireMock('@/presentation/providers/family');
 
 function renderInviteSheet(overrides?: Partial<ReturnType<typeof useCreateInvite>>) {
   useCreateInvite.mockReturnValue({
@@ -43,6 +48,7 @@ function renderInviteSheet(overrides?: Partial<ReturnType<typeof useCreateInvite
 describe('InviteSheet', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    useFamily.mockReturnValue({ familyId: 'family-1' });
   });
 
   it('renders generate CTA when no invite yet (M-FAM-04)', () => {
@@ -93,5 +99,14 @@ describe('InviteSheet', () => {
 
     const json = JSON.stringify(tree.toJSON());
     expect(json).toContain('Apenas administradores podem convidar.');
+  });
+
+  it('blocks generate when no active family is selected', () => {
+    useFamily.mockReturnValue({ familyId: null });
+    const tree = renderInviteSheet();
+    const json = JSON.stringify(tree.toJSON());
+
+    expect(json).toContain('Selecione uma família ativa antes de gerar o convite.');
+    expect(json).not.toContain('Gerar código');
   });
 });

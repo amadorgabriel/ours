@@ -168,7 +168,7 @@ describe('AssistidoProvider', () => {
     expect(getAssistido().parentId).toBe('parent-2');
   });
 
-  it('clears stale parent id when parents list does not contain it', async () => {
+  it('resets to Todos when stored parent is no longer in family', async () => {
     const parents: ParentSummary[] = [
       { id: 'parent-valid', name: 'Maria', relationship: 'Mãe' },
     ];
@@ -181,15 +181,16 @@ describe('AssistidoProvider', () => {
 
     const { getAssistido } = await renderAssistido('family-1');
 
-    await waitForAssistido(getAssistido, (value) => value.parentId === 'parent-valid');
+    await waitForAssistido(getAssistido, (value) => !value.isLoading && value.parentId === null);
 
-    expect(mockClearStoredParentId).toHaveBeenCalledWith('family-1');
-    expect(getAssistido().parentId).toBe('parent-valid');
-    expect(mockSetStoredParentId).toHaveBeenCalledWith('family-1', 'parent-valid');
-    expect(getAssistido().activeParent).toEqual(parents[0]);
+    expect(mockSetStoredAllAssistidos).toHaveBeenCalledWith('family-1');
+    expect(getAssistido().parentId).toBeNull();
+    expect(mockSetStoredParentId).not.toHaveBeenCalled();
+    expect(mockClearStoredParentId).not.toHaveBeenCalled();
+    expect(getAssistido().activeParent).toBeNull();
   });
 
-  it('auto-selects first parent when none is stored', async () => {
+  it('defaults to Todos when none is stored', async () => {
     const parents: ParentSummary[] = [
       { id: 'parent-1', name: 'João', relationship: 'Pai' },
       { id: 'parent-2', name: 'Maria', relationship: 'Mãe' },
@@ -202,11 +203,48 @@ describe('AssistidoProvider', () => {
 
     const { getAssistido } = await renderAssistido('family-1');
 
-    await waitForAssistido(getAssistido, (value) => value.parentId === 'parent-1');
+    await waitForAssistido(getAssistido, (value) => !value.isLoading);
 
-    expect(getAssistido().parentId).toBe('parent-1');
-    expect(mockSetStoredParentId).toHaveBeenCalledWith('family-1', 'parent-1');
-    expect(getAssistido().activeParent).toEqual(parents[0]);
+    expect(getAssistido().parentId).toBeNull();
+    expect(mockSetStoredParentId).not.toHaveBeenCalled();
+    expect(getAssistido().activeParent).toBeNull();
+  });
+
+  it('hydrates Todos from storage sentinel', async () => {
+    mockGetStoredAssistidoFilter.mockResolvedValue('all');
+    useParents.mockImplementation((familyId: string | null) => ({
+      data: familyId
+        ? [{ id: 'parent-1', name: 'João', relationship: 'Pai' }]
+        : [],
+      isLoading: false,
+    }));
+
+    const { getAssistido } = await renderAssistido('family-1');
+
+    await waitForAssistido(getAssistido, (value) => !value.isLoading);
+
+    expect(getAssistido().parentId).toBeNull();
+    expect(mockSetStoredAllAssistidos).not.toHaveBeenCalled();
+  });
+
+  it('persists Todos sentinel when setParentId is called with null', async () => {
+    useParents.mockImplementation((familyId: string | null) => ({
+      data: familyId
+        ? [{ id: 'parent-2', name: 'Maria', relationship: 'Mãe' }]
+        : [],
+      isLoading: false,
+    }));
+
+    const { getAssistido } = await renderAssistido('family-1');
+
+    act(() => {
+      getAssistido().setParentId(null);
+    });
+
+    await flushEffects();
+
+    expect(mockSetStoredAllAssistidos).toHaveBeenCalledWith('family-1');
+    expect(getAssistido().parentId).toBeNull();
   });
 
   it('is not loading when familyId is null', async () => {

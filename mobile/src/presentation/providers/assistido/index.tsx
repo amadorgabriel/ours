@@ -5,7 +5,6 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -32,8 +31,6 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
   const { data: parents = [], isLoading, isError, refetch } = useParents(familyId);
   const [parentId, setParentIdState] = useState<ParentId | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
-  const skipAutoSelectRef = useRef(false);
-  const allowAutoSelectRef = useRef(false);
 
   useEffect(() => {
     if (!familyId) {
@@ -44,9 +41,6 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
   }, [familyId, queryClient]);
 
   useLayoutEffect(() => {
-    skipAutoSelectRef.current = false;
-    allowAutoSelectRef.current = false;
-
     if (!familyId) {
       setParentIdState(null);
       setIsHydrated(true);
@@ -68,18 +62,10 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      if (stored === 'all') {
-        skipAutoSelectRef.current = true;
-        allowAutoSelectRef.current = false;
+      if (stored === 'all' || stored === null) {
         setParentIdState(null);
-      } else if (stored !== null) {
-        skipAutoSelectRef.current = true;
-        allowAutoSelectRef.current = false;
-        setParentIdState(stored);
       } else {
-        skipAutoSelectRef.current = false;
-        allowAutoSelectRef.current = true;
-        setParentIdState(null);
+        setParentIdState(stored);
       }
 
       setIsHydrated(true);
@@ -104,35 +90,23 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
     if (!isHydrated || isLoading || !familyId || parents.length === 0) return;
 
     setParentIdState((currentParentId) => {
-      if (currentParentId !== null) {
-        const isValid = parents.some((parent) => parent.id === currentParentId);
-        if (isValid) {
-          skipAutoSelectRef.current = true;
-          allowAutoSelectRef.current = false;
-          return currentParentId;
-        }
-
-        void clearStoredParentId(familyId);
-        skipAutoSelectRef.current = false;
-        allowAutoSelectRef.current = true;
-      }
-
-      if (!allowAutoSelectRef.current || skipAutoSelectRef.current) {
+      if (currentParentId === null) {
         return currentParentId;
       }
 
-      allowAutoSelectRef.current = false;
-      skipAutoSelectRef.current = true;
-      const first = parents[0];
-      void setStoredParentId(familyId, first.id);
-      return first.id;
+      const isValid = parents.some((parent) => parent.id === currentParentId);
+      if (isValid) {
+        return currentParentId;
+      }
+
+      void setStoredAllAssistidos(familyId);
+      return null;
     });
   }, [isHydrated, isLoading, familyId, parents]);
 
   const setParentId = useCallback(
     (id: ParentId | null) => {
       setParentIdState(id);
-      skipAutoSelectRef.current = true;
 
       if (!familyId) return;
 
