@@ -58,9 +58,9 @@ export function ConfirmDialog({
                 <Text className="font-sans-semibold text-mindful-brown">{cancelButton.text}</Text>
               </Pressable>
             ) : null}
-            {actionButtons.map((button) => (
+            {actionButtons.map((button, index) => (
               <Pressable
-                key={button.text}
+                key={`${button.style ?? 'default'}-${button.text}-${index}`}
                 accessibilityRole="button"
                 accessibilityLabel={button.accessibilityLabel ?? button.text}
                 className="min-h-[44px] items-center justify-center rounded-xl px-4"

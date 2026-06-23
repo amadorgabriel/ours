@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Keyboard,
@@ -36,9 +36,11 @@ export function BottomSheet({
   const insets = useSafeAreaInsets();
   const sheetTranslateY = useRef(new Animated.Value(400)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const [modalVisible, setModalVisible] = useState(visible);
 
   useEffect(() => {
     if (visible) {
+      setModalVisible(true);
       backdropOpacity.setValue(1);
       sheetTranslateY.setValue(400);
       Animated.timing(sheetTranslateY, {
@@ -46,6 +48,10 @@ export function BottomSheet({
         duration: SHEET_ANIMATION_MS,
         useNativeDriver: true,
       }).start();
+      return;
+    }
+
+    if (!modalVisible) {
       return;
     }
 
@@ -60,14 +66,18 @@ export function BottomSheet({
         duration: BACKDROP_FADE_MS,
         useNativeDriver: true,
       }),
-    ]).start();
-  }, [backdropOpacity, sheetTranslateY, visible]);
+    ]).start(({ finished }) => {
+      if (finished) {
+        setModalVisible(false);
+      }
+    });
+  }, [backdropOpacity, modalVisible, sheetTranslateY, visible]);
 
   useEffect(() => {
-    if (!visible) {
+    if (!visible && !modalVisible) {
       Keyboard.dismiss();
     }
-  }, [visible]);
+  }, [modalVisible, visible]);
 
   const panelLabel = accessibilityLabel ?? t('bottomSheet.panel');
   const closeLabel = t('bottomSheet.close');
@@ -88,7 +98,7 @@ export function BottomSheet({
     <Modal
       animationType="none"
       transparent
-      visible={visible}
+      visible={modalVisible}
       onRequestClose={onClose}
       accessibilityViewIsModal
     >

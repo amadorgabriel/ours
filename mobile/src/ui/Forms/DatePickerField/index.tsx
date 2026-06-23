@@ -23,10 +23,10 @@ function formatDisplayDate(isoDate: string): string {
   return `${day}/${month}/${year}`;
 }
 
-function parseIsoDate(isoDate: string): Date {
+function parseIsoDate(isoDate: string): Date | null {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate.trim());
   if (!match) {
-    return new Date();
+    return null;
   }
 
   const year = Number(match[1]);
@@ -52,7 +52,7 @@ export function DatePickerField({
 }: DatePickerFieldProps) {
   const { t } = useTranslation();
   const [showPicker, setShowPicker] = useState(false);
-  const [pendingDate, setPendingDate] = useState<Date>(() => parseIsoDate(value));
+  const [pendingDate, setPendingDate] = useState<Date>(() => parseIsoDate(value) ?? new Date());
 
   function handleChange(event: DateTimePickerEvent, selectedDate?: Date) {
     if (Platform.OS === 'android') {
@@ -76,7 +76,7 @@ export function DatePickerField({
   }
 
   function openPicker() {
-    setPendingDate(parseIsoDate(value));
+    setPendingDate(parseIsoDate(value) ?? new Date());
     setShowPicker(true);
   }
 

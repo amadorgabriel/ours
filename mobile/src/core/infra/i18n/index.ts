@@ -6,7 +6,7 @@ import { ptBR } from './locales/pt-BR';
 const i18n = new I18n({ 'pt-BR': ptBR });
 
 const deviceLocale = getLocales()[0]?.languageTag ?? 'pt-BR';
-i18n.locale = deviceLocale.startsWith('pt') ? 'pt-BR' : 'pt-BR';
+i18n.locale = deviceLocale.startsWith('pt') ? 'pt-BR' : deviceLocale;
 i18n.defaultLocale = 'pt-BR';
 i18n.enableFallback = true;
 

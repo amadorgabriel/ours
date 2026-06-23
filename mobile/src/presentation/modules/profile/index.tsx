@@ -1,5 +1,5 @@
 import { useRouter, type Href } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -47,12 +47,14 @@ function ParentListItem({
   onEdit?: () => void;
   showEdit?: boolean;
 }) {
+  const { t } = useTranslation();
+
   return (
     <View className="mb-2 flex-row items-center rounded-xl bg-cream px-3 py-3">
       <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-mindful-brown/15">
         {parent.photoData ? (
           <Image
-            accessibilityLabel={`Foto de ${parent.name}`}
+            accessibilityLabel={t('profile.parentPhoto', { name: parent.name })}
             className="h-10 w-10 rounded-full"
             source={{ uri: parent.photoData }}
           />
@@ -68,20 +70,20 @@ function ParentListItem({
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Ver ficha de ${parent.name}`}
+        accessibilityLabel={t('profile.viewProfileOf', { name: parent.name })}
         className="rounded-lg border border-mindful-brown/20 px-3 py-2"
         onPress={onOpen}
       >
-        <Text className="font-sans-semibold text-sm text-mindful-brown">Ver ficha</Text>
+        <Text className="font-sans-semibold text-sm text-mindful-brown">{t('profile.viewProfile')}</Text>
       </Pressable>
       {showEdit && onEdit ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Editar ${parent.name}`}
+          accessibilityLabel={t('profile.editName', { name: parent.name })}
           className="ml-2 rounded-lg px-3 py-2"
           onPress={onEdit}
         >
-          <Text className="font-sans-semibold text-sm text-serenity-green">Editar</Text>
+          <Text className="font-sans-semibold text-sm text-serenity-green">{t('profile.edit')}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -181,8 +183,12 @@ export function ProfileScreen() {
         style: 'destructive',
         onPress: () => {
           void (async () => {
-            await logoutMutation.mutateAsync();
-            router.replace(mobileRoutes.login as Href);
+            try {
+              await logoutMutation.mutateAsync();
+              router.replace(mobileRoutes.login as Href);
+            } catch {
+              alert(t('alerts.logout.errorTitle'), t('alerts.logout.errorMessage'));
+            }
           })();
         },
       },
@@ -211,7 +217,7 @@ export function ProfileScreen() {
           <View className="flex-row items-center">
             {userPicture ? (
               <Image
-                accessibilityLabel="Foto do perfil"
+                accessibilityLabel={t('profile.userPhoto')}
                 className="h-14 w-14 rounded-full"
                 source={{ uri: userPicture }}
               />
@@ -242,7 +248,7 @@ export function ProfileScreen() {
           {isAdmin ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Editar família"
+              accessibilityLabel={t('profile.editFamily')}
               className="mt-4 items-center rounded-xl border border-serenity-green py-3"
               onPress={() => setFamilyAdminVisible(true)}
             >
@@ -251,7 +257,7 @@ export function ProfileScreen() {
           ) : null}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Nova família"
+            accessibilityLabel={t('profile.newFamily')}
             className="mt-3 items-center rounded-xl border border-mindful-brown/20 py-3"
             onPress={() => setCreateFamilyVisible(true)}
           >
@@ -290,7 +296,7 @@ export function ProfileScreen() {
                 <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-mindful-brown/15">
                   {member.picture ? (
                     <Image
-                      accessibilityLabel={`Foto de ${member.name}`}
+                      accessibilityLabel={t('profile.memberPhoto', { name: member.name })}
                       className="h-10 w-10 rounded-full"
                       source={{ uri: member.picture }}
                     />
@@ -309,7 +315,7 @@ export function ProfileScreen() {
                 </View>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`Remover ${member.name}`}
+                  accessibilityLabel={t('profile.removeName', { name: member.name })}
                   className="rounded-lg px-3 py-2"
                   disabled={removeMember.isPending}
                   onPress={() => handleRemoveMember(member.userId, member.name)}
@@ -375,7 +381,7 @@ export function ProfileScreen() {
           {isAdmin && !parentsError ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Novo assistido"
+              accessibilityLabel={t('profile.newAssistido')}
               className="mt-4 items-center rounded-xl border border-serenity-green py-3"
               onPress={() => setCreateParentVisible(true)}
             >
@@ -389,7 +395,7 @@ export function ProfileScreen() {
         {isAdmin && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Convidar familiar"
+            accessibilityLabel={t('profile.invite')}
             className="mt-4 items-center rounded-xl bg-serenity-green py-3"
             onPress={() => setInviteVisible(true)}
           >
@@ -400,7 +406,7 @@ export function ProfileScreen() {
         <View className="mt-auto pt-8">
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Sair da conta"
+            accessibilityLabel={t('profile.logoutAccessibility')}
             className="items-center rounded-xl border border-mindful-brown/20 py-3"
             disabled={logoutMutation.isPending}
             onPress={handleLogout}
