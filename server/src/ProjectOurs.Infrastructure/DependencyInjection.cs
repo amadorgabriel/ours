@@ -10,6 +10,8 @@ using ProjectOurs.Application.Family;
 using ProjectOurs.Application.Goals;
 using ProjectOurs.Application.Parents;
 using ProjectOurs.Infrastructure.Auth;
+using ProjectOurs.Application.Abstractions.Media;
+using ProjectOurs.Infrastructure.Media;
 using ProjectOurs.Infrastructure.Options;
 using ProjectOurs.Infrastructure.Persistence;
 
@@ -36,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IGoalContributionRepository, GoalContributionRepository>();
         services.AddScoped<IParentRepository, ParentRepository>();
         services.AddScoped<IDeviceRepository, DeviceRepository>();
+        services.AddScoped<IMediaStorage, InlineBase64MediaStorage>();
         services.AddScoped<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
         services.AddScoped<IJwtTokenFactory, JwtTokenFactory>();
         services.AddScoped<AuthService>();

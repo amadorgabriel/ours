@@ -331,6 +331,79 @@ public sealed class FamilyServiceTests
     }
 
     [Fact]
+    public async Task ListMembers_AsMember_ReturnsMembers()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var memberId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership { UserId = userId, FamilyId = familyId, Role = FamilyRole.Member });
+        _families
+            .Setup(x => x.ListMembersByFamilyIdAsync(familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new FamilyMembership
+                {
+                    UserId = memberId,
+                    FamilyId = familyId,
+                    Role = FamilyRole.Admin,
+                    JoinedAt = DateTimeOffset.UtcNow,
+                    User = new User { Id = memberId, Name = "Admin", Email = "admin@test.com" },
+                },
+            ]);
+
+        var result = await _sut.ListMembersAsync(userId, familyId);
+
+        Assert.Single(result.Items);
+        Assert.Equal("Admin", result.Items[0].Name);
+        Assert.Equal("Admin", result.Items[0].Role);
+    }
+
+    [Fact]
+    public async Task RemoveMember_AsAdmin_RemovesMember()
+    {
+        var adminId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var memberId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(adminId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership { UserId = adminId, FamilyId = familyId, Role = FamilyRole.Admin });
+        _families
+            .Setup(x => x.GetMembershipAsync(memberId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership { UserId = memberId, FamilyId = familyId, Role = FamilyRole.Member });
+        _families
+            .Setup(x => x.RemoveMemberAsync(familyId, memberId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await _sut.RemoveMemberAsync(adminId, familyId, memberId);
+
+        _families.Verify(x => x.RemoveMemberAsync(familyId, memberId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RemoveMember_LastAdmin_ThrowsConflict()
+    {
+        var adminId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+
+        _families
+            .Setup(x => x.GetMembershipAsync(adminId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership { UserId = adminId, FamilyId = familyId, Role = FamilyRole.Admin });
+        _families
+            .Setup(x => x.GetMembershipAsync(adminId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership { UserId = adminId, FamilyId = familyId, Role = FamilyRole.Admin });
+        _families
+            .Setup(x => x.CountAdminsByFamilyIdAsync(familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        var act = () => _sut.RemoveMemberAsync(adminId, familyId, adminId);
+
+        await Assert.ThrowsAsync<FamilyConflictException>(act);
+    }
+
+    [Fact]
     public void InviteCodeGenerator_GeneratesSixCharacterAlphanumericCode()
     {
         var generator = new InviteCodeGenerator();

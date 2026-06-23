@@ -1,5 +1,6 @@
 using Moq;
 using ProjectOurs.Application.Abstractions.Persistence;
+using ProjectOurs.Application.Activity;
 using ProjectOurs.Application.Goals;
 using ProjectOurs.Domain.Entities;
 using ProjectOurs.Domain.Enums;
@@ -12,11 +13,21 @@ public sealed class GoalContributionServiceTests
     private readonly Mock<IGoalRepository> _goals = new();
     private readonly Mock<IGoalContributionRepository> _contributions = new();
     private readonly Mock<IFamilyRepository> _families = new();
+    private readonly Mock<IActivityRepository> _activityRepo = new();
+    private readonly ActivityService _activityService;
     private readonly GoalContributionService _sut;
 
     public GoalContributionServiceTests()
     {
-        _sut = new GoalContributionService(_goals.Object, _contributions.Object, _families.Object);
+        _activityService = new ActivityService(
+            _activityRepo.Object,
+            _families.Object,
+            Mock.Of<ProjectOurs.Application.Abstractions.Media.IMediaStorage>());
+        _sut = new GoalContributionService(
+            _goals.Object,
+            _contributions.Object,
+            _families.Object,
+            _activityService);
     }
 
     [Fact]
@@ -40,6 +51,19 @@ public sealed class GoalContributionServiceTests
                 Amount = contribution.Amount,
                 IsPrivate = contribution.IsPrivate,
                 CreatedAt = contribution.CreatedAt,
+                User = new User { Id = userId, Name = "Ana Silva" },
+            });
+
+        _activityRepo
+            .Setup(x => x.AddAsync(It.IsAny<Activity>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Activity activity, CancellationToken _) => new Activity
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = familyId,
+                UserId = userId,
+                Type = activity.Type,
+                Metadata = activity.Metadata,
+                CreatedAt = activity.CreatedAt,
                 User = new User { Id = userId, Name = "Ana Silva" },
             });
 

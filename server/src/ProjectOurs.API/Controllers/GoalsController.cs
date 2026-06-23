@@ -197,6 +197,113 @@ public sealed class GoalsController(
         }
     }
 
+    [HttpPatch("{goalId:guid}/contributions/{contributionId:guid}")]
+    [ProducesResponseType(typeof(GoalContributionDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateContribution(
+        Guid goalId,
+        Guid contributionId,
+        [FromBody] UpdateGoalContributionRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (!TryGetFamilyId(out var familyId, out var familyError))
+        {
+            return familyError!;
+        }
+
+        try
+        {
+            var contribution = await goalContributionService.UpdateAsync(
+                userId,
+                familyId,
+                goalId,
+                contributionId,
+                request,
+                cancellationToken);
+            return Ok(contribution);
+        }
+        catch (GoalValidationException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (GoalForbiddenException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (GoalNotFoundException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to update contribution {ContributionId} for goal {GoalId}, user {UserId}.",
+                contributionId,
+                goalId,
+                userId);
+            return MapGoalException(ex);
+        }
+    }
+
+    [HttpDelete("{goalId:guid}/contributions/{contributionId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteContribution(
+        Guid goalId,
+        Guid contributionId,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (!TryGetFamilyId(out var familyId, out var familyError))
+        {
+            return familyError!;
+        }
+
+        try
+        {
+            await goalContributionService.DeleteAsync(
+                userId,
+                familyId,
+                goalId,
+                contributionId,
+                cancellationToken);
+            return NoContent();
+        }
+        catch (GoalForbiddenException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (GoalNotFoundException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to delete contribution {ContributionId} for goal {GoalId}, user {UserId}.",
+                contributionId,
+                goalId,
+                userId);
+            return MapGoalException(ex);
+        }
+    }
+
     private bool TryGetFamilyId(out Guid familyId, out IActionResult? error)
     {
         if (!Request.Headers.TryGetValue(FamilyHeaders.FamilyId, out var familyIdHeader)

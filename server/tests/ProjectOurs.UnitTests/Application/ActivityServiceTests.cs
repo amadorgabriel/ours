@@ -1,4 +1,5 @@
 using Moq;
+using ProjectOurs.Application.Abstractions.Media;
 using ProjectOurs.Application.Abstractions.Persistence;
 using ProjectOurs.Application.Activity;
 using ProjectOurs.Domain.Entities;
@@ -11,11 +12,12 @@ public sealed class ActivityServiceTests
 {
     private readonly Mock<IActivityRepository> _activities = new();
     private readonly Mock<IFamilyRepository> _families = new();
+    private readonly Mock<IMediaStorage> _media = new();
     private readonly ActivityService _sut;
 
     public ActivityServiceTests()
     {
-        _sut = new ActivityService(_activities.Object, _families.Object);
+        _sut = new ActivityService(_activities.Object, _families.Object, _media.Object);
     }
 
     [Fact]
@@ -175,11 +177,20 @@ public sealed class ActivityServiceTests
                 },
             ]);
 
+        _activities
+            .Setup(x => x.ListViewsByActivityIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, IReadOnlyList<ActivityViewInfo>>());
+
+        _activities
+            .Setup(x => x.CountUnreadAsync(familyId, userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
         var result = await _sut.GetFeedAsync(userId, familyId, null);
 
         Assert.Single(result.Items);
         Assert.Equal(activityId.ToString(), result.Items[0].Id);
         Assert.Equal("Bruno", result.Items[0].UserName);
+        Assert.Equal(1, result.UnreadCount);
     }
 
     [Fact]
@@ -204,6 +215,14 @@ public sealed class ActivityServiceTests
         _activities
             .Setup(x => x.ListByFamilyIdAsync(familyId, 50, from, to, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
+
+        _activities
+            .Setup(x => x.ListViewsByActivityIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, IReadOnlyList<ActivityViewInfo>>());
+
+        _activities
+            .Setup(x => x.CountUnreadAsync(familyId, userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
 
         var result = await _sut.GetFeedAsync(userId, familyId, null, from, to);
 
@@ -238,6 +257,14 @@ public sealed class ActivityServiceTests
         _activities
             .Setup(x => x.ListByFamilyIdAsync(familyId, 50, null, null, parentId, It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
+
+        _activities
+            .Setup(x => x.ListViewsByActivityIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, IReadOnlyList<ActivityViewInfo>>());
+
+        _activities
+            .Setup(x => x.CountUnreadAsync(familyId, userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
 
         var result = await _sut.GetFeedAsync(userId, familyId, null, null, null, parentId.ToString());
 

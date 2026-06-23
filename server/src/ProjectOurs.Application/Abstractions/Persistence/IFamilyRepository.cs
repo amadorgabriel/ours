@@ -51,4 +51,17 @@ public interface IFamilyRepository
     Task DeleteFamilyAsync(
         Guid familyId,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<FamilyMembership>> ListMembersByFamilyIdAsync(
+        Guid familyId,
+        CancellationToken cancellationToken = default);
+
+    Task<int> CountAdminsByFamilyIdAsync(
+        Guid familyId,
+        CancellationToken cancellationToken = default);
+
+    Task RemoveMemberAsync(
+        Guid familyId,
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }

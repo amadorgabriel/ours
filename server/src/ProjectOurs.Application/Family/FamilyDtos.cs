@@ -17,3 +17,12 @@ public sealed record JoinResponse(string FamilyId, string FamilyName, string Rol
 public sealed record UpdateFamilyRequest(string Name);
 
 public sealed record DeleteFamilyRequest(string ConfirmName);
+
+public sealed record FamilyMemberDto(
+    string UserId,
+    string Name,
+    string? Email,
+    string Role,
+    DateTimeOffset JoinedAt);
+
+public sealed record FamilyMemberListResponse(IReadOnlyList<FamilyMemberDto> Items);

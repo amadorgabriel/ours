@@ -104,6 +104,102 @@ public sealed class ActivitiesController(
         }
     }
 
+    [HttpPost("visit")]
+    [ProducesResponseType(typeof(ActivityFeedItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> RegisterVisit(
+        [FromBody] RegisterVisitRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (!TryGetFamilyId(out var familyId, out var familyError))
+        {
+            return familyError!;
+        }
+
+        try
+        {
+            var activity = await activityService.RegisterVisitAsync(
+                userId,
+                familyId,
+                request,
+                cancellationToken);
+            return Ok(activity);
+        }
+        catch (ActivityValidationException ex)
+        {
+            return MapActivityException(ex);
+        }
+        catch (ActivityForbiddenException ex)
+        {
+            return MapActivityException(ex);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return new BadRequestObjectResult(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to register visit for user {UserId} in family {FamilyId}.", userId, familyId);
+            return MapActivityException(ex);
+        }
+    }
+
+    [HttpPost("{activityId:guid}/seen")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> MarkSeen(
+        Guid activityId,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (!TryGetFamilyId(out var familyId, out var familyError))
+        {
+            return familyError!;
+        }
+
+        try
+        {
+            await activityService.MarkSeenAsync(userId, familyId, activityId, cancellationToken);
+            return NoContent();
+        }
+        catch (ActivityNotFoundException ex)
+        {
+            return new NotFoundObjectResult(new { message = ex.Message });
+        }
+        catch (ActivityValidationException ex)
+        {
+            return MapActivityException(ex);
+        }
+        catch (ActivityForbiddenException ex)
+        {
+            return MapActivityException(ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to mark activity {ActivityId} seen for user {UserId} in family {FamilyId}.",
+                activityId,
+                userId,
+                familyId);
+            return MapActivityException(ex);
+        }
+    }
+
     private bool TryGetFamilyId(out Guid familyId, out IActionResult? error)
     {
         if (!Request.Headers.TryGetValue(FamilyHeaders.FamilyId, out var familyIdHeader)

@@ -192,4 +192,63 @@ public sealed class FamilyService(IFamilyRepository families, IInviteCodeGenerat
 
         await families.DeleteFamilyAsync(familyId, cancellationToken);
     }
+
+    public async Task<FamilyMemberListResponse> ListMembersAsync(
+        Guid userId,
+        Guid familyId,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureMembershipAsync(userId, familyId, cancellationToken);
+
+        var members = await families.ListMembersByFamilyIdAsync(familyId, cancellationToken);
+        return new FamilyMemberListResponse(
+            members.Select(m => new FamilyMemberDto(
+                m.UserId.ToString(),
+                m.User.Name,
+                m.User.Email,
+                m.Role == FamilyRole.Admin ? "Admin" : "Member",
+                m.JoinedAt)).ToList());
+    }
+
+    public async Task RemoveMemberAsync(
+        Guid userId,
+        Guid familyId,
+        Guid memberUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var requesterMembership = await families.GetMembershipAsync(userId, familyId, cancellationToken);
+        if (requesterMembership is null || requesterMembership.Role != FamilyRole.Admin)
+        {
+            throw new FamilyForbiddenException("Only the family admin can remove members.");
+        }
+
+        var targetMembership = await families.GetMembershipAsync(memberUserId, familyId, cancellationToken);
+        if (targetMembership is null)
+        {
+            throw new FamilyNotFoundException("Member not found in this family.");
+        }
+
+        if (targetMembership.Role == FamilyRole.Admin)
+        {
+            var adminCount = await families.CountAdminsByFamilyIdAsync(familyId, cancellationToken);
+            if (adminCount <= 1)
+            {
+                throw new FamilyConflictException("Cannot remove the last admin of the family.");
+            }
+        }
+
+        await families.RemoveMemberAsync(familyId, memberUserId, cancellationToken);
+    }
+
+    private async Task EnsureMembershipAsync(
+        Guid userId,
+        Guid familyId,
+        CancellationToken cancellationToken)
+    {
+        var membership = await families.GetMembershipAsync(userId, familyId, cancellationToken);
+        if (membership is null)
+        {
+            throw new FamilyForbiddenException("You are not a member of this family.");
+        }
+    }
 }

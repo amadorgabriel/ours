@@ -1,3 +1,4 @@
+using ProjectOurs.Application.Abstractions.Media;
 using ProjectOurs.Application.Abstractions.Persistence;
 using ProjectOurs.Domain.Enums;
 using ParentEntity = ProjectOurs.Domain.Entities.Parent;
@@ -6,7 +7,8 @@ namespace ProjectOurs.Application.Parents;
 
 public sealed class ParentService(
     IParentRepository parents,
-    IFamilyRepository families)
+    IFamilyRepository families,
+    IMediaStorage mediaStorage)
 {
     public async Task<ParentListResponse> ListAsync(
         Guid userId,
@@ -84,6 +86,53 @@ public sealed class ParentService(
         return MapToDetailDto(updated);
     }
 
+    public async Task<ParentDetailDto> UpdatePhotoAsync(
+        Guid userId,
+        Guid familyId,
+        Guid parentId,
+        UpdateParentPhotoRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureAdminAsync(userId, familyId, cancellationToken);
+
+        var existing = await parents.GetByIdAndFamilyIdAsync(parentId, familyId, cancellationToken);
+        if (existing is null)
+        {
+            throw new ParentNotFoundException("Parent not found.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.PhotoBase64))
+        {
+            existing.PhotoData = null;
+        }
+        else
+        {
+            var mimeType = string.IsNullOrWhiteSpace(request.MimeType) ? "image/jpeg" : request.MimeType;
+            var payload = request.PhotoBase64;
+            var commaIndex = request.PhotoBase64.IndexOf(',');
+            if (commaIndex >= 0)
+            {
+                payload = request.PhotoBase64[(commaIndex + 1)..];
+            }
+
+            byte[] bytes;
+            try
+            {
+                bytes = Convert.FromBase64String(payload);
+            }
+            catch (FormatException)
+            {
+                throw new ParentValidationException("Invalid photo data.");
+            }
+
+            await using var stream = new MemoryStream(bytes);
+            existing.PhotoData = await mediaStorage.StoreAsync(stream, mimeType, cancellationToken);
+        }
+
+        var updated = await parents.UpdateAsync(existing, cancellationToken);
+        return MapToDetailDto(updated);
+    }
+
     private static void ValidateRequest(UpdateParentRequest request)
     {
         ValidateBasicFields(request.Name, request.Relationship);
@@ -155,7 +204,8 @@ public sealed class ParentService(
             parent.Id.ToString(),
             parent.Name,
             parent.Relationship,
-            parent.BirthDate);
+            parent.BirthDate,
+            parent.PhotoData);
 
     internal static ParentDetailDto MapToDetailDto(ParentEntity parent) =>
         new(
@@ -164,5 +214,6 @@ public sealed class ParentService(
             parent.Relationship,
             parent.BirthDate,
             parent.MedicalInfo,
-            parent.EmergencyBriefing);
+            parent.EmergencyBriefing,
+            parent.PhotoData);
 }

@@ -192,6 +192,65 @@ public sealed class ParentsController(
         }
     }
 
+    [HttpPatch("{parentId:guid}/photo")]
+    [ProducesResponseType(typeof(ParentDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdatePhoto(
+        Guid parentId,
+        [FromBody] UpdateParentPhotoRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (!TryGetFamilyId(out var familyId, out var familyError))
+        {
+            return familyError!;
+        }
+
+        try
+        {
+            var parent = await parentService.UpdatePhotoAsync(
+                userId,
+                familyId,
+                parentId,
+                request,
+                cancellationToken);
+            return Ok(parent);
+        }
+        catch (ParentValidationException ex)
+        {
+            return MapParentException(ex);
+        }
+        catch (ParentForbiddenException ex)
+        {
+            return MapParentException(ex);
+        }
+        catch (ParentNotFoundException ex)
+        {
+            return MapParentException(ex);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return new BadRequestObjectResult(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to update photo for parent {ParentId}, user {UserId}, family {FamilyId}.",
+                parentId,
+                userId,
+                familyId);
+            return MapParentException(ex);
+        }
+    }
+
     private bool TryGetFamilyId(out Guid familyId, out IActionResult? error)
     {
         if (!Request.Headers.TryGetValue(FamilyHeaders.FamilyId, out var familyIdHeader)

@@ -14,6 +14,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Goal> Goals => Set<Goal>();
     public DbSet<GoalContribution> GoalContributions => Set<GoalContribution>();
     public DbSet<Device> Devices => Set<Device>();
+    public DbSet<ActivityView> ActivityViews => Set<ActivityView>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -75,6 +76,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             e.Property(x => x.Relationship).HasMaxLength(20).IsRequired();
             e.Property(x => x.MedicalInfo).HasColumnType("jsonb");
             e.Property(x => x.EmergencyBriefing);
+            e.Property(x => x.PhotoData);
             e.HasOne(x => x.Family)
                 .WithMany(x => x.Parents)
                 .HasForeignKey(x => x.FamilyId)
@@ -144,6 +146,21 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             e.HasIndex(x => new { x.UserId, x.Platform }).IsUnique();
             e.HasOne(x => x.User)
                 .WithMany(x => x.Devices)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ActivityView>(e =>
+        {
+            e.ToTable("activity_views");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.ActivityId, x.UserId }).IsUnique();
+            e.HasOne(x => x.Activity)
+                .WithMany()
+                .HasForeignKey(x => x.ActivityId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.User)
+                .WithMany()
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });

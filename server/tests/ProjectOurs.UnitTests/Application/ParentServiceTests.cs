@@ -1,4 +1,5 @@
 using Moq;
+using ProjectOurs.Application.Abstractions.Media;
 using ProjectOurs.Application.Abstractions.Persistence;
 using ProjectOurs.Application.Parents;
 using ProjectOurs.Domain.Entities;
@@ -11,11 +12,12 @@ public sealed class ParentServiceTests
 {
     private readonly Mock<IParentRepository> _parents = new();
     private readonly Mock<IFamilyRepository> _families = new();
+    private readonly Mock<IMediaStorage> _media = new();
     private readonly ParentService _sut;
 
     public ParentServiceTests()
     {
-        _sut = new ParentService(_parents.Object, _families.Object);
+        _sut = new ParentService(_parents.Object, _families.Object, _media.Object);
     }
 
     [Fact]

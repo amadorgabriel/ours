@@ -13,7 +13,8 @@ public sealed record ParentDto(
     string Id,
     string Name,
     string Relationship,
-    DateOnly? BirthDate);
+    DateOnly? BirthDate,
+    string? PhotoData = null);
 
 public sealed record ParentDetailDto(
     string Id,
@@ -21,6 +22,9 @@ public sealed record ParentDetailDto(
     string Relationship,
     DateOnly? BirthDate,
     string? MedicalInfo,
-    string? EmergencyBriefing);
+    string? EmergencyBriefing,
+    string? PhotoData = null);
+
+public sealed record UpdateParentPhotoRequest(string? PhotoBase64, string? MimeType);
 
 public sealed record ParentListResponse(IReadOnlyList<ParentDto> Items);

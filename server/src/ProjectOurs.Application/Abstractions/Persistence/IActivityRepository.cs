@@ -19,4 +19,35 @@ public interface IActivityRepository
         Guid parentId,
         Guid familyId,
         CancellationToken cancellationToken = default);
+
+    Task<ActivityEntity?> GetByIdAndFamilyIdAsync(
+        Guid activityId,
+        Guid familyId,
+        CancellationToken cancellationToken = default);
+
+    Task<ActivityEntity?> FindByContributionIdAsync(
+        Guid contributionId,
+        Guid familyId,
+        CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(ActivityEntity activity, CancellationToken cancellationToken = default);
+
+    Task UpdateAsync(ActivityEntity activity, CancellationToken cancellationToken = default);
+
+    Task UpsertViewAsync(
+        Guid activityId,
+        Guid userId,
+        DateTimeOffset seenAt,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyDictionary<Guid, IReadOnlyList<ActivityViewInfo>>> ListViewsByActivityIdsAsync(
+        IEnumerable<Guid> activityIds,
+        CancellationToken cancellationToken = default);
+
+    Task<int> CountUnreadAsync(
+        Guid familyId,
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }
+
+public sealed record ActivityViewInfo(Guid UserId, string UserName, DateTimeOffset SeenAt);

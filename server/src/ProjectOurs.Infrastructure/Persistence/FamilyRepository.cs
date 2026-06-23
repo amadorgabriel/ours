@@ -137,4 +137,38 @@ public sealed class FamilyRepository(ApplicationDbContext db) : IFamilyRepositor
         db.Families.Remove(family);
         await db.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<FamilyMembership>> ListMembersByFamilyIdAsync(
+        Guid familyId,
+        CancellationToken cancellationToken = default) =>
+        await db.FamilyMemberships
+            .AsNoTracking()
+            .Include(x => x.User)
+            .Where(x => x.FamilyId == familyId)
+            .OrderBy(x => x.User.Name)
+            .ToListAsync(cancellationToken);
+
+    public Task<int> CountAdminsByFamilyIdAsync(
+        Guid familyId,
+        CancellationToken cancellationToken = default) =>
+        db.FamilyMemberships.CountAsync(
+            x => x.FamilyId == familyId && x.Role == FamilyRole.Admin,
+            cancellationToken);
+
+    public async Task RemoveMemberAsync(
+        Guid familyId,
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var membership = await db.FamilyMemberships
+            .FirstOrDefaultAsync(x => x.FamilyId == familyId && x.UserId == userId, cancellationToken);
+
+        if (membership is null)
+        {
+            return;
+        }
+
+        db.FamilyMemberships.Remove(membership);
+        await db.SaveChangesAsync(cancellationToken);
+    }
 }

@@ -9,6 +9,7 @@ public class Parent
     public DateOnly? BirthDate { get; set; }
     public string? MedicalInfo { get; set; }
     public string? EmergencyBriefing { get; set; }
+    public string? PhotoData { get; set; }
 
     public Family Family { get; set; } = null!;
     public ICollection<Activity> Activities { get; set; } = new List<Activity>();

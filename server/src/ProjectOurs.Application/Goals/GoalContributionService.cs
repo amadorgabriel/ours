@@ -1,4 +1,5 @@
 using ProjectOurs.Application.Abstractions.Persistence;
+using ProjectOurs.Application.Activity;
 using GoalContributionEntity = ProjectOurs.Domain.Entities.GoalContribution;
 
 namespace ProjectOurs.Application.Goals;
@@ -6,7 +7,8 @@ namespace ProjectOurs.Application.Goals;
 public sealed class GoalContributionService(
     IGoalRepository goals,
     IGoalContributionRepository contributions,
-    IFamilyRepository families)
+    IFamilyRepository families,
+    ActivityService activityService)
 {
     public async Task<GoalContributionListResponse> ListAsync(
         Guid userId,
@@ -15,7 +17,7 @@ public sealed class GoalContributionService(
         CancellationToken cancellationToken = default)
     {
         await EnsureMembershipAsync(userId, familyId, cancellationToken);
-        await EnsureGoalInFamilyAsync(goalId, familyId, cancellationToken);
+        var goal = await EnsureGoalInFamilyAsync(goalId, familyId, cancellationToken);
 
         var items = await contributions.ListByGoalIdAsync(goalId, cancellationToken);
         return new GoalContributionListResponse(
@@ -30,7 +32,7 @@ public sealed class GoalContributionService(
         CancellationToken cancellationToken = default)
     {
         await EnsureMembershipAsync(userId, familyId, cancellationToken);
-        await EnsureGoalInFamilyAsync(goalId, familyId, cancellationToken);
+        var goal = await EnsureGoalInFamilyAsync(goalId, familyId, cancellationToken);
 
         if (!GoalRules.IsValidContributionAmount(request.Amount))
         {
@@ -50,7 +52,92 @@ public sealed class GoalContributionService(
         };
 
         var created = await contributions.AddWithGoalUpdateAsync(contribution, cancellationToken);
+
+        if (!request.IsPrivate)
+        {
+            await activityService.CreateContributionActivityAsync(
+                userId,
+                familyId,
+                goalId,
+                goal.Title,
+                created.Id,
+                created.Amount,
+                cancellationToken);
+        }
+
         return MapToDto(created, userId);
+    }
+
+    public async Task<GoalContributionDto> UpdateAsync(
+        Guid userId,
+        Guid familyId,
+        Guid goalId,
+        Guid contributionId,
+        UpdateGoalContributionRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureMembershipAsync(userId, familyId, cancellationToken);
+        var goal = await EnsureGoalInFamilyAsync(goalId, familyId, cancellationToken);
+
+        var existing = await contributions.GetByIdAndGoalIdAsync(contributionId, goalId, cancellationToken);
+        if (existing is null)
+        {
+            throw new GoalNotFoundException("Contribution not found.");
+        }
+
+        if (existing.UserId != userId)
+        {
+            throw new GoalForbiddenException("Only the author can edit this contribution.");
+        }
+
+        if (!GoalRules.IsValidContributionAmount(request.Amount))
+        {
+            throw new GoalValidationException(
+                $"Contribution amount must be at least R$ {GoalRules.MinimumContributionAmount:F2}.");
+        }
+
+        var previousAmount = existing.Amount;
+        existing.Amount = request.Amount;
+        existing.IsPrivate = request.IsPrivate;
+
+        var updated = await contributions.UpdateWithGoalAdjustAsync(existing, previousAmount, cancellationToken);
+
+        await activityService.SyncContributionActivityAsync(
+            userId,
+            familyId,
+            contributionId,
+            goalId,
+            goal.Title,
+            updated.Amount,
+            updated.IsPrivate,
+            cancellationToken);
+
+        return MapToDto(updated, userId);
+    }
+
+    public async Task DeleteAsync(
+        Guid userId,
+        Guid familyId,
+        Guid goalId,
+        Guid contributionId,
+        CancellationToken cancellationToken = default)
+    {
+        await EnsureMembershipAsync(userId, familyId, cancellationToken);
+        await EnsureGoalInFamilyAsync(goalId, familyId, cancellationToken);
+
+        var existing = await contributions.GetByIdAndGoalIdAsync(contributionId, goalId, cancellationToken);
+        if (existing is null)
+        {
+            throw new GoalNotFoundException("Contribution not found.");
+        }
+
+        if (existing.UserId != userId)
+        {
+            throw new GoalForbiddenException("Only the author can delete this contribution.");
+        }
+
+        await contributions.DeleteWithGoalUpdateAsync(existing, cancellationToken);
+        await activityService.DeleteContributionActivityAsync(familyId, contributionId, cancellationToken);
     }
 
     private async Task EnsureMembershipAsync(
@@ -65,7 +152,7 @@ public sealed class GoalContributionService(
         }
     }
 
-    private async Task EnsureGoalInFamilyAsync(
+    private async Task<Domain.Entities.Goal> EnsureGoalInFamilyAsync(
         Guid goalId,
         Guid familyId,
         CancellationToken cancellationToken)
@@ -75,6 +162,8 @@ public sealed class GoalContributionService(
         {
             throw new GoalNotFoundException("Goal not found.");
         }
+
+        return goal;
     }
 
     internal static GoalContributionDto MapToDto(GoalContributionEntity contribution, Guid currentUserId)

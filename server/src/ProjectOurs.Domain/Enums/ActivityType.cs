@@ -7,4 +7,5 @@ public enum ActivityType
     Medical = 2,
     Task = 3,
     Medication = 4,
+    Contribution = 5,
 }
