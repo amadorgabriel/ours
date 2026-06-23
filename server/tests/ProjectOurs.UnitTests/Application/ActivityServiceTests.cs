@@ -326,6 +326,92 @@ public sealed class ActivityServiceTests
     }
 
     [Fact]
+    public async Task UpdateVisit_WithRemovePhoto_ClearsPhotoUrl()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var activityId = Guid.NewGuid();
+        var startAt = DateTimeOffset.UtcNow.AddDays(-1);
+        var metadata =
+            $$"""{"allDay":true,"startAt":"{{startAt:O}}","endAt":null,"photoBase64":"https://old-photo","mimeType":"image/jpeg"}""";
+
+        SetupMembership(userId, familyId);
+
+        _activities
+            .Setup(x => x.GetByIdAndFamilyIdAsync(activityId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Activity
+            {
+                Id = activityId,
+                FamilyId = familyId,
+                UserId = userId,
+                Type = ActivityType.Visit,
+                Metadata = metadata,
+                CreatedAt = DateTimeOffset.UtcNow.AddHours(-1),
+                User = new User { Id = userId, Name = "Ana" },
+            });
+
+        _activities
+            .Setup(x => x.UpdateAsync(It.IsAny<Activity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await _sut.UpdateAsync(
+            userId,
+            familyId,
+            activityId,
+            new UpdateActivityRequest(null, null, null, null, null, null, RemovePhoto: true));
+
+        Assert.Null(result.PhotoUrl);
+    }
+
+    [Fact]
+    public async Task UpdateVisit_WithNewPhoto_ReplacesStoredPhoto()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var activityId = Guid.NewGuid();
+        var startAt = DateTimeOffset.UtcNow.AddDays(-1);
+        var metadata =
+            $$"""{"allDay":true,"startAt":"{{startAt:O}}","endAt":null,"photoBase64":"https://old-photo","mimeType":"image/jpeg"}""";
+        var photoBytes = new byte[] { 1, 2, 3 };
+        var photoBase64 = Convert.ToBase64String(photoBytes);
+        const string newPhotoUrl = "https://storage/new-photo";
+
+        SetupMembership(userId, familyId);
+
+        _activities
+            .Setup(x => x.GetByIdAndFamilyIdAsync(activityId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Activity
+            {
+                Id = activityId,
+                FamilyId = familyId,
+                UserId = userId,
+                Type = ActivityType.Visit,
+                Metadata = metadata,
+                CreatedAt = DateTimeOffset.UtcNow.AddHours(-1),
+                User = new User { Id = userId, Name = "Ana" },
+            });
+
+        _activities
+            .Setup(x => x.UpdateAsync(It.IsAny<Activity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        _media
+            .Setup(x => x.StoreAsync(It.IsAny<Stream>(), "image/jpeg", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(newPhotoUrl);
+
+        var result = await _sut.UpdateAsync(
+            userId,
+            familyId,
+            activityId,
+            new UpdateActivityRequest(null, null, null, null, photoBase64, "image/jpeg"));
+
+        Assert.Equal(newPhotoUrl, result.PhotoUrl);
+        _media.Verify(
+            x => x.StoreAsync(It.IsAny<Stream>(), "image/jpeg", It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
     public async Task GetFeed_WithMembership_ReturnsMappedItems()
     {
         var userId = Guid.NewGuid();

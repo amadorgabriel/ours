@@ -1,18 +1,15 @@
 import { Text } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
+import type { ActivityFeedItem } from '@/core/domain/activity';
+
 import { FeedScreen } from '../index';
 
 const mockRefetch = jest.fn();
+const mockUseActivityFeed = jest.fn();
 
 jest.mock('@/core/services/usecases/activity/index.hooks', () => ({
-  useActivityFeed: () => ({
-    data: { items: [], unreadCount: 0 },
-    isLoading: false,
-    isError: false,
-    isRefetching: false,
-    refetch: mockRefetch,
-  }),
+  useActivityFeed: () => mockUseActivityFeed(),
   useMarkActivitySeen: () => ({
     mutate: jest.fn(),
     isPending: false,
@@ -29,7 +26,22 @@ jest.mock('@/presentation/modules/feed/activity-detail-sheet', () => ({
   ActivityDetailSheet: 'ActivityDetailSheet',
 }));
 
+function feedMock(items: ActivityFeedItem[]) {
+  return {
+    data: { items, unreadCount: 0 },
+    isLoading: false,
+    isError: false,
+    isRefetching: false,
+    refetch: mockRefetch,
+  };
+}
+
 describe('FeedScreen', () => {
+  beforeEach(() => {
+    mockRefetch.mockClear();
+    mockUseActivityFeed.mockReturnValue(feedMock([]));
+  });
+
   it('shows empty state when there are no activities', () => {
     let tree!: renderer.ReactTestRenderer;
 
