@@ -3,6 +3,7 @@ import { useEffect, type ReactNode } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 
 import { useAuth } from '@/presentation/providers/auth';
+import { useTranslation } from '@/presentation/hooks/use-translation';
 
 import { getAuthGuardRedirect } from '../auth-redirect';
 import { colors } from '@/presentation/styles/tokens';
@@ -12,6 +13,7 @@ type AuthGuardProps = {
 };
 
 export function AuthGuard({ children }: AuthGuardProps) {
+  const { t } = useTranslation();
   const { isAuthenticated, isSessionLoading } = useAuth();
   const router = useRouter();
 
@@ -27,7 +29,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     return (
       <View className="flex-1 items-center justify-center bg-cream">
         <ActivityIndicator color={colors.serenityGreen60} />
-        <Text className="mt-2 text-mindful-brown">Carregando sessão…</Text>
+        <Text className="mt-2 text-mindful-brown">{t('common.loadingSession')}</Text>
       </View>
     );
   }

@@ -9,6 +9,8 @@ import {
 
 import { PARENT_RELATIONSHIPS, type ParentRelationship } from '@/core/domain/parent';
 import { useCreateParent } from '@/core/services/usecases/parent/index.hooks';
+import { useTranslation } from '@/presentation/hooks/use-translation';
+import { relationshipLabel } from '@/presentation/modules/family/relationship-label';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 
@@ -30,10 +32,13 @@ function RelationshipOption({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const { t } = useTranslation();
+  const displayLabel = relationshipLabel(label);
+
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Relação ${label}`}
+      accessibilityLabel={t('relationships.accessibility', { label: displayLabel })}
       accessibilityState={{ selected }}
       className={`mr-2 rounded-full px-4 py-2 ${
         selected ? 'bg-serenity-green' : 'bg-white'
@@ -41,13 +46,14 @@ function RelationshipOption({
       onPress={onSelect}
     >
       <Text className={`font-sans-semibold text-sm ${selected ? 'text-light' : 'text-mindful-brown'}`}>
-        {label}
+        {displayLabel}
       </Text>
     </Pressable>
   );
 }
 
 export function CreateParentSheet({ visible, onClose }: CreateParentSheetProps) {
+  const { t } = useTranslation();
   const createParent = useCreateParent();
   const [name, setName] = useState('');
   const [relationship, setRelationship] = useState<ParentRelationship>('Pai');
@@ -79,19 +85,22 @@ export function CreateParentSheet({ visible, onClose }: CreateParentSheetProps) 
   const isValid = name.trim().length > 0 && name.trim().length <= MAX_NAME_LENGTH;
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Novo assistido" scrollable>
-      <Text className="font-sans-semibold text-xl text-mindful-brown">Novo assistido</Text>
-      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
-        Cadastre quem a família cuida (Pai, Mãe ou outro).
-      </Text>
+    <BottomSheet
+      visible={visible}
+      onClose={handleClose}
+      accessibilityLabel={t('parents.newAccessibility')}
+      scrollable
+    >
+      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('parents.newTitle')}</Text>
+      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{t('parents.newDescription')}</Text>
 
       <View className="mt-6">
-        <Text className="font-sans text-sm text-mindful-brown">Nome</Text>
+        <Text className="font-sans text-sm text-mindful-brown">{t('parents.name')}</Text>
         <TextInput
-          accessibilityLabel="Nome do assistido"
+          accessibilityLabel={t('parents.nameAccessibility')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           maxLength={MAX_NAME_LENGTH}
-          placeholder="Ex.: João Silva"
+          placeholder={t('common.placeholderName')}
           placeholderTextColor={colors.mindfulBrown60}
           value={name}
           onChangeText={setName}
@@ -99,7 +108,7 @@ export function CreateParentSheet({ visible, onClose }: CreateParentSheetProps) 
       </View>
 
       <View className="mt-4">
-        <Text className="font-sans text-sm text-mindful-brown">Relação</Text>
+        <Text className="font-sans text-sm text-mindful-brown">{t('parents.relationship')}</Text>
         <View className="mt-2 flex-row flex-wrap">
           {PARENT_RELATIONSHIPS.map((option) => (
             <RelationshipOption
@@ -113,11 +122,11 @@ export function CreateParentSheet({ visible, onClose }: CreateParentSheetProps) 
       </View>
 
       <View className="mt-4">
-        <Text className="font-sans text-sm text-mindful-brown">Data de nascimento (opcional)</Text>
+        <Text className="font-sans text-sm text-mindful-brown">{t('parents.birthDate')}</Text>
         <TextInput
-          accessibilityLabel="Data de nascimento"
+          accessibilityLabel={t('parents.birthDateAccessibility')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
-          placeholder="AAAA-MM-DD"
+          placeholder={t('parents.birthDatePlaceholder')}
           placeholderTextColor={colors.mindfulBrown60}
           value={birthDate}
           onChangeText={setBirthDate}
@@ -132,7 +141,7 @@ export function CreateParentSheet({ visible, onClose }: CreateParentSheetProps) 
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Cadastrar assistido"
+        accessibilityLabel={t('parents.registerAccessibility')}
         className="mt-4 items-center rounded-xl bg-serenity-green py-3"
         disabled={!isValid || createParent.isPending}
         onPress={handleSubmit}
@@ -140,7 +149,7 @@ export function CreateParentSheet({ visible, onClose }: CreateParentSheetProps) 
         {createParent.isPending ? (
           <ActivityIndicator color={colors.textLight} />
         ) : (
-          <Text className="font-sans-semibold text-light">Cadastrar</Text>
+          <Text className="font-sans-semibold text-light">{t('parents.register')}</Text>
         )}
       </Pressable>
     </BottomSheet>

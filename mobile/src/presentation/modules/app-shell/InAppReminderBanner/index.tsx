@@ -4,6 +4,7 @@ import { AppState, Pressable, Text, View } from 'react-native';
 import type { ReminderSettings } from '@/core/domain/device';
 import { acknowledgeReminderNow } from '@/core/infra/storage/reminder-storage';
 import { loadReminderSettings } from '@/core/infra/notifications/notification-service';
+import { useTranslation } from '@/presentation/hooks/use-translation';
 import { useNotificationActions } from '@/presentation/providers/notifications';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -66,6 +67,7 @@ type InAppReminderBannerProps = {
 };
 
 export function InAppReminderBanner({ onCallNow }: InAppReminderBannerProps) {
+  const { t } = useTranslation();
   const { visible, acknowledge } = usePendingReminder();
 
   if (!visible) {
@@ -74,31 +76,29 @@ export function InAppReminderBanner({ onCallNow }: InAppReminderBannerProps) {
 
   return (
     <View className="mx-4 mb-2 rounded-2xl bg-serenity-green/15 px-4 py-3">
-      <Text className="font-sans-semibold text-mindful-brown">Hora de ligar</Text>
-      <Text className="mt-1 font-sans text-sm text-mindful-brown/80">
-        Que tal registrar uma ligação para o assistido agora?
-      </Text>
+      <Text className="font-sans-semibold text-mindful-brown">{t('reminder.title')}</Text>
+      <Text className="mt-1 font-sans text-sm text-mindful-brown/80">{t('reminder.description')}</Text>
       <View className="mt-3 flex-row gap-3">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Registrar ligação agora"
+          accessibilityLabel={t('reminder.callNowAccessibility')}
           className="rounded-xl bg-serenity-green px-4 py-2"
           onPress={() => {
             void acknowledge();
             onCallNow();
           }}
         >
-          <Text className="font-sans-semibold text-light">Ligar agora</Text>
+          <Text className="font-sans-semibold text-light">{t('reminder.callNow')}</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Dispensar lembrete"
+          accessibilityLabel={t('reminder.dismissAccessibility')}
           className="rounded-xl border border-mindful-brown/20 px-4 py-2"
           onPress={() => {
             void acknowledge();
           }}
         >
-          <Text className="font-sans-semibold text-mindful-brown">Depois</Text>
+          <Text className="font-sans-semibold text-mindful-brown">{t('reminder.dismiss')}</Text>
         </Pressable>
       </View>
     </View>

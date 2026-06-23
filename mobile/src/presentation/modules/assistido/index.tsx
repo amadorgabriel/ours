@@ -1,9 +1,11 @@
 import { useRouter, type Href } from 'expo-router';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
+import { useTranslation } from '@/presentation/hooks/use-translation';
 import { useAuth } from '@/presentation/providers/auth';
 import { useAssistido } from '@/presentation/providers/assistido';
 import { useFamily } from '@/presentation/providers/family';
+import { relationshipLabel } from '@/presentation/modules/family/relationship-label';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
@@ -23,10 +25,12 @@ function ParentListItem({
   isSelected: boolean;
   onSelect: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Selecionar ${parent.name}`}
+      accessibilityLabel={t('assistido.selectAccessibility', { name: parent.name })}
       accessibilityState={{ selected: isSelected }}
       className={`mb-2 flex-row items-center rounded-xl px-4 py-3 ${
         isSelected ? 'bg-serenity-green/15' : 'bg-white'
@@ -40,13 +44,16 @@ function ParentListItem({
       </View>
       <View className="flex-1">
         <Text className="font-sans-semibold text-mindful-brown">{parent.name}</Text>
-        <Text className="font-sans text-sm text-mindful-brown/70">{parent.relationship}</Text>
+        <Text className="font-sans text-sm text-mindful-brown/70">
+          {relationshipLabel(parent.relationship)}
+        </Text>
       </View>
     </Pressable>
   );
 }
 
 export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const { session } = useAuth();
   const { familyId } = useFamily();
@@ -66,16 +73,18 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
   }
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} accessibilityLabel="Selecionar assistido">
-      <Text className="font-sans-semibold text-xl text-mindful-brown">Assistido</Text>
-      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
-        Escolha para quem você está cuidando agora.
-      </Text>
+    <BottomSheet
+      visible={visible}
+      onClose={onClose}
+      accessibilityLabel={t('assistido.sheetAccessibility')}
+    >
+      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('assistido.title')}</Text>
+      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{t('assistido.description')}</Text>
 
       {!isLoading ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Todos os assistidos"
+          accessibilityLabel={t('assistido.allAccessibility')}
           accessibilityState={{ selected: parentId === null }}
           className={`mt-4 flex-row items-center rounded-xl px-4 py-3 ${
             parentId === null ? 'bg-serenity-green/15' : 'bg-white'
@@ -89,8 +98,8 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
             <Text className="font-sans-semibold text-mindful-brown">∞</Text>
           </View>
           <View className="flex-1">
-            <Text className="font-sans-semibold text-mindful-brown">Todos os assistidos</Text>
-            <Text className="font-sans text-sm text-mindful-brown/70">Sem filtro no feed e calendário</Text>
+            <Text className="font-sans-semibold text-mindful-brown">{t('assistido.all')}</Text>
+            <Text className="font-sans text-sm text-mindful-brown/70">{t('assistido.allDescription')}</Text>
           </View>
         </Pressable>
       ) : null}
@@ -98,14 +107,14 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
       {isLoading && (
         <View className="mt-6 items-center py-4">
           <ActivityIndicator color={colors.serenityGreen60} />
-          <Text className="mt-2 font-sans text-sm text-mindful-brown/70">Carregando...</Text>
+          <Text className="mt-2 font-sans text-sm text-mindful-brown/70">{t('common.loading')}</Text>
         </View>
       )}
 
       {isError && !isLoading ? (
         <View className="mt-6">
           <QueryErrorState
-            message="Não foi possível carregar os assistidos."
+            message={t('errors.parents.loadListFailed')}
             variant="inline"
             onRetry={refetch}
           />
@@ -115,13 +124,11 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
       {!isLoading && !isError && parents.length === 0 ? (
         <View className="mt-6">
           <EmptyState
-            title="Nenhum assistido cadastrado"
+            title={t('assistido.emptyTitle')}
             description={
-              isAdmin
-                ? 'Cadastre Pai, Mãe ou outro assistido para personalizar ligações e atividades.'
-                : 'Peça ao administrador da família para cadastrar os assistidos.'
+              isAdmin ? t('assistido.emptyAdminDescription') : t('assistido.emptyMemberDescription')
             }
-            actionLabel={isAdmin ? 'Cadastrar assistido' : undefined}
+            actionLabel={isAdmin ? t('assistido.registerAssistido') : undefined}
             onAction={isAdmin ? handleAdminCreate : undefined}
             variant="inline"
           />

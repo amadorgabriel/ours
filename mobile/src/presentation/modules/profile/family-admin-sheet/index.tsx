@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
 
 import { useDeleteFamily, useUpdateFamily } from '@/core/services/usecases/family/index.hooks';
+import { useTranslation } from '@/presentation/hooks/use-translation';
+import { getFamilyErrorMessage } from '@/presentation/modules/family/family-api-error';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
-
-import { getFamilyErrorMessage } from '@/presentation/modules/family/family-api-error';
 
 type FamilyAdminSheetProps = {
   visible: boolean;
@@ -20,6 +20,7 @@ export function FamilyAdminSheet({
   onClose,
   onDeleted,
 }: FamilyAdminSheetProps) {
+  const { t } = useTranslation();
   const updateFamily = useUpdateFamily();
   const deleteFamily = useDeleteFamily();
   const [name, setName] = useState(familyName);
@@ -61,14 +62,19 @@ export function FamilyAdminSheet({
   }
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Administrar família" scrollable>
-      <Text className="font-sans-semibold text-xl text-mindful-brown">Família</Text>
+    <BottomSheet
+      visible={visible}
+      onClose={handleClose}
+      accessibilityLabel={t('profile.familyAdminAccessibility')}
+      scrollable
+    >
+      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('profile.familyTitle')}</Text>
 
       {deleteStep === 0 ? (
         <>
-          <Text className="mt-4 font-sans text-sm text-mindful-brown/70">Nome da família</Text>
+          <Text className="mt-4 font-sans text-sm text-mindful-brown/70">{t('profile.familyName')}</Text>
           <TextInput
-            accessibilityLabel="Nome da família"
+            accessibilityLabel={t('profile.familyNameAccessibility')}
             className="mt-2 rounded-xl border border-mindful-brown/20 bg-cream px-4 py-3 font-sans text-mindful-brown"
             maxLength={100}
             value={name}
@@ -76,7 +82,7 @@ export function FamilyAdminSheet({
           />
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Salvar nome da família"
+            accessibilityLabel={t('profile.saveFamilyNameAccessibility')}
             className="mt-4 items-center rounded-xl bg-serenity-green py-3"
             disabled={updateFamily.isPending || !name.trim()}
             onPress={handleSaveName}
@@ -84,7 +90,7 @@ export function FamilyAdminSheet({
             {updateFamily.isPending ? (
               <ActivityIndicator color={colors.textLight} />
             ) : (
-              <Text className="font-sans-semibold text-light">Salvar</Text>
+              <Text className="font-sans-semibold text-light">{t('common.save')}</Text>
             )}
           </Pressable>
           {updateFamily.isError ? (
@@ -95,11 +101,11 @@ export function FamilyAdminSheet({
 
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Excluir família"
+            accessibilityLabel={t('profile.deleteFamilyAccessibility')}
             className="mt-6 items-center rounded-xl border border-red-500 py-3"
             onPress={() => setDeleteStep(1)}
           >
-            <Text className="font-sans-semibold text-red-600">Excluir família</Text>
+            <Text className="font-sans-semibold text-red-600">{t('profile.deleteFamily')}</Text>
           </Pressable>
         </>
       ) : null}
@@ -107,23 +113,23 @@ export function FamilyAdminSheet({
       {deleteStep === 1 ? (
         <>
           <Text className="mt-4 font-sans text-sm text-mindful-brown/80">
-            Esta ação é permanente e remove todos os dados da família. Deseja continuar?
+            {t('profile.deleteFamilyWarning')}
           </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Continuar exclusão"
+            accessibilityLabel={t('profile.continueDeleteAccessibility')}
             className="mt-4 items-center rounded-xl border border-red-500 py-3"
             onPress={() => setDeleteStep(2)}
           >
-            <Text className="font-sans-semibold text-red-600">Continuar</Text>
+            <Text className="font-sans-semibold text-red-600">{t('common.continue')}</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Cancelar exclusão"
+            accessibilityLabel={t('profile.cancelDeleteAccessibility')}
             className="mt-3 items-center py-2"
             onPress={() => setDeleteStep(0)}
           >
-            <Text className="font-sans-semibold text-mindful-brown">Cancelar</Text>
+            <Text className="font-sans-semibold text-mindful-brown">{t('common.cancel')}</Text>
           </Pressable>
         </>
       ) : null}
@@ -131,17 +137,17 @@ export function FamilyAdminSheet({
       {deleteStep === 2 ? (
         <>
           <Text className="mt-4 font-sans text-sm text-mindful-brown/80">
-            Digite <Text className="font-sans-semibold">{familyName}</Text> para confirmar.
+            {t('profile.confirmDeleteHint', { name: familyName })}
           </Text>
           <TextInput
-            accessibilityLabel="Confirmar nome da família"
+            accessibilityLabel={t('profile.confirmFamilyNameAccessibility')}
             className="mt-2 rounded-xl border border-mindful-brown/20 bg-cream px-4 py-3 font-sans text-mindful-brown"
             value={confirmName}
             onChangeText={setConfirmName}
           />
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Confirmar exclusão da família"
+            accessibilityLabel={t('profile.confirmDeleteAccessibility')}
             className="mt-4 items-center rounded-xl bg-red-600 py-3"
             disabled={deleteFamily.isPending || confirmName.trim() !== familyName}
             onPress={handleDelete}
@@ -149,7 +155,7 @@ export function FamilyAdminSheet({
             {deleteFamily.isPending ? (
               <ActivityIndicator color={colors.textLight} />
             ) : (
-              <Text className="font-sans-semibold text-light">Excluir permanentemente</Text>
+              <Text className="font-sans-semibold text-light">{t('profile.deletePermanently')}</Text>
             )}
           </Pressable>
           {deleteFamily.isError ? (

@@ -242,7 +242,7 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
 
       {photoPreview ? (
         <Image
-          accessibilityLabel="Prévia da foto da visita"
+          accessibilityLabel={t('visit.photoPreviewAccessibility')}
           className="mt-4 h-40 w-full rounded-xl"
           resizeMode="cover"
           source={{ uri: photoPreview }}

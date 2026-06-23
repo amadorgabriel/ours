@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 
 import type { Goal } from '@/core/domain/goal';
+import { useTranslation } from '@/presentation/hooks/use-translation';
 
 type GoalCardProps = {
   goal: Goal;
@@ -20,13 +21,17 @@ function getProgressPercent(current: number, target: number): number {
 }
 
 export function GoalCard({ goal, onPress }: GoalCardProps) {
+  const { t } = useTranslation();
   const progress = getProgressPercent(goal.currentAmount, goal.targetAmount);
 
   const content = (
     <>
       <Text className="font-sans-semibold text-mindful-brown">{goal.title}</Text>
       <Text className="mt-2 font-sans text-sm text-mindful-brown/70">
-        {formatCurrency(goal.currentAmount)} de {formatCurrency(goal.targetAmount)}
+        {t('goals.progressAmount', {
+          current: formatCurrency(goal.currentAmount),
+          target: formatCurrency(goal.targetAmount),
+        })}
       </Text>
       <View className="mt-3 h-2 overflow-hidden rounded-full bg-mindful-brown/10">
         <View
@@ -34,7 +39,9 @@ export function GoalCard({ goal, onPress }: GoalCardProps) {
           style={{ width: `${progress}%` }}
         />
       </View>
-      <Text className="mt-2 font-sans text-xs text-mindful-brown/60">{progress}% concluído</Text>
+      <Text className="mt-2 font-sans text-xs text-mindful-brown/60">
+        {t('goals.progress', { percent: progress })}
+      </Text>
     </>
   );
 
@@ -45,7 +52,7 @@ export function GoalCard({ goal, onPress }: GoalCardProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Meta ${goal.title}`}
+      accessibilityLabel={t('goals.goalAccessibility', { title: goal.title })}
       className="mb-3 rounded-2xl bg-white/80 p-4"
       onPress={onPress}
     >

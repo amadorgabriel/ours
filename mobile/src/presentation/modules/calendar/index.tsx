@@ -7,6 +7,7 @@ import {
   getDaysWithActivities,
   toLocalDateKey,
 } from '@/core/services/usecases/activity/month-range';
+import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
 import { CalendarGrid } from '@/ui/DataDisplay/CalendarGrid';
 import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
@@ -34,6 +35,7 @@ function filterItemsForDay(
 }
 
 export function CalendarScreen() {
+  const { t } = useTranslation();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -88,11 +90,13 @@ export function CalendarScreen() {
           />
         }
       >
-        <Text className="mb-4 font-sans-semibold text-xl text-mindful-brown">Calendário</Text>
+        <Text className="mb-4 font-sans-semibold text-xl text-mindful-brown">
+          {t('calendar.title')}
+        </Text>
 
         {isError && items.length === 0 ? (
           <QueryErrorState
-            message="Não foi possível carregar o calendário."
+            message={t('errors.calendar.loadFailed')}
             onRetry={() => {
               void refetch();
             }}
@@ -112,7 +116,7 @@ export function CalendarScreen() {
         {isError && items.length > 0 ? (
           <View className="mt-4">
             <QueryErrorState
-              message="Não foi possível atualizar o calendário."
+              message={t('errors.calendar.refreshFailed')}
               variant="inline"
               onRetry={() => {
                 void refetch();

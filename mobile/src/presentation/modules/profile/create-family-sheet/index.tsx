@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-nativ
 
 import { useCreateFamily } from '@/core/services/usecases/family/index.hooks';
 import { getFamilyErrorMessage } from '@/presentation/modules/family/family-api-error';
+import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 
@@ -12,6 +13,7 @@ type CreateFamilySheetProps = {
 };
 
 export function CreateFamilySheet({ visible, onClose }: CreateFamilySheetProps) {
+  const { t } = useTranslation();
   const createFamily = useCreateFamily();
   const [name, setName] = useState('');
 
@@ -38,18 +40,23 @@ export function CreateFamilySheet({ visible, onClose }: CreateFamilySheetProps) 
   }
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Nova família" scrollable>
-      <Text className="font-sans-semibold text-xl text-mindful-brown">Nova família</Text>
+    <BottomSheet
+      visible={visible}
+      onClose={handleClose}
+      accessibilityLabel={t('profile.newFamily')}
+      scrollable
+    >
+      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('profile.newFamily')}</Text>
       <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
-        Crie outra família e alterne entre elas pelo header.
+        {t('profile.createFamilyDescription')}
       </Text>
 
-      <Text className="mt-6 font-sans text-sm text-mindful-brown">Nome da família</Text>
+      <Text className="mt-6 font-sans text-sm text-mindful-brown">{t('profile.familyName')}</Text>
       <TextInput
-        accessibilityLabel="Nome da família"
+        accessibilityLabel={t('profile.familyNameAccessibility')}
         className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
         maxLength={100}
-        placeholder="Ex.: Silva"
+        placeholder={t('common.placeholderFamilyName')}
         placeholderTextColor={colors.mindfulBrown60}
         value={name}
         onChangeText={setName}
@@ -63,7 +70,7 @@ export function CreateFamilySheet({ visible, onClose }: CreateFamilySheetProps) 
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Criar família"
+        accessibilityLabel={t('profile.createFamilyAccessibility')}
         className="mt-4 items-center rounded-xl bg-serenity-green py-3"
         disabled={createFamily.isPending || !name.trim()}
         onPress={handleSubmit}
@@ -71,7 +78,7 @@ export function CreateFamilySheet({ visible, onClose }: CreateFamilySheetProps) 
         {createFamily.isPending ? (
           <ActivityIndicator color={colors.textLight} />
         ) : (
-          <Text className="font-sans-semibold text-light">Criar família</Text>
+          <Text className="font-sans-semibold text-light">{t('profile.createFamily')}</Text>
         )}
       </Pressable>
     </BottomSheet>

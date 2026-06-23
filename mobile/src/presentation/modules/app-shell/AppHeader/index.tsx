@@ -5,14 +5,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AssistidoSheet } from '@/presentation/modules/assistido';
 import { FamilyDropdown } from '@/presentation/modules/app-shell/FamilyDropdown';
+import { useTranslation } from '@/presentation/hooks/use-translation';
 import { useAssistido } from '@/presentation/providers/assistido';
 import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
-import { colors } from '@/presentation/styles/tokens';
 
 const HEADER_HEIGHT = 56;
 
 export function AppHeader() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { session } = useAuth();
   const { familyId, setFamilyId } = useFamily();
@@ -21,8 +22,9 @@ export function AppHeader() {
 
   const families = session?.families ?? [];
   const activeFamily = families.find((family) => family.id === familyId);
-  const familyName = activeFamily?.name ?? 'Família';
-  const assistidoLabel = activeParent?.name ?? (parentId === null ? 'Todos' : 'Assistido');
+  const familyName = activeFamily?.name ?? t('header.familyFallback');
+  const assistidoLabel =
+    activeParent?.name ?? (parentId === null ? t('common.all') : t('common.assistido'));
   const assistidoInitial = assistidoLabel.charAt(0).toUpperCase();
 
   function handleAssistidoPress() {
@@ -45,7 +47,7 @@ export function AppHeader() {
 
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Assistido: ${assistidoLabel}. Toque para selecionar`}
+            accessibilityLabel={t('header.assistidoAccessibility', { name: assistidoLabel })}
             className="min-h-[44px] max-w-[48%] flex-row items-center rounded-full bg-white px-3 py-2"
             onPress={handleAssistidoPress}
           >

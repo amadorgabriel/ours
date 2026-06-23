@@ -1,5 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 
+import { useTranslation } from '@/presentation/hooks/use-translation';
+
 type QueryErrorStateProps = {
   message?: string;
   onRetry: () => void;
@@ -7,10 +9,12 @@ type QueryErrorStateProps = {
 };
 
 export function QueryErrorState({
-  message = 'Não foi possível carregar os dados.',
+  message,
   onRetry,
   variant = 'default',
 }: QueryErrorStateProps) {
+  const { t } = useTranslation();
+  const displayMessage = message ?? t('common.genericLoadError');
   const isInline = variant === 'inline';
 
   return (
@@ -28,15 +32,15 @@ export function QueryErrorState({
             : 'text-center font-sans-semibold text-base text-mindful-brown'
         }
       >
-        {message}
+        {displayMessage}
       </Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Tentar novamente"
+        accessibilityLabel={t('common.retry')}
         className={`items-center rounded-xl border border-serenity-green px-6 py-3 ${isInline ? 'mt-4' : 'mt-6'}`}
         onPress={onRetry}
       >
-        <Text className="font-sans-semibold text-serenity-green">Tentar novamente</Text>
+        <Text className="font-sans-semibold text-serenity-green">{t('common.retry')}</Text>
       </Pressable>
     </View>
   );

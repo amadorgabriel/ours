@@ -11,6 +11,8 @@ import {
 
 import type { ParentId } from '@/core/domain/parent';
 import { useParent, useUpdateParent } from '@/core/services/usecases/parent/index.hooks';
+import { useTranslation } from '@/presentation/hooks/use-translation';
+import { relationshipLabel } from '@/presentation/modules/family/relationship-label';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
@@ -54,6 +56,7 @@ export function ParentDetailSheet({
   isAdmin,
   onClose,
 }: ParentDetailSheetProps) {
+  const { t } = useTranslation();
   const { data: parent, isLoading, isError, isRefetching, refetch } = useParent(parentId, visible);
   const updateParent = useUpdateParent(parentId ?? '');
   const [isEditing, setIsEditing] = useState(false);
@@ -98,14 +101,19 @@ export function ParentDetailSheet({
   }
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Ficha do assistido" scrollable>
+    <BottomSheet
+      visible={visible}
+      onClose={handleClose}
+      accessibilityLabel={t('parents.detailAccessibility')}
+      scrollable
+    >
       {isLoading ? (
         <View className="items-center py-10">
           <ActivityIndicator color={colors.serenityGreen60} />
         </View>
       ) : isError || !parent ? (
         <QueryErrorState
-          message="Não foi possível carregar a ficha do assistido."
+          message={t('errors.parents.loadDetailFailed')}
           variant="inline"
           onRetry={() => {
             void refetch();
@@ -128,13 +136,15 @@ export function ParentDetailSheet({
             <View className="flex-1 pr-3">
               <Text className="font-sans-semibold text-xl text-mindful-brown">{parent.name}</Text>
               <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
-                {parent.relationship}
+                {relationshipLabel(parent.relationship)}
               </Text>
             </View>
             {isAdmin ? (
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={isEditing ? 'Cancelar edição' : 'Editar ficha'}
+                accessibilityLabel={
+                  isEditing ? t('parents.cancelEditAccessibility') : t('parents.editDetailAccessibility')
+                }
                 className="rounded-lg px-3 py-2"
                 onPress={() => {
                   if (isEditing) {
@@ -145,7 +155,7 @@ export function ParentDetailSheet({
                 }}
               >
                 <Text className="font-sans-semibold text-sm text-serenity-green">
-                  {isEditing ? 'Cancelar' : 'Editar'}
+                  {isEditing ? t('common.cancel') : t('common.edit')}
                 </Text>
               </Pressable>
             ) : null}
@@ -155,16 +165,16 @@ export function ParentDetailSheet({
             <>
               <View className="mt-4">
                 <Text className="font-sans-semibold text-base text-mindful-brown">
-                  Informações médicas
+                  {t('parents.medicalInfo')}
                 </Text>
                 <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
-                  Alergias, medicamentos e observações relevantes.
+                  {t('parents.medicalInfoDescription')}
                 </Text>
                 <TextInput
-                  accessibilityLabel="Informações médicas"
+                  accessibilityLabel={t('parents.medicalInfoAccessibility')}
                   className="mt-2 min-h-[120px] rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
                   multiline
-                  placeholder="Ex.: alergia a penicilina; toma losartana 50mg"
+                  placeholder={t('parents.medicalInfoPlaceholder')}
                   placeholderTextColor={colors.mindfulBrown60}
                   textAlignVertical="top"
                   value={medicalInfo}
@@ -174,16 +184,16 @@ export function ParentDetailSheet({
 
               <View className="mt-4">
                 <Text className="font-sans-semibold text-base text-mindful-brown">
-                  Briefing de emergência
+                  {t('parents.emergencyBriefing')}
                 </Text>
                 <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
-                  Contatos, endereço e instruções para situações urgentes.
+                  {t('parents.emergencyBriefingDescription')}
                 </Text>
                 <TextInput
-                  accessibilityLabel="Briefing de emergência"
+                  accessibilityLabel={t('parents.emergencyBriefingAccessibility')}
                   className="mt-2 min-h-[120px] rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
                   multiline
-                  placeholder="Ex.: ligar para Maria (11) 99999-9999"
+                  placeholder={t('parents.emergencyBriefingPlaceholder')}
                   placeholderTextColor={colors.mindfulBrown60}
                   textAlignVertical="top"
                   value={emergencyBriefing}
@@ -199,7 +209,7 @@ export function ParentDetailSheet({
 
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Salvar ficha"
+                accessibilityLabel={t('parents.saveDetailAccessibility')}
                 className="mt-4 items-center rounded-xl bg-serenity-green py-3"
                 disabled={updateParent.isPending}
                 onPress={handleSaveMedical}
@@ -207,21 +217,21 @@ export function ParentDetailSheet({
                 {updateParent.isPending ? (
                   <ActivityIndicator color={colors.textLight} />
                 ) : (
-                  <Text className="font-sans-semibold text-light">Salvar</Text>
+                  <Text className="font-sans-semibold text-light">{t('common.save')}</Text>
                 )}
               </Pressable>
             </>
           ) : (
             <>
               <ReadSection
-                title="Informações médicas"
+                title={t('parents.medicalInfo')}
                 content={parent.medicalInfo}
-                emptyMessage="Nenhuma informação médica cadastrada ainda."
+                emptyMessage={t('parents.medicalInfoEmpty')}
               />
               <ReadSection
-                title="Briefing de emergência"
+                title={t('parents.emergencyBriefing')}
                 content={parent.emergencyBriefing}
-                emptyMessage="Nenhum briefing de emergência cadastrado ainda."
+                emptyMessage={t('parents.emergencyBriefingEmpty')}
               />
             </>
           )}

@@ -19,18 +19,13 @@ import {
   saveReminderSettings,
 } from '@/core/infra/notifications/notification-service';
 import { useRegisterDevice } from '@/core/services/usecases/device/index.hooks';
+import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
-
-const FREQUENCY_OPTIONS: { value: ReminderFrequency; label: string }[] = [
-  { value: 'daily', label: 'Diária' },
-  { value: 'weekly', label: 'Semanal' },
-  { value: 'monthly', label: 'Mensal' },
-  { value: 'custom', label: 'Personalizada' },
-];
 
 const CUSTOM_INTERVAL_OPTIONS = [2, 3, 5, 7, 14, 30];
 
 export function NotificationSettings() {
+  const { t } = useTranslation();
   const registerDevice = useRegisterDevice();
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<ReminderSettings>({
@@ -41,6 +36,13 @@ export function NotificationSettings() {
   });
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const frequencyOptions: { value: ReminderFrequency; labelKey: string }[] = [
+    { value: 'daily', labelKey: 'notifications.frequencyDaily' },
+    { value: 'weekly', labelKey: 'notifications.frequencyWeekly' },
+    { value: 'monthly', labelKey: 'notifications.frequencyMonthly' },
+    { value: 'custom', labelKey: 'notifications.frequencyCustom' },
+  ];
 
   useEffect(() => {
     void loadReminderSettings().then((loaded) => {
@@ -58,7 +60,7 @@ export function NotificationSettings() {
       setSettings(next);
       setStatusMessage(message);
     } catch {
-      setStatusMessage('Não foi possível atualizar as notificações.');
+      setStatusMessage(t('errors.notifications.updateFailed'));
     } finally {
       setSaving(false);
     }
@@ -68,7 +70,7 @@ export function NotificationSettings() {
     if (nextEnabled) {
       const granted = await requestNotificationPermission();
       if (!granted) {
-        setStatusMessage('Permissão negada. Você pode ativar depois nas configurações do sistema.');
+        setStatusMessage(t('errors.notifications.permissionDenied'));
         setSettings((current) => ({ ...current, enabled: false }));
         return;
       }
@@ -81,11 +83,11 @@ export function NotificationSettings() {
         });
       }
 
-      await persistSettings({ ...settings, enabled: true }, 'Lembrete ativado.');
+      await persistSettings({ ...settings, enabled: true }, t('notifications.reminderEnabled'));
       return;
     }
 
-    await persistSettings({ ...settings, enabled: false }, 'Lembretes desativados.');
+    await persistSettings({ ...settings, enabled: false }, t('notifications.reminderDisabled'));
   }
 
   async function updateSettings(patch: Partial<ReminderSettings>, message: string) {
@@ -109,15 +111,13 @@ export function NotificationSettings() {
 
   return (
     <View className="mt-4 rounded-2xl bg-white p-5">
-      <Text className="font-sans-semibold text-lg text-mindful-brown">Notificações</Text>
-      <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
-        Receba lembretes para ligar para o assistido.
-      </Text>
+      <Text className="font-sans-semibold text-lg text-mindful-brown">{t('notifications.title')}</Text>
+      <Text className="mt-1 font-sans text-sm text-mindful-brown/70">{t('notifications.description')}</Text>
 
       <View className="mt-4 flex-row items-center justify-between">
-        <Text className="font-sans text-mindful-brown">Lembretes</Text>
+        <Text className="font-sans text-mindful-brown">{t('notifications.reminders')}</Text>
         <Switch
-          accessibilityLabel="Ativar lembretes"
+          accessibilityLabel={t('notifications.remindersAccessibility')}
           disabled={saving}
           value={settings.enabled}
           onValueChange={(value) => {
@@ -129,20 +129,24 @@ export function NotificationSettings() {
       {settings.enabled ? (
         <>
           <View className="mt-4">
-            <Text className="font-sans text-sm text-mindful-brown/70">Periodicidade</Text>
+            <Text className="font-sans text-sm text-mindful-brown/70">{t('notifications.frequency')}</Text>
             <View className="mt-2 flex-row flex-wrap gap-2">
-              {FREQUENCY_OPTIONS.map((option) => {
+              {frequencyOptions.map((option) => {
+                const label = t(option.labelKey);
                 const isSelected = settings.frequency === option.value;
                 return (
                   <Pressable
                     key={option.value}
                     accessibilityRole="button"
-                    accessibilityLabel={option.label}
+                    accessibilityLabel={label}
                     accessibilityState={isSelected ? { selected: true } : {}}
                     className={`rounded-full px-3 py-2 ${isSelected ? 'bg-serenity-green' : 'bg-cream'}`}
                     disabled={saving}
                     onPress={() => {
-                      void updateSettings({ frequency: option.value }, `Periodicidade: ${option.label}.`);
+                      void updateSettings(
+                        { frequency: option.value },
+                        t('notifications.frequencyUpdated', { label })
+                      );
                     }}
                   >
                     <Text
@@ -150,7 +154,7 @@ export function NotificationSettings() {
                         isSelected ? 'text-light' : 'text-mindful-brown'
                       }`}
                     >
-                      {option.label}
+                      {label}
                     </Text>
                   </Pressable>
                 );
@@ -160,7 +164,9 @@ export function NotificationSettings() {
 
           {settings.frequency === 'custom' ? (
             <View className="mt-4">
-              <Text className="font-sans text-sm text-mindful-brown/70">A cada quantos dias?</Text>
+              <Text className="font-sans text-sm text-mindful-brown/70">
+                {t('notifications.customInterval')}
+              </Text>
               <View className="mt-2 flex-row flex-wrap gap-2">
                 {CUSTOM_INTERVAL_OPTIONS.map((days) => {
                   const isSelected = settings.customIntervalDays === days;
@@ -168,13 +174,13 @@ export function NotificationSettings() {
                     <Pressable
                       key={days}
                       accessibilityRole="button"
-                      accessibilityLabel={`${days} dias`}
+                      accessibilityLabel={t('notifications.customIntervalAccessibility', { days })}
                       className={`rounded-full px-3 py-2 ${isSelected ? 'bg-serenity-green' : 'bg-cream'}`}
                       disabled={saving}
                       onPress={() => {
                         void updateSettings(
                           { customIntervalDays: days },
-                          `Lembrete a cada ${days} dias.`
+                          t('notifications.reminderEveryDays', { days })
                         );
                       }}
                     >
@@ -183,7 +189,7 @@ export function NotificationSettings() {
                           isSelected ? 'text-light' : 'text-mindful-brown'
                         }`}
                       >
-                        {days}d
+                        {t('notifications.customIntervalDays', { days })}
                       </Text>
                     </Pressable>
                   );
@@ -193,9 +199,11 @@ export function NotificationSettings() {
           ) : null}
 
           <View className="mt-4">
-            <Text className="font-sans text-sm text-mindful-brown/70">Horário do lembrete</Text>
+            <Text className="font-sans text-sm text-mindful-brown/70">
+              {t('notifications.reminderTime')}
+            </Text>
             <View className="mt-2 flex-row flex-wrap gap-2">
-              {REMINDER_TIME_OPTIONS.map((time) => {
+              {REMINDER_TIME_OPTIONS.map((time: ReminderTime) => {
                 const label = formatReminderTime(time);
                 const isSelected =
                   time.hour === settings.time.hour && time.minute === settings.time.minute;
@@ -204,14 +212,14 @@ export function NotificationSettings() {
                   <Pressable
                     key={label}
                     accessibilityRole="button"
-                    accessibilityLabel={`Horário ${label}`}
+                    accessibilityLabel={t('notifications.reminderTimeAccessibility', { time: label })}
                     accessibilityState={isSelected ? { selected: true } : {}}
                     className={`rounded-full px-3 py-2 ${
                       isSelected ? 'bg-serenity-green' : 'bg-cream'
                     }`}
                     disabled={saving}
                     onPress={() => {
-                      void updateSettings({ time }, `Lembrete agendado para ${label}.`);
+                      void updateSettings({ time }, t('notifications.reminderScheduled', { time: label }));
                     }}
                   >
                     <Text

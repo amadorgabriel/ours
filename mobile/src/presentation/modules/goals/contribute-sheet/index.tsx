@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import { useCreateGoalContribution } from '@/core/services/usecases/goal/index.hooks';
+import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 
@@ -23,6 +24,7 @@ type ContributeSheetProps = {
 const MIN_AMOUNT = 1;
 
 export function ContributeSheet({ visible, goalId, onClose }: ContributeSheetProps) {
+  const { t } = useTranslation();
   const createContribution = useCreateGoalContribution(goalId);
   const [amount, setAmount] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
@@ -54,37 +56,42 @@ export function ContributeSheet({ visible, goalId, onClose }: ContributeSheetPro
   const isValid = !Number.isNaN(parsedAmount) && parsedAmount >= MIN_AMOUNT;
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Contribuir para meta" scrollable>
-      <Text className="font-sans-semibold text-xl text-mindful-brown">Contribuir</Text>
+    <BottomSheet
+      visible={visible}
+      onClose={handleClose}
+      accessibilityLabel={t('goals.contributeSheetAccessibility')}
+      scrollable
+    >
+      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('goals.contribute')}</Text>
       <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
-        Registre quanto você está contribuindo para esta meta.
+        {t('goals.contributeDescription')}
       </Text>
 
       <View className="mt-6">
-        <Text className="font-sans text-sm text-mindful-brown">Valor (R$)</Text>
+        <Text className="font-sans text-sm text-mindful-brown">{t('goals.amount')}</Text>
         <TextInput
-          accessibilityLabel="Valor da contribuição"
+          accessibilityLabel={t('goals.amountAccessibility')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           keyboardType="decimal-pad"
-          placeholder="Ex.: 50"
+          placeholder={t('goals.amountPlaceholder')}
           placeholderTextColor={colors.mindfulBrown60}
           value={amount}
           onChangeText={setAmount}
         />
         <Text className="mt-1 font-sans text-xs text-mindful-brown/50">
-          Mínimo R$ {MIN_AMOUNT.toFixed(2)}
+          {t('common.minimum', { amount: MIN_AMOUNT.toFixed(2) })}
         </Text>
       </View>
 
       <View className="mt-4 flex-row items-center justify-between rounded-xl bg-white/80 px-4 py-3">
         <View className="flex-1 pr-4">
-          <Text className="font-sans text-sm text-mindful-brown">Contribuição privada</Text>
+          <Text className="font-sans text-sm text-mindful-brown">{t('goals.privateContribution')}</Text>
           <Text className="mt-1 font-sans text-xs text-mindful-brown/60">
-            Outros membros não verão o valor
+            {t('goals.privateContributionHint')}
           </Text>
         </View>
         <Switch
-          accessibilityLabel="Contribuição privada"
+          accessibilityLabel={t('goals.privateContributionAccessibility')}
           trackColor={{ false: colors.mindfulBrown60, true: colors.serenityGreen60 }}
           thumbColor={colors.textLight}
           value={isPrivate}
@@ -100,7 +107,7 @@ export function ContributeSheet({ visible, goalId, onClose }: ContributeSheetPro
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Registrar contribuição"
+        accessibilityLabel={t('goals.registerContributionAccessibility')}
         className="mt-4 items-center rounded-xl bg-serenity-green py-3"
         disabled={!isValid || createContribution.isPending}
         onPress={handleSubmit}
@@ -108,7 +115,7 @@ export function ContributeSheet({ visible, goalId, onClose }: ContributeSheetPro
         {createContribution.isPending ? (
           <ActivityIndicator color={colors.textLight} />
         ) : (
-          <Text className="font-sans-semibold text-light">Registrar contribuição</Text>
+          <Text className="font-sans-semibold text-light">{t('goals.registerContribution')}</Text>
         )}
       </Pressable>
     </BottomSheet>

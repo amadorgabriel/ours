@@ -1,23 +1,32 @@
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
+import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
 
-const WEEKDAY_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+const MONTH_KEYS = [
+  'calendar.months.january',
+  'calendar.months.february',
+  'calendar.months.march',
+  'calendar.months.april',
+  'calendar.months.may',
+  'calendar.months.june',
+  'calendar.months.july',
+  'calendar.months.august',
+  'calendar.months.september',
+  'calendar.months.october',
+  'calendar.months.november',
+  'calendar.months.december',
+] as const;
 
-const MONTH_LABELS = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro',
-];
+const WEEKDAY_KEYS = [
+  'calendar.weekdays.mon',
+  'calendar.weekdays.tue',
+  'calendar.weekdays.wed',
+  'calendar.weekdays.thu',
+  'calendar.weekdays.fri',
+  'calendar.weekdays.sat',
+  'calendar.weekdays.sun',
+] as const;
 
 export type CalendarGridProps = {
   year: number;
@@ -56,15 +65,16 @@ export function CalendarGrid({
   onPrevMonth,
   onNextMonth,
 }: CalendarGridProps) {
+  const { t } = useTranslation();
   const cells = buildCalendarDays(year, month);
-  const monthLabel = `${MONTH_LABELS[month - 1]} ${year}`;
+  const monthLabel = `${t(MONTH_KEYS[month - 1])} ${year}`;
 
   return (
     <View className="relative">
       <View className="mb-4 flex-row items-center justify-between">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Mês anterior"
+          accessibilityLabel={t('calendar.prevMonthAccessibility')}
           className="min-h-11 min-w-11 items-center justify-center"
           onPress={onPrevMonth}
         >
@@ -73,7 +83,7 @@ export function CalendarGrid({
         <Text className="font-sans-semibold text-lg text-mindful-brown">{monthLabel}</Text>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Próximo mês"
+          accessibilityLabel={t('calendar.nextMonthAccessibility')}
           className="min-h-11 min-w-11 items-center justify-center"
           onPress={onNextMonth}
         >
@@ -82,9 +92,9 @@ export function CalendarGrid({
       </View>
 
       <View className="mb-2 flex-row">
-        {WEEKDAY_LABELS.map((label) => (
-          <View key={label} className="flex-1 items-center py-1">
-            <Text className="font-sans text-xs text-mindful-brown/60">{label}</Text>
+        {WEEKDAY_KEYS.map((key) => (
+          <View key={key} className="flex-1 items-center py-1">
+            <Text className="font-sans text-xs text-mindful-brown/60">{t(key)}</Text>
           </View>
         ))}
       </View>
@@ -95,7 +105,7 @@ export function CalendarGrid({
             {day ? (
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={`Dia ${day}`}
+                accessibilityLabel={t('calendar.dayAccessibility', { day })}
                 className="min-h-11 min-w-11 items-center justify-center rounded-full"
                 onPress={() => onDayPress(day)}
               >

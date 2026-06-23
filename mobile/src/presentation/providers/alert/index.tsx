@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { createContext, useCallback, useContext, useRef, useState } from 'react';
 
+import { t } from '@/core/infra/i18n';
 import { ConfirmDialog, type ConfirmDialogButton } from '@/ui/Feedback/ConfirmDialog';
 
 type AlertRequest = {
@@ -31,7 +32,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
       const request: AlertRequest = {
         title,
         message,
-        buttons: buttons ?? [{ text: 'OK' }],
+        buttons: buttons ?? [{ text: t('common.ok') }],
       };
 
       if (!currentRef.current) {

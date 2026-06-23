@@ -18,6 +18,7 @@ import {
 import { useUpdateParent, useUpdateParentPhoto } from '@/core/services/usecases/parent/index.hooks';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { useAppAlert } from '@/presentation/providers/alert';
+import { relationshipLabel } from '@/presentation/modules/family/relationship-label';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 import { DatePickerField } from '@/ui/Forms/DatePickerField';
@@ -41,10 +42,13 @@ function RelationshipOption({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const { t } = useTranslation();
+  const displayLabel = relationshipLabel(label);
+
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Relação ${label}`}
+      accessibilityLabel={t('relationships.accessibility', { label: displayLabel })}
       accessibilityState={{ selected }}
       className={`mr-2 rounded-full px-4 py-2 ${
         selected ? 'bg-serenity-green' : 'bg-white'
@@ -52,7 +56,7 @@ function RelationshipOption({
       onPress={onSelect}
     >
       <Text className={`font-sans-semibold text-sm ${selected ? 'text-light' : 'text-mindful-brown'}`}>
-        {label}
+        {displayLabel}
       </Text>
     </Pressable>
   );
@@ -181,7 +185,7 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
       <View className="mt-6 items-center">
         {photoPreview ? (
           <Image
-            accessibilityLabel="Foto do assistido"
+            accessibilityLabel={t('parents.photoAccessibility')}
             className="h-20 w-20 rounded-full"
             source={{ uri: photoPreview }}
           />
@@ -222,7 +226,7 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
           accessibilityLabel={t('parents.name')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           maxLength={MAX_NAME_LENGTH}
-          placeholder="Ex.: João Silva"
+          placeholder={t('common.placeholderName')}
           placeholderTextColor={colors.mindfulBrown60}
           value={name}
           onChangeText={setName}

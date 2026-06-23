@@ -5,6 +5,7 @@ import { Modal, Pressable, Text, View } from 'react-native';
 
 import type { FamilyWithRoleModel } from '@/core/domain/family';
 import { roleLabel } from '@/presentation/modules/family/role-label';
+import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
 
 import { invalidateFamilyDependentQueries } from './invalidate-family-queries';
@@ -22,6 +23,7 @@ export function FamilyDropdown({
   familyName,
   onSelectFamily,
 }: FamilyDropdownProps) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [menuVisible, setMenuVisible] = useState(false);
   const isMultiFamily = families.length > 1;
@@ -35,7 +37,7 @@ export function FamilyDropdown({
   if (!isMultiFamily) {
     return (
       <View
-        accessibilityLabel={`Família ativa: ${familyName}`}
+        accessibilityLabel={t('header.activeFamilyAccessibility', { name: familyName })}
         className="min-h-[44px] max-w-[48%] flex-row items-center rounded-full bg-white px-3 py-2"
       >
         <Ionicons color={colors.mindfulBrown60} name="people" size={18} />
@@ -53,7 +55,7 @@ export function FamilyDropdown({
     <>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Família ativa: ${familyName}. Toque para trocar`}
+        accessibilityLabel={t('header.activeFamilySwitchAccessibility', { name: familyName })}
         className="min-h-[44px] max-w-[48%] flex-row items-center rounded-full bg-white px-3 py-2"
         onPress={() => setMenuVisible(true)}
       >
@@ -77,12 +79,12 @@ export function FamilyDropdown({
       >
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Fechar menu de famílias"
+          accessibilityLabel={t('header.closeFamilyMenuAccessibility')}
           className="flex-1 justify-start bg-black/30 px-4 pt-28"
           onPress={() => setMenuVisible(false)}
         >
           <Pressable
-            accessibilityLabel="Lista de famílias"
+            accessibilityLabel={t('header.familyListAccessibility')}
             className="rounded-2xl bg-cream p-2"
             onPress={(event) => event.stopPropagation()}
           >

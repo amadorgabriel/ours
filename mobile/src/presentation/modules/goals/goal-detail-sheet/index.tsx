@@ -68,6 +68,8 @@ function ContributionRow({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <View className="flex-row items-center justify-between border-b border-mindful-brown/10 py-3">
       <View className="flex-1 pr-3">
@@ -76,7 +78,7 @@ function ContributionRow({
         </Text>
         <Text className="mt-0.5 font-sans text-xs text-mindful-brown/60">
           {formatContributionDate(contribution.createdAt)}
-          {contribution.isPrivate ? ' · Privada' : ''}
+          {contribution.isPrivate ? ` · ${t('common.private')}` : ''}
         </Text>
       </View>
       <Text className="font-sans-semibold text-sm text-mindful-brown">
@@ -84,11 +86,19 @@ function ContributionRow({
       </Text>
       {isAuthor ? (
         <View className="ml-2">
-          <Pressable accessibilityRole="button" accessibilityLabel="Editar contribuição" onPress={onEdit}>
-            <Text className="font-sans-semibold text-xs text-serenity-green">Editar</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('goals.editContributionAccessibility')}
+            onPress={onEdit}
+          >
+            <Text className="font-sans-semibold text-xs text-serenity-green">{t('common.edit')}</Text>
           </Pressable>
-          <Pressable accessibilityRole="button" accessibilityLabel="Excluir contribuição" onPress={onDelete}>
-            <Text className="mt-1 font-sans-semibold text-xs text-red-600">Excluir</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('goals.deleteContributionAccessibility')}
+            onPress={onDelete}
+          >
+            <Text className="mt-1 font-sans-semibold text-xs text-red-600">{t('common.delete')}</Text>
           </Pressable>
         </View>
       ) : null}
@@ -181,7 +191,11 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
 
   return (
     <>
-      <BottomSheet visible={visible} onClose={onClose} accessibilityLabel="Detalhe da meta">
+      <BottomSheet
+        visible={visible}
+        onClose={onClose}
+        accessibilityLabel={t('goals.detailAccessibility')}
+      >
         <ScrollView
           refreshControl={
             <RefreshControl
@@ -194,7 +208,7 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
         >
           <Text className="font-sans-semibold text-xl text-mindful-brown">{liveGoal.title}</Text>
           <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
-            Criada em {formatDate(liveGoal.createdAt)}
+            {t('goals.createdAt', { date: formatDate(liveGoal.createdAt) })}
           </Text>
 
           <View className="mt-4">
@@ -202,7 +216,7 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
           </View>
 
           <View className="mt-4 rounded-xl bg-white/80 p-4">
-            <Text className="font-sans text-sm text-mindful-brown/70">Faltam</Text>
+            <Text className="font-sans text-sm text-mindful-brown/70">{t('goals.remaining')}</Text>
             <Text className="mt-1 font-sans-semibold text-lg text-mindful-brown">
               {formatCurrency(remaining)}
             </Text>
@@ -210,15 +224,15 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
 
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Contribuir"
+            accessibilityLabel={t('goals.contributeAccessibility')}
             className="mt-4 items-center rounded-xl bg-serenity-green py-3"
             onPress={() => setContributeVisible(true)}
           >
-            <Text className="font-sans-semibold text-light">Contribuir</Text>
+            <Text className="font-sans-semibold text-light">{t('goals.contribute')}</Text>
           </Pressable>
 
           <Text className="mb-2 mt-6 font-sans-semibold text-base text-mindful-brown">
-            Contribuições
+            {t('goals.contributions')}
           </Text>
 
           {contributionsLoading && contributions.length === 0 ? (
@@ -241,16 +255,18 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
 
           {editingContribution ? (
             <View className="mt-4 rounded-xl bg-white/80 p-4">
-              <Text className="font-sans-semibold text-mindful-brown">Editar contribuição</Text>
+              <Text className="font-sans-semibold text-mindful-brown">
+                {t('goals.editContribution')}
+              </Text>
               <TextInput
-                accessibilityLabel="Valor da contribuição"
+                accessibilityLabel={t('goals.amountAccessibility')}
                 className="mt-3 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
                 keyboardType="decimal-pad"
                 value={editAmount}
                 onChangeText={setEditAmount}
               />
               <View className="mt-3 flex-row items-center justify-between">
-                <Text className="font-sans text-sm text-mindful-brown">Privada</Text>
+                <Text className="font-sans text-sm text-mindful-brown">{t('common.private')}</Text>
                 <Switch value={editPrivate} onValueChange={setEditPrivate} />
               </View>
               <View className="mt-3 flex-row gap-3">
@@ -259,7 +275,7 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
                   className="flex-1 items-center rounded-xl border border-mindful-brown/20 py-3"
                   onPress={() => setEditingContribution(null)}
                 >
-                  <Text className="font-sans-semibold text-mindful-brown">Cancelar</Text>
+                  <Text className="font-sans-semibold text-mindful-brown">{t('common.cancel')}</Text>
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
@@ -267,7 +283,7 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
                   disabled={updateContribution.isPending}
                   onPress={handleSaveEdit}
                 >
-                  <Text className="font-sans-semibold text-light">Salvar</Text>
+                  <Text className="font-sans-semibold text-light">{t('common.save')}</Text>
                 </Pressable>
               </View>
             </View>

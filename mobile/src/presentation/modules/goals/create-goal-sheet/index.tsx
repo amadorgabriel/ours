@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import { useCreateGoal } from '@/core/services/usecases/goal/index.hooks';
+import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 
@@ -22,6 +23,7 @@ const MAX_TITLE_LENGTH = 100;
 const MIN_TARGET_AMOUNT = 10;
 
 export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
+  const { t } = useTranslation();
   const createGoal = useCreateGoal();
   const [title, setTitle] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
@@ -57,19 +59,24 @@ export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
     parsedAmount >= MIN_TARGET_AMOUNT;
 
   return (
-    <BottomSheet visible={visible} onClose={handleClose} accessibilityLabel="Nova meta" scrollable>
-      <Text className="font-sans-semibold text-xl text-mindful-brown">Nova meta</Text>
+    <BottomSheet
+      visible={visible}
+      onClose={handleClose}
+      accessibilityLabel={t('goals.newGoal')}
+      scrollable
+    >
+      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('goals.newGoal')}</Text>
       <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
-        Defina um objetivo financeiro para o cuidado da família.
+        {t('goals.createDescription')}
       </Text>
 
       <View className="mt-6">
-        <Text className="font-sans text-sm text-mindful-brown">Título</Text>
+        <Text className="font-sans text-sm text-mindful-brown">{t('goals.titleLabel')}</Text>
         <TextInput
-          accessibilityLabel="Título da meta"
+          accessibilityLabel={t('goals.titleAccessibility')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           maxLength={MAX_TITLE_LENGTH}
-          placeholder="Ex.: Reserva de emergência"
+          placeholder={t('goals.titlePlaceholder')}
           placeholderTextColor={colors.mindfulBrown60}
           value={title}
           onChangeText={setTitle}
@@ -77,18 +84,18 @@ export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
       </View>
 
       <View className="mt-4">
-        <Text className="font-sans text-sm text-mindful-brown">Valor alvo (R$)</Text>
+        <Text className="font-sans text-sm text-mindful-brown">{t('goals.targetAmount')}</Text>
         <TextInput
-          accessibilityLabel="Valor alvo"
+          accessibilityLabel={t('goals.targetAmountAccessibility')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           keyboardType="decimal-pad"
-          placeholder="Ex.: 500"
+          placeholder={t('goals.targetAmountPlaceholder')}
           placeholderTextColor={colors.mindfulBrown60}
           value={targetAmount}
           onChangeText={setTargetAmount}
         />
         <Text className="mt-1 font-sans text-xs text-mindful-brown/50">
-          Mínimo R$ {MIN_TARGET_AMOUNT.toFixed(2)}
+          {t('common.minimum', { amount: MIN_TARGET_AMOUNT.toFixed(2) })}
         </Text>
       </View>
 
@@ -100,7 +107,7 @@ export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Criar meta"
+        accessibilityLabel={t('goals.createGoalAccessibility')}
         className="mt-4 items-center rounded-xl bg-serenity-green py-3"
         disabled={!isValid || createGoal.isPending}
         onPress={handleSubmit}
@@ -108,7 +115,7 @@ export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
         {createGoal.isPending ? (
           <ActivityIndicator color={colors.textLight} />
         ) : (
-          <Text className="font-sans-semibold text-light">Criar meta</Text>
+          <Text className="font-sans-semibold text-light">{t('goals.createGoal')}</Text>
         )}
       </Pressable>
     </BottomSheet>
