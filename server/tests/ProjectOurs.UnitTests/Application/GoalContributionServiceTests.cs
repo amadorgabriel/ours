@@ -173,6 +173,59 @@ public sealed class GoalContributionServiceTests
             _sut.ListAsync(userId, familyId, goalId));
     }
 
+    [Fact]
+    public async Task DeleteAsync_AsAuthor_RemovesContributionActivity()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var goalId = Guid.NewGuid();
+        var contributionId = Guid.NewGuid();
+
+        SetupMembership(userId, familyId);
+        SetupGoal(goalId, familyId);
+
+        _contributions
+            .Setup(x => x.GetByIdAndGoalIdAsync(contributionId, goalId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new GoalContribution
+            {
+                Id = contributionId,
+                GoalId = goalId,
+                UserId = userId,
+                Amount = 25m,
+                IsPrivate = false,
+                CreatedAt = DateTimeOffset.UtcNow,
+                User = new User { Id = userId, Name = "Ana" },
+            });
+
+        _contributions
+            .Setup(x => x.DeleteWithGoalUpdateAsync(It.IsAny<GoalContribution>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        _activityRepo
+            .Setup(x => x.FindByContributionIdAsync(contributionId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Activity
+            {
+                Id = Guid.NewGuid(),
+                FamilyId = familyId,
+                UserId = userId,
+                Type = ActivityType.Contribution,
+                CreatedAt = DateTimeOffset.UtcNow,
+            });
+
+        _activityRepo
+            .Setup(x => x.DeleteAsync(It.IsAny<Activity>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await _sut.DeleteAsync(userId, familyId, goalId, contributionId);
+
+        _activityRepo.Verify(
+            x => x.DeleteAsync(It.IsAny<Activity>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+        _contributions.Verify(
+            x => x.DeleteWithGoalUpdateAsync(It.IsAny<GoalContribution>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
     private void SetupMembership(Guid userId, Guid familyId)
     {
         _families

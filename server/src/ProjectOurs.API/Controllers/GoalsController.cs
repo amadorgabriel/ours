@@ -18,7 +18,9 @@ public sealed class GoalsController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> List(CancellationToken cancellationToken)
+    public async Task<IActionResult> List(
+        [FromQuery] string? parentId,
+        CancellationToken cancellationToken)
     {
         if (!ApiControllerHelper.TryGetUserId(User, out var userId))
         {
@@ -30,9 +32,24 @@ public sealed class GoalsController(
             return familyError!;
         }
 
+        Guid? parsedParentId = null;
+        if (!string.IsNullOrWhiteSpace(parentId))
+        {
+            if (!Guid.TryParse(parentId, out var resolvedParentId))
+            {
+                return BadRequest(new { message = "Invalid assistido filter." });
+            }
+
+            parsedParentId = resolvedParentId;
+        }
+
         try
         {
-            var response = await goalService.ListAsync(userId, familyId, cancellationToken);
+            var response = await goalService.ListAsync(
+                userId,
+                familyId,
+                parsedParentId,
+                cancellationToken);
             return Ok(response);
         }
         catch (GoalValidationException ex)
@@ -300,6 +317,55 @@ public sealed class GoalsController(
                 contributionId,
                 goalId,
                 userId);
+            return MapGoalException(ex);
+        }
+    }
+
+    [HttpDelete("{goalId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(
+        Guid goalId,
+        CancellationToken cancellationToken)
+    {
+        if (!ApiControllerHelper.TryGetUserId(User, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        if (!TryGetFamilyId(out var familyId, out var familyError))
+        {
+            return familyError!;
+        }
+
+        try
+        {
+            await goalService.DeleteAsync(userId, familyId, goalId, cancellationToken);
+            return NoContent();
+        }
+        catch (GoalValidationException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (GoalForbiddenException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (GoalNotFoundException ex)
+        {
+            return MapGoalException(ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Failed to delete goal {GoalId} for user {UserId} in family {FamilyId}.",
+                goalId,
+                userId,
+                familyId);
             return MapGoalException(ex);
         }
     }

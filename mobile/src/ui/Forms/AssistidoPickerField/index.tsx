@@ -10,9 +10,10 @@ import { EmptyState } from '@/ui/Feedback/EmptyState';
 type AssistidoPickerFieldProps = {
   parents: ParentSummary[];
   value: ParentId | null;
-  onChange: (parentId: ParentId) => void;
+  onChange: (parentId: ParentId | null) => void;
   label?: string;
   requiredHint?: string;
+  allowAll?: boolean;
 };
 
 function ParentOption({
@@ -53,10 +54,15 @@ function ParentOption({
 
 export function resolveInitialFormParentId(
   globalParentId: ParentId | null,
-  parents: ParentSummary[]
+  parents: ParentSummary[],
+  allowAll = false
 ): ParentId | null {
   if (globalParentId) {
     return globalParentId;
+  }
+
+  if (allowAll) {
+    return null;
   }
 
   if (parents.length === 1) {
@@ -72,16 +78,19 @@ export function AssistidoPickerField({
   onChange,
   label,
   requiredHint,
+  allowAll = false,
 }: AssistidoPickerFieldProps) {
   const { t } = useTranslation();
   const [pickerVisible, setPickerVisible] = useState(false);
 
   const selectedParent = useMemo(
-    () => parents.find((parent) => parent.id === value) ?? null,
+    () => (value ? parents.find((parent) => parent.id === value) ?? null : null),
     [parents, value]
   );
 
   const fieldLabel = label ?? t('common.assistido');
+  const displayName =
+    selectedParent?.name ?? (allowAll && value === null ? t('common.all') : null);
 
   return (
     <>
@@ -94,9 +103,9 @@ export function AssistidoPickerField({
           onPress={() => setPickerVisible(true)}
         >
           <Text className="font-sans-semibold text-mindful-brown">
-            {selectedParent?.name ?? t('assistidoPicker.noneSelected')}
+            {displayName ?? t('assistidoPicker.noneSelected')}
           </Text>
-          {!selectedParent && requiredHint ? (
+          {!displayName && requiredHint ? (
             <Text className="mt-1 font-sans text-xs text-mindful-brown/60">{requiredHint}</Text>
           ) : null}
         </Pressable>
@@ -110,6 +119,23 @@ export function AssistidoPickerField({
         <Text className="font-sans-semibold text-xl text-mindful-brown">
           {t('assistidoPicker.sheetTitle')}
         </Text>
+
+        {allowAll ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('assistidoPicker.allAccessibility')}
+            accessibilityState={{ selected: value === null }}
+            className={`mb-2 mt-4 flex-row items-center rounded-xl px-4 py-3 ${
+              value === null ? 'bg-serenity-green/15' : 'bg-white'
+            }`}
+            onPress={() => {
+              onChange(null);
+              setPickerVisible(false);
+            }}
+          >
+            <Text className="font-sans-semibold text-mindful-brown">{t('common.all')}</Text>
+          </Pressable>
+        ) : null}
 
         {parents.length === 0 ? (
           <EmptyState

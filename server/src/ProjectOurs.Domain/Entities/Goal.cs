@@ -13,8 +13,10 @@ public class Goal
     public Guid CreatedBy { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }
+    public Guid? ParentId { get; set; }
 
     public Family Family { get; set; } = null!;
+    public Parent? Parent { get; set; }
     public User Creator { get; set; } = null!;
     public ICollection<GoalContribution> Contributions { get; set; } = new List<GoalContribution>();
 }

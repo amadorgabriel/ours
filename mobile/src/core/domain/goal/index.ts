@@ -10,6 +10,7 @@ export type Goal = {
   status: GoalStatus;
   createdAt: string;
   createdBy: string;
+  parentId?: string | null;
 };
 
 export type GoalListResponse = {
@@ -19,6 +20,7 @@ export type GoalListResponse = {
 export type CreateGoalRequest = {
   title: string;
   targetAmount: number;
+  parentId?: string | null;
 };
 
 export type CreateGoalResponse = Goal;

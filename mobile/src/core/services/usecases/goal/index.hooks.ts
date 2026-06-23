@@ -3,10 +3,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CreateGoalRequest, CreateGoalContributionRequest, UpdateGoalContributionRequest } from '@/core/domain/goal';
 import { HttpClientFactory } from '@/core/infra/http/http-client-factory';
 import { queryKeys } from '@/core/infra/query/query-keys';
+import { useAssistido } from '@/presentation/providers/assistido';
 import { useFamily } from '@/presentation/providers/family';
 
 import { CreateGoalContributionUseCase } from './create-goal-contribution.usecase';
 import { CreateGoalUseCase } from './create-goal.usecase';
+import { DeleteGoalUseCase } from './delete-goal.usecase';
 import { ListGoalContributionsUseCase } from './list-goal-contributions.usecase';
 import { ListGoalsUseCase } from './list-goals.usecase';
 import { UpdateGoalContributionUseCase } from './update-goal-contribution.usecase';
@@ -14,12 +16,13 @@ import { DeleteGoalContributionUseCase } from './delete-goal-contribution.usecas
 
 export function useGoals() {
   const { familyId } = useFamily();
+  const { parentId } = useAssistido();
   const httpClient = HttpClientFactory.create();
   const useCase = new ListGoalsUseCase(httpClient);
 
   return useQuery({
-    queryKey: queryKeys.goals.list(familyId),
-    queryFn: () => useCase.listGoals(),
+    queryKey: queryKeys.goals.list(familyId, parentId),
+    queryFn: () => useCase.listGoals(parentId ?? undefined),
     enabled: Boolean(familyId),
   });
 }
@@ -36,6 +39,20 @@ export function useCreateGoal() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
     },
     meta: { familyId },
+  });
+}
+
+export function useDeleteGoal() {
+  const queryClient = useQueryClient();
+  const httpClient = HttpClientFactory.create();
+  const useCase = new DeleteGoalUseCase(httpClient);
+
+  return useMutation({
+    mutationFn: (goalId: string) => useCase.deleteGoal(goalId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.activities.all });
+    },
   });
 }
 
@@ -95,6 +112,7 @@ export function useDeleteGoalContribution(goalId: string) {
     mutationFn: (contributionId: string) => useCase.deleteGoalContribution(goalId, contributionId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.activities.all });
     },
   });
 }

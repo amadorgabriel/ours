@@ -4,35 +4,40 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
-  Switch,
   Text,
-  TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import type { Goal, GoalContribution } from '@/core/domain/goal';
 import {
+  useDeleteGoal,
   useDeleteGoalContribution,
   useGoalContributions,
   useGoals,
-  useUpdateGoalContribution,
 } from '@/core/services/usecases/goal/index.hooks';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { useAppAlert } from '@/presentation/providers/alert';
 import { useAuth } from '@/presentation/providers/auth';
+import { useFamily } from '@/presentation/providers/family';
 import { colors } from '@/presentation/styles/tokens';
 import { GoalCard } from '@/ui/DataDisplay/GoalCard';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
 
 import { ContributeSheet } from '../contribute-sheet';
-import { getContributionErrorMessage } from '../goals-api-error';
+import { EditContributionSheet } from '../edit-contribution-sheet';
+import { getContributionErrorMessage, getDeleteGoalErrorMessage } from '../goals-api-error';
 
 type GoalDetailSheetProps = {
   visible: boolean;
   goal: Goal | null;
   onClose: () => void;
 };
+
+const ICON_HIT_SLOP = { top: 12, bottom: 12, left: 12, right: 12 };
+const SHEET_CHROME_HEIGHT = 80;
 
 function formatCurrency(value: number): string {
   return value.toLocaleString('pt-BR', {
@@ -85,20 +90,24 @@ function ContributionRow({
         {contribution.amount !== null ? formatCurrency(contribution.amount) : '—'}
       </Text>
       {isAuthor ? (
-        <View className="ml-2">
+        <View className="ml-2 flex-row items-center gap-1">
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('goals.editContributionAccessibility')}
+            className="h-11 w-11 items-center justify-center"
+            hitSlop={ICON_HIT_SLOP}
             onPress={onEdit}
           >
-            <Text className="font-sans-semibold text-xs text-serenity-green">{t('common.edit')}</Text>
+            <Ionicons color={colors.serenityGreen60} name="pencil" size={20} />
           </Pressable>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('goals.deleteContributionAccessibility')}
+            className="h-11 w-11 items-center justify-center"
+            hitSlop={ICON_HIT_SLOP}
             onPress={onDelete}
           >
-            <Text className="mt-1 font-sans-semibold text-xs text-red-600">{t('common.delete')}</Text>
+            <Ionicons color="#dc2626" name="trash" size={20} />
           </Pressable>
         </View>
       ) : null}
@@ -115,10 +124,10 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
   const { t } = useTranslation();
   const { alert } = useAppAlert();
   const { session } = useAuth();
+  const { familyId } = useFamily();
+  const { height: windowHeight } = useWindowDimensions();
   const [contributeVisible, setContributeVisible] = useState(false);
   const [editingContribution, setEditingContribution] = useState<GoalContribution | null>(null);
-  const [editAmount, setEditAmount] = useState('');
-  const [editPrivate, setEditPrivate] = useState(false);
   const { data: goalsData, refetch: refetchGoals } = useGoals();
   const {
     data: contributionsData,
@@ -126,7 +135,7 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
     isRefetching,
     refetch: refetchContributions,
   } = useGoalContributions(visible && goal ? goal.id : null);
-  const updateContribution = useUpdateGoalContribution(goal?.id ?? '');
+  const deleteGoal = useDeleteGoal();
   const deleteContribution = useDeleteGoalContribution(goal?.id ?? '');
 
   if (!goal) {
@@ -136,44 +145,18 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
   const liveGoal = goalsData?.items.find((item) => item.id === goal.id) ?? goal;
   const remaining = Math.max(0, liveGoal.targetAmount - liveGoal.currentAmount);
   const contributions = contributionsData?.items ?? [];
+  const activeFamily = session?.families.find((family) => family.id === familyId);
+  const isAdmin = activeFamily?.role === 'Admin';
+  const canDeleteGoal =
+    session?.user.id === liveGoal.createdBy || isAdmin;
+  const scrollMaxHeight = windowHeight * 0.9 - SHEET_CHROME_HEIGHT;
 
   function handleRefresh() {
     void refetchGoals();
     void refetchContributions();
   }
 
-  function startEdit(contribution: GoalContribution) {
-    setEditingContribution(contribution);
-    setEditAmount(contribution.amount?.toString() ?? '');
-    setEditPrivate(contribution.isPrivate);
-  }
-
-  function handleSaveEdit() {
-    if (!editingContribution) return;
-
-    const amount = Number.parseFloat(editAmount.replace(',', '.'));
-    if (!Number.isFinite(amount) || amount < 1) {
-      alert(t('alerts.invalidAmount.title'), t('alerts.invalidAmount.message'));
-      return;
-    }
-
-    updateContribution.mutate(
-      {
-        contributionId: editingContribution.id,
-        data: { amount, isPrivate: editPrivate },
-      },
-      {
-        onSuccess: () => {
-          setEditingContribution(null);
-        },
-        onError: (error) => {
-          alert(t('alerts.deleteContribution.errorSave'), getContributionErrorMessage(error));
-        },
-      }
-    );
-  }
-
-  function handleDelete(contribution: GoalContribution) {
+  function handleDeleteContribution(contribution: GoalContribution) {
     alert(t('alerts.deleteContribution.title'), t('alerts.deleteContribution.message'), [
       { text: t('common.cancel'), style: 'cancel' },
       {
@@ -183,6 +166,34 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
           deleteContribution.mutate(contribution.id, {
             onError: (error) => {
               alert(t('alerts.deleteContribution.errorDelete'), getContributionErrorMessage(error));
+            },
+          }),
+      },
+    ]);
+  }
+
+  function confirmDeleteGoal() {
+    if (deleteGoal.isPending) {
+      return;
+    }
+
+    const hasContributions = contributions.length > 0;
+    const message = hasContributions
+      ? t('alerts.deleteGoal.withContributionsMessage')
+      : t('alerts.deleteGoal.message');
+
+    alert(t('alerts.deleteGoal.title'), message, [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('alerts.deleteGoal.confirm'),
+        style: 'destructive',
+        onPress: () =>
+          deleteGoal.mutate(liveGoal.id, {
+            onSuccess: () => {
+              onClose();
+            },
+            onError: (error) => {
+              alert(t('alerts.deleteGoal.errorTitle'), getDeleteGoalErrorMessage(error));
             },
           }),
       },
@@ -204,12 +215,34 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
               onRefresh={handleRefresh}
             />
           }
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator
+          style={{ maxHeight: scrollMaxHeight }}
         >
-          <Text className="font-sans-semibold text-xl text-mindful-brown">{liveGoal.title}</Text>
-          <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
-            {t('goals.createdAt', { date: formatDate(liveGoal.createdAt) })}
-          </Text>
+          <View className="flex-row items-start justify-between">
+            <View className="flex-1 pr-3">
+              <Text className="font-sans-semibold text-xl text-mindful-brown">{liveGoal.title}</Text>
+              <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
+                {t('goals.createdAt', { date: formatDate(liveGoal.createdAt) })}
+              </Text>
+            </View>
+            {canDeleteGoal ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('goals.deleteGoalAccessibility')}
+                accessibilityState={{ disabled: deleteGoal.isPending }}
+                className="h-11 w-11 items-center justify-center"
+                disabled={deleteGoal.isPending}
+                hitSlop={ICON_HIT_SLOP}
+                onPress={confirmDeleteGoal}
+              >
+                {deleteGoal.isPending ? (
+                  <ActivityIndicator color="#dc2626" size="small" />
+                ) : (
+                  <Ionicons color="#dc2626" name="trash" size={22} />
+                )}
+              </Pressable>
+            ) : null}
+          </View>
 
           <View className="mt-4">
             <GoalCard goal={liveGoal} />
@@ -247,47 +280,11 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
                 key={contribution.id}
                 contribution={contribution}
                 isAuthor={contribution.userId === session?.user.id}
-                onDelete={() => handleDelete(contribution)}
-                onEdit={() => startEdit(contribution)}
+                onDelete={() => handleDeleteContribution(contribution)}
+                onEdit={() => setEditingContribution(contribution)}
               />
             ))
           )}
-
-          {editingContribution ? (
-            <View className="mt-4 rounded-xl bg-white/80 p-4">
-              <Text className="font-sans-semibold text-mindful-brown">
-                {t('goals.editContribution')}
-              </Text>
-              <TextInput
-                accessibilityLabel={t('goals.amountAccessibility')}
-                className="mt-3 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
-                keyboardType="decimal-pad"
-                value={editAmount}
-                onChangeText={setEditAmount}
-              />
-              <View className="mt-3 flex-row items-center justify-between">
-                <Text className="font-sans text-sm text-mindful-brown">{t('common.private')}</Text>
-                <Switch value={editPrivate} onValueChange={setEditPrivate} />
-              </View>
-              <View className="mt-3 flex-row gap-3">
-                <Pressable
-                  accessibilityRole="button"
-                  className="flex-1 items-center rounded-xl border border-mindful-brown/20 py-3"
-                  onPress={() => setEditingContribution(null)}
-                >
-                  <Text className="font-sans-semibold text-mindful-brown">{t('common.cancel')}</Text>
-                </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  className="flex-1 items-center rounded-xl bg-serenity-green py-3"
-                  disabled={updateContribution.isPending}
-                  onPress={handleSaveEdit}
-                >
-                  <Text className="font-sans-semibold text-light">{t('common.save')}</Text>
-                </Pressable>
-              </View>
-            </View>
-          ) : null}
         </ScrollView>
       </BottomSheet>
 
@@ -295,6 +292,13 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
         goalId={goal.id}
         visible={contributeVisible}
         onClose={() => setContributeVisible(false)}
+      />
+
+      <EditContributionSheet
+        contribution={editingContribution}
+        goalId={goal.id}
+        visible={editingContribution !== null}
+        onClose={() => setEditingContribution(null)}
       />
     </>
   );

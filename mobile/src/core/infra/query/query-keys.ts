@@ -41,8 +41,8 @@ export const queryKeys = {
   },
   goals: {
     all: ['goals'] as const,
-    list: (familyId?: string | null) =>
-      [...queryKeys.goals.all, 'list', familyId ?? 'none'] as const,
+    list: (familyId?: string | null, parentId?: string | null) =>
+      [...queryKeys.goals.all, 'list', familyId ?? 'none', parentId ?? 'all'] as const,
     contributions: (familyId: string | null | undefined, goalId: string) =>
       [...queryKeys.goals.all, 'contributions', familyId ?? 'none', goalId] as const,
   },

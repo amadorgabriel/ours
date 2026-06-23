@@ -49,6 +49,12 @@ jest.mock('@/core/services/usecases/goal/index.hooks', () => ({
     isError: false,
     error: null,
   }),
+  useDeleteGoal: () => ({
+    mutate: jest.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+  }),
 }));
 
 jest.mock('@/presentation/providers/auth', () => ({
@@ -62,6 +68,10 @@ jest.mock('@/presentation/providers/auth', () => ({
 
 jest.mock('@/presentation/providers/family', () => ({
   useFamily: () => ({ familyId: 'f1' }),
+}));
+
+jest.mock('@/presentation/providers/assistido', () => ({
+  useAssistido: () => ({ parentId: null, parents: [] }),
 }));
 
 describe('GoalsScreen', () => {

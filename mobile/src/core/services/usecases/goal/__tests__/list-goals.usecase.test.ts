@@ -15,6 +15,7 @@ describe('ListGoalsUseCase', () => {
           status: 'Active',
           createdAt: '2026-06-18T12:00:00.000Z',
           createdBy: 'user-1',
+          parentId: null,
         },
       ],
     };
@@ -27,7 +28,22 @@ describe('ListGoalsUseCase', () => {
     expect(request).toHaveBeenCalledWith({
       method: 'get',
       url: '/goals',
+      queryParams: undefined,
     });
     expect(result).toEqual(goals);
+  });
+
+  it('passes parentId filter when provided', async () => {
+    const request = jest.fn().mockResolvedValue({ statusCode: 200, data: { items: [] } });
+    const httpClient: IHttpClient = { request };
+    const useCase = new ListGoalsUseCase(httpClient);
+
+    await useCase.listGoals('parent-1');
+
+    expect(request).toHaveBeenCalledWith({
+      method: 'get',
+      url: '/goals',
+      queryParams: { parentId: 'parent-1' },
+    });
   });
 });

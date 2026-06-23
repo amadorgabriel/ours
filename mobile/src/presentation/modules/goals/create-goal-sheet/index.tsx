@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -7,10 +7,16 @@ import {
   View,
 } from 'react-native';
 
+import type { ParentId } from '@/core/domain/parent';
 import { useCreateGoal } from '@/core/services/usecases/goal/index.hooks';
 import { useTranslation } from '@/presentation/hooks/use-translation';
+import { useAssistido } from '@/presentation/providers/assistido';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import {
+  AssistidoPickerField,
+  resolveInitialFormParentId,
+} from '@/ui/Forms/AssistidoPickerField';
 
 import { getGoalErrorMessage } from '../goals-api-error';
 
@@ -24,13 +30,22 @@ const MIN_TARGET_AMOUNT = 10;
 
 export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
   const { t } = useTranslation();
+  const { parentId, parents } = useAssistido();
   const createGoal = useCreateGoal();
   const [title, setTitle] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
+  const [formParentId, setFormParentId] = useState<ParentId | null>(null);
+
+  useEffect(() => {
+    if (visible) {
+      setFormParentId(resolveInitialFormParentId(parentId, parents, true));
+    }
+  }, [visible, parentId, parents]);
 
   function handleClose() {
     setTitle('');
     setTargetAmount('');
+    setFormParentId(null);
     createGoal.reset();
     onClose();
   }
@@ -42,6 +57,7 @@ export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
       {
         title: title.trim(),
         targetAmount: parsedAmount,
+        parentId: formParentId,
       },
       {
         onSuccess: () => {
@@ -71,6 +87,16 @@ export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
       </Text>
 
       <View className="mt-6">
+        <AssistidoPickerField
+          allowAll
+          label={t('goals.assistidoLabel')}
+          parents={parents}
+          value={formParentId}
+          onChange={setFormParentId}
+        />
+      </View>
+
+      <View className="mt-4">
         <Text className="font-sans text-sm text-mindful-brown">{t('goals.titleLabel')}</Text>
         <TextInput
           accessibilityLabel={t('goals.titleAccessibility')}

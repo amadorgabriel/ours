@@ -119,6 +119,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithMany(x => x.CreatedGoals)
                 .HasForeignKey(x => x.CreatedBy)
                 .OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Parent)
+                .WithMany(x => x.Goals)
+                .HasForeignKey(x => x.ParentId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<GoalContribution>(e =>

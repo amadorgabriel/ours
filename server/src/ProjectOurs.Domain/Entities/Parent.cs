@@ -13,4 +13,5 @@ public class Parent
 
     public Family Family { get; set; } = null!;
     public ICollection<Activity> Activities { get; set; } = new List<Activity>();
+    public ICollection<Goal> Goals { get; set; } = new List<Goal>();
 }

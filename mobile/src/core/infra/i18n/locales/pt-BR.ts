@@ -67,6 +67,14 @@ export const ptBR = {
       errorSave: 'Erro ao salvar',
       errorDelete: 'Erro ao excluir',
     },
+    deleteGoal: {
+      title: 'Excluir meta',
+      message: 'Esta ação não pode ser desfeita.',
+      withContributionsMessage:
+        'Excluir a meta significa remover todas as contribuições. Esta ação não pode ser desfeita.',
+      confirm: 'Excluir',
+      errorTitle: 'Erro ao excluir meta',
+    },
     invalidAmount: {
       title: 'Valor inválido',
       message: 'Informe um valor válido (mínimo R$ 1,00).',
@@ -138,6 +146,11 @@ export const ptBR = {
     goals: {
       createFailed: 'Não foi possível criar a meta. Tente novamente.',
       contributeFailed: 'Não foi possível registrar a contribuição. Tente novamente.',
+      deleteFailed: 'Não foi possível excluir a meta. Tente novamente.',
+      deleteBlockedContributions:
+        'Não é possível excluir esta meta porque há contribuições de outros membros.',
+      deleteForbidden: 'Apenas o criador ou administrador pode excluir esta meta.',
+      notFound: 'Meta não encontrada.',
       invalidInput: 'Verifique título e valor alvo (mínimo R$ 10,00).',
       invalidContribution: 'Informe um valor válido (mínimo R$ 1,00).',
       notAdmin: 'Apenas administradores podem criar metas.',
@@ -188,6 +201,7 @@ export const ptBR = {
   },
   assistidoPicker: {
     noneSelected: 'Selecione um assistido',
+    allAccessibility: 'Selecionar todos da família',
     requiredHint: 'Escolha para quem é esta atividade antes de registrar.',
     openAccessibility: 'Selecionar assistido',
     sheetAccessibility: 'Escolher assistido',
@@ -216,6 +230,7 @@ export const ptBR = {
     newGoal: 'Nova meta',
     noContributions: 'Nenhuma contribuição ainda.',
     createDescription: 'Defina um objetivo financeiro para o cuidado da família.',
+    assistidoLabel: 'Assistido',
     titleLabel: 'Título',
     titleAccessibility: 'Título da meta',
     titlePlaceholder: 'Ex.: Reserva de emergência',
@@ -243,6 +258,7 @@ export const ptBR = {
     editContribution: 'Editar contribuição',
     editContributionAccessibility: 'Editar contribuição',
     deleteContributionAccessibility: 'Excluir contribuição',
+    deleteGoalAccessibility: 'Excluir meta',
     progress: '{{percent}}% concluído',
     progressAmount: '{{current}} de {{target}}',
     goalAccessibility: 'Meta {{title}}',
