@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { AppHeader } from '@/presentation/modules/app-shell/AppHeader';
 import { InAppReminderBannerHost } from '@/presentation/modules/app-shell/InAppReminderBanner';
+import { RegisterActivityFab } from '@/presentation/modules/app-shell/RegisterActivityFab';
 import { TabPagerLayout } from '@/presentation/modules/app-shell/TabPager/TabPagerLayout';
 import { FamilySelectGuard } from '@/presentation/modules/family/family-select-guard';
 import { colors } from '@/presentation/styles/tokens';
@@ -34,6 +35,7 @@ export default function AppTabsLayout() {
             <Tabs.Screen name="goals" options={{ title: 'Metas' }} />
             <Tabs.Screen name="profile" options={{ title: 'Perfil' }} />
           </Tabs>
+          <RegisterActivityFab />
         </View>
       </View>
     </FamilySelectGuard>

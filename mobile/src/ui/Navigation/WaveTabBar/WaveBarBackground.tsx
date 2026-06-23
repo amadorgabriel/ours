@@ -11,16 +11,10 @@ type WaveBarBackgroundProps = {
 
 export function WaveBarBackground({ height = WAVE_TAB_BAR_HEIGHT }: WaveBarBackgroundProps) {
   const { width } = useWindowDimensions();
-  const centerX = width / 2;
-  const notchHalfWidth = 40;
-  const notchDepth = 10;
 
   const path = [
-    `M 0 ${notchDepth}`,
-    `L ${centerX - notchHalfWidth} ${notchDepth}`,
-    `Q ${centerX - notchHalfWidth / 2} 0 ${centerX} 0`,
-    `Q ${centerX + notchHalfWidth / 2} 0 ${centerX + notchHalfWidth} ${notchDepth}`,
-    `L ${width} ${notchDepth}`,
+    `M 0 0`,
+    `L ${width} 0`,
     `L ${width} ${height}`,
     `L 0 ${height}`,
     'Z',

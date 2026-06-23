@@ -78,7 +78,7 @@ describe('LoginScreen', () => {
     const json = JSON.stringify(tree.toJSON());
 
     expect(json).toContain('Entrar com Google');
-    expect(json).toContain('Project Ours');
+    expect(json).toContain('Ours');
   });
 
   it('submits idToken and routes to home after successful login', async () => {

@@ -1,18 +1,13 @@
 import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
 
 import { colors } from '@/presentation/styles/tokens';
-import { useNotificationActions } from '@/presentation/providers/notifications';
 
-import { CallNowSheet } from '@/presentation/modules/feed/call-now-sheet';
 import {
   ACTIVE_TAB_CIRCLE_SIZE,
-  CENTER_BUTTON_OFFSET,
-  CENTER_BUTTON_SIZE,
   tabItems,
   WAVE_TAB_BAR_HEIGHT,
 } from './tab-config';
@@ -26,23 +21,8 @@ export type WaveTabBarProps = Pick<TabBarProps, 'state' | 'navigation'>;
 
 type TabIconName = keyof typeof Ionicons.glyphMap;
 
-const LEFT_TAB_INDEXES = [0, 1] as const;
-const RIGHT_TAB_INDEXES = [2, 3] as const;
-
 export function WaveTabBar({ state, navigation }: WaveTabBarProps) {
   const insets = useSafeAreaInsets();
-  const { callNowRequested, consumeCallNowRequest } = useNotificationActions();
-  const [callNowVisible, setCallNowVisible] = useState(false);
-
-  useEffect(() => {
-    if (!callNowRequested) {
-      return;
-    }
-
-    navigation.navigate('index');
-    setCallNowVisible(true);
-    consumeCallNowRequest();
-  }, [callNowRequested, consumeCallNowRequest, navigation]);
 
   function renderTab(routeIndex: number) {
     const route = state.routes[routeIndex];
@@ -89,46 +69,15 @@ export function WaveTabBar({ state, navigation }: WaveTabBarProps) {
   }
 
   return (
-    <>
-      <View
-        className="bg-cream"
-        style={{ paddingBottom: insets.bottom }}
-      >
-        <View style={{ height: WAVE_TAB_BAR_HEIGHT }}>
-          <WaveBarBackground />
-          <View className="absolute inset-0 flex-row items-center px-1">
-            {LEFT_TAB_INDEXES.map(renderTab)}
-            <View style={{ width: CENTER_BUTTON_SIZE }} />
-            {RIGHT_TAB_INDEXES.map(renderTab)}
-          </View>
+    <View className="bg-cream" style={{ paddingBottom: insets.bottom }}>
+      <View style={{ height: WAVE_TAB_BAR_HEIGHT }}>
+        <WaveBarBackground />
+        <View className="absolute inset-0 flex-row items-center px-1">
+          {tabItems.map((_, index) => renderTab(index))}
         </View>
-
-        <Pressable
-          accessibilityLabel="Registrar ligação"
-          accessibilityRole="button"
-          className="absolute items-center justify-center rounded-full bg-serenity-green"
-          style={{
-            width: CENTER_BUTTON_SIZE,
-            height: CENTER_BUTTON_SIZE,
-            left: '50%',
-            marginLeft: -CENTER_BUTTON_SIZE / 2,
-            top: CENTER_BUTTON_OFFSET,
-          }}
-          onPress={() => setCallNowVisible(true)}
-        >
-          <Ionicons color={colors.textLight} name="add" size={28} />
-        </Pressable>
       </View>
-
-      <CallNowSheet visible={callNowVisible} onClose={() => setCallNowVisible(false)} />
-    </>
+    </View>
   );
 }
 
-export {
-  ACTIVE_TAB_CIRCLE_SIZE,
-  CENTER_BUTTON_OFFSET,
-  CENTER_BUTTON_SIZE,
-  tabItems,
-  WAVE_TAB_BAR_HEIGHT,
-} from './tab-config';
+export { ACTIVE_TAB_CIRCLE_SIZE, tabItems, WAVE_TAB_BAR_HEIGHT } from './tab-config';

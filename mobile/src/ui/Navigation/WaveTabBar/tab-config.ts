@@ -1,6 +1,4 @@
 export const WAVE_TAB_BAR_HEIGHT = 64;
-export const CENTER_BUTTON_OFFSET = -20;
-export const CENTER_BUTTON_SIZE = 56;
 export const ACTIVE_TAB_CIRCLE_SIZE = 40;
 
 export const tabItems = [

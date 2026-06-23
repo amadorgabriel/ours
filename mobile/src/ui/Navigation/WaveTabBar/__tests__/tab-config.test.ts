@@ -1,6 +1,5 @@
 import {
-  CENTER_BUTTON_OFFSET,
-  CENTER_BUTTON_SIZE,
+  ACTIVE_TAB_CIRCLE_SIZE,
   tabItems,
   WAVE_TAB_BAR_HEIGHT,
 } from '../tab-config';
@@ -16,9 +15,8 @@ describe('WaveTabBar tab-config', () => {
     ]);
   });
 
-  it('exports layout constants for M-T02 and M-T03', () => {
+  it('exports layout constants for tab bar', () => {
     expect(WAVE_TAB_BAR_HEIGHT).toBe(64);
-    expect(CENTER_BUTTON_OFFSET).toBe(-20);
-    expect(CENTER_BUTTON_SIZE).toBe(56);
+    expect(ACTIVE_TAB_CIRCLE_SIZE).toBe(40);
   });
 });

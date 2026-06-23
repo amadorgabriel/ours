@@ -138,14 +138,14 @@ export function LoginScreen() {
   return (
     <View className="flex-1 items-center justify-center bg-cream px-6">
       <Image
-        accessibilityLabel="Project Ours"
+        accessibilityLabel="Ours"
         className="mb-4"
         resizeMode="contain"
         source={require("@/assets/images/logo-ours.png")}
         style={{ height: 96, width: 96 }}
       />
       <Text className="font-sans-semibold text-2xl text-mindful-brown">
-        Project Ours
+        Ours
       </Text>
 
       <Text className="mt-2 text-center font-sans text-base text-mindful-brown/80">
