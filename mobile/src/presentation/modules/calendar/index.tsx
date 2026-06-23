@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 
 import type { ActivityFeedItem } from '@/core/domain/activity';
 import { useActivitiesByMonth } from '@/core/services/usecases/activity/index.hooks';
@@ -39,7 +39,10 @@ export function CalendarScreen() {
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
-  const { data, isLoading, isError, isRefetching, refetch } = useActivitiesByMonth(year, month);
+  const { data, isLoading, isError, isRefetching, isFetching, refetch } = useActivitiesByMonth(
+    year,
+    month
+  );
   const items = data?.items ?? [];
 
   const daysWithActivity = useMemo(() => getDaysWithActivities(items), [items]);
@@ -49,6 +52,7 @@ export function CalendarScreen() {
   const selectedDateLabel = selectedDay
     ? formatDayLabel(year, month, selectedDay)
     : '';
+  const showGridLoading = (isLoading || isFetching) && !isRefetching;
 
   function goToPreviousMonth() {
     if (month === 1) {
@@ -70,27 +74,6 @@ export function CalendarScreen() {
     setMonth((current) => current + 1);
   }
 
-  if (isLoading && items.length === 0) {
-    return (
-      <View className="flex-1 items-center justify-center bg-cream">
-        <ActivityIndicator color={colors.serenityGreen60} />
-      </View>
-    );
-  }
-
-  if (isError && items.length === 0) {
-    return (
-      <View className="flex-1 bg-cream">
-        <QueryErrorState
-          message="Não foi possível carregar o calendário."
-          onRetry={() => {
-            void refetch();
-          }}
-        />
-      </View>
-    );
-  }
-
   return (
     <View className="flex-1 bg-cream">
       <ScrollView
@@ -107,16 +90,26 @@ export function CalendarScreen() {
       >
         <Text className="mb-4 font-sans-semibold text-xl text-mindful-brown">Calendário</Text>
 
-        <CalendarGrid
-          year={year}
-          month={month}
-          daysWithActivity={daysWithActivity}
-          onDayPress={(day) => setSelectedDay(day)}
-          onPrevMonth={goToPreviousMonth}
-          onNextMonth={goToNextMonth}
-        />
+        {isError && items.length === 0 ? (
+          <QueryErrorState
+            message="Não foi possível carregar o calendário."
+            onRetry={() => {
+              void refetch();
+            }}
+          />
+        ) : (
+          <CalendarGrid
+            year={year}
+            month={month}
+            daysWithActivity={daysWithActivity}
+            isLoading={showGridLoading}
+            onDayPress={(day) => setSelectedDay(day)}
+            onPrevMonth={goToPreviousMonth}
+            onNextMonth={goToNextMonth}
+          />
+        )}
 
-        {isError ? (
+        {isError && items.length > 0 ? (
           <View className="mt-4">
             <QueryErrorState
               message="Não foi possível atualizar o calendário."

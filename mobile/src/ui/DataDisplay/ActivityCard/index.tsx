@@ -34,6 +34,8 @@ function getActivityLabel(type: ActivityFeedItem['type']): string {
       return 'Ligação';
     case 'Visit':
       return 'Visita';
+    case 'Contribution':
+      return 'Contribuição';
     case 'Medical':
       return 'Consulta';
     case 'Task':
@@ -43,6 +45,30 @@ function getActivityLabel(type: ActivityFeedItem['type']): string {
     default:
       return 'Atividade';
   }
+}
+
+function SeenByAvatars({ seenBy }: { seenBy: ActivityFeedItem['seenBy'] }) {
+  if (!seenBy?.length) {
+    return null;
+  }
+
+  return (
+    <View className="mt-3 flex-row items-center">
+      {seenBy.slice(0, 4).map((viewer) => (
+        <View
+          key={viewer.userId}
+          className="-ml-1 h-6 w-6 items-center justify-center rounded-full border border-white bg-mindful-brown/15"
+        >
+          <Text className="font-sans-semibold text-[10px] text-mindful-brown">
+            {viewer.userName.charAt(0).toUpperCase()}
+          </Text>
+        </View>
+      ))}
+      <Text className="ml-2 font-sans text-xs text-mindful-brown/60">
+        {seenBy.length === 1 ? 'Visto' : `Visto por ${seenBy.length}`}
+      </Text>
+    </View>
+  );
 }
 
 export function ActivityCard({ item }: ActivityCardProps) {
@@ -63,6 +89,21 @@ export function ActivityCard({ item }: ActivityCardProps) {
       {item.notes ? (
         <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{item.notes}</Text>
       ) : null}
+      {item.type === 'Contribution' && item.contributionAmount != null ? (
+        <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
+          {item.goalTitle
+            ? `R$ ${item.contributionAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em ${item.goalTitle}`
+            : `R$ ${item.contributionAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+        </Text>
+      ) : null}
+      {item.type === 'Visit' && item.startAt ? (
+        <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
+          {item.allDay
+            ? `Dia inteiro — ${new Date(item.startAt).toLocaleDateString('pt-BR')}`
+            : `${new Date(item.startAt).toLocaleString('pt-BR')}${item.endAt ? ` até ${new Date(item.endAt).toLocaleString('pt-BR')}` : ''}`}
+        </Text>
+      ) : null}
+      <SeenByAvatars seenBy={item.seenBy} />
     </View>
   );
 }

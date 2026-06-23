@@ -1,6 +1,6 @@
 import * as Clipboard from 'expo-clipboard';
 import { useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, Share, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Share, Text, View } from 'react-native';
 
 import type { CreateInviteResponse } from '@/core/domain/family';
 import { useCreateInvite } from '@/core/services/usecases/family/index.hooks';
@@ -8,7 +8,7 @@ import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 
 import { getFamilyErrorMessage } from '../family-api-error';
-import { buildInviteUrl, buildWhatsAppInviteUrl } from './invite-link';
+import { buildInviteUrl } from './invite-link';
 
 type InviteSheetProps = {
   visible: boolean;
@@ -65,16 +65,6 @@ export function InviteSheet({ visible, onClose }: InviteSheetProps) {
       });
     } catch (error) {
       console.error('Failed to share invite code:', error);
-    }
-  }
-
-  async function handleWhatsApp() {
-    if (!invite?.inviteCode) return;
-
-    try {
-      await Linking.openURL(buildWhatsAppInviteUrl(invite.inviteCode));
-    } catch (error) {
-      console.error('Failed to open WhatsApp invite:', error);
     }
   }
 
@@ -139,14 +129,6 @@ export function InviteSheet({ visible, onClose }: InviteSheetProps) {
               <Text className="font-sans-semibold text-light">Compartilhar</Text>
             </Pressable>
           </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Convidar via WhatsApp"
-            className="mt-3 items-center rounded-xl bg-trust-blue py-3"
-            onPress={() => void handleWhatsApp()}
-          >
-            <Text className="font-sans-semibold text-light">Convidar via WhatsApp</Text>
-          </Pressable>
         </View>
       )}
     </BottomSheet>

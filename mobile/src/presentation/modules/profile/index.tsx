@@ -2,6 +2,7 @@ import { useRouter, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   RefreshControl,
@@ -9,18 +10,25 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { ParentSummary } from '@/core/domain/parent';
 import { useLogout } from '@/core/services/usecases/auth/index.hooks';
+import {
+  useFamilyMembers,
+  useRemoveFamilyMember,
+} from '@/core/services/usecases/family/index.hooks';
 import { useParents } from '@/core/services/usecases/parent/index.hooks';
 import { InviteSheet } from '@/presentation/modules/family/invite';
 import { roleLabel } from '@/presentation/modules/family/role-label';
+import { CreateFamilySheet } from '@/presentation/modules/profile/create-family-sheet';
 import { NotificationSettings } from '@/presentation/modules/profile/notification-settings';
 import { FamilyAdminSheet } from '@/presentation/modules/profile/family-admin-sheet';
 import { CreateParentSheet } from '@/presentation/modules/parents/create-parent-sheet';
 import { EditParentSheet } from '@/presentation/modules/parents/edit-parent-sheet';
 import { ParentDetailSheet } from '@/presentation/modules/parents/parent-detail-sheet';
-import { mobileRoutes, resolvePostLoginRoute } from '@/presentation/modules/auth/auth-redirect';import { useAuth } from '@/presentation/providers/auth';
+import { mobileRoutes, resolvePostLoginRoute } from '@/presentation/modules/auth/auth-redirect';
+import { useAuth } from '@/presentation/providers/auth';
 import { useFamily } from '@/presentation/providers/family';
 import { colors } from '@/presentation/styles/tokens';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
@@ -39,25 +47,36 @@ function ParentListItem({
 }) {
   return (
     <View className="mb-2 flex-row items-center rounded-xl bg-cream px-3 py-3">
+      <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-mindful-brown/15">
+        {parent.photoData ? (
+          <Image
+            accessibilityLabel={`Foto de ${parent.name}`}
+            className="h-10 w-10 rounded-full"
+            source={{ uri: parent.photoData }}
+          />
+        ) : (
+          <Text className="font-sans-semibold text-mindful-brown">
+            {parent.name.charAt(0).toUpperCase()}
+          </Text>
+        )}
+      </View>
+      <View className="flex-1">
+        <Text className="font-sans-semibold text-mindful-brown">{parent.name}</Text>
+        <Text className="font-sans text-sm text-mindful-brown/70">{parent.relationship}</Text>
+      </View>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Ver ficha de ${parent.name}`}
-        className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-mindful-brown/15"
+        className="rounded-lg border border-mindful-brown/20 px-3 py-2"
         onPress={onOpen}
       >
-        <Text className="font-sans-semibold text-mindful-brown">
-          {parent.name.charAt(0).toUpperCase()}
-        </Text>
-      </Pressable>
-      <Pressable accessibilityRole="button" className="flex-1" onPress={onOpen}>
-        <Text className="font-sans-semibold text-mindful-brown">{parent.name}</Text>
-        <Text className="font-sans text-sm text-mindful-brown/70">{parent.relationship}</Text>
+        <Text className="font-sans-semibold text-sm text-mindful-brown">Ver ficha</Text>
       </Pressable>
       {showEdit && onEdit ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Editar ${parent.name}`}
-          className="rounded-lg px-3 py-2"
+          className="ml-2 rounded-lg px-3 py-2"
           onPress={onEdit}
         >
           <Text className="font-sans-semibold text-sm text-serenity-green">Editar</Text>
@@ -69,6 +88,7 @@ function ParentListItem({
 
 export function ProfileScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { session } = useAuth();
   const { familyId } = useFamily();
   const logoutMutation = useLogout();
@@ -84,6 +104,10 @@ export function ProfileScreen() {
   const [editParent, setEditParent] = useState<ParentSummary | null>(null);
   const [detailParentId, setDetailParentId] = useState<string | null>(null);
   const [familyAdminVisible, setFamilyAdminVisible] = useState(false);
+  const [createFamilyVisible, setCreateFamilyVisible] = useState(false);
+  const { data: membersData } = useFamilyMembers();
+  const removeMember = useRemoveFamilyMember();
+  const members = membersData?.items ?? [];
 
   const activeFamily = session?.families.find((family) => family.id === familyId);
   const isAdmin = activeFamily?.role === 'Admin';
@@ -95,10 +119,36 @@ export function ProfileScreen() {
     router.replace(resolvePostLoginRoute(nextCount) as Href);
   }
 
+  function handleRemoveMember(memberUserId: string, memberName: string) {
+    Alert.alert(
+      'Remover membro',
+      `Remover ${memberName} da família?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Remover',
+          style: 'destructive',
+          onPress: () => {
+            removeMember.mutate(memberUserId);
+          },
+        },
+      ]
+    );
+  }
+
   function handleLogout() {
-    logoutMutation.mutate(undefined, {
-      onSuccess: () => router.replace(mobileRoutes.login as Href),
-    });
+    Alert.alert('Sair da conta', 'Tem certeza que deseja sair?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Sair',
+        style: 'destructive',
+        onPress: () => {
+          logoutMutation.mutate(undefined, {
+            onSuccess: () => router.replace(mobileRoutes.login as Href),
+          });
+        },
+      },
+    ]);
   }
 
   return (
@@ -106,6 +156,7 @@ export function ProfileScreen() {
       <ScrollView
         className="flex-1 bg-cream"
         contentContainerClassName="grow px-6 py-8"
+        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
         refreshControl={
           <RefreshControl
             refreshing={parentsRefetching}
@@ -160,7 +211,47 @@ export function ProfileScreen() {
               <Text className="font-sans-semibold text-serenity-green">Editar família</Text>
             </Pressable>
           ) : null}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Nova família"
+            className="mt-3 items-center rounded-xl border border-mindful-brown/20 py-3"
+            onPress={() => setCreateFamilyVisible(true)}
+          >
+            <Text className="font-sans-semibold text-mindful-brown">Nova família</Text>
+          </Pressable>
         </View>
+
+        {isAdmin ? (
+          <View className="mt-4 rounded-2xl bg-white p-5">
+            <Text className="font-sans-semibold text-lg text-mindful-brown">Membros</Text>
+            <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
+              Pessoas com acesso a esta família.
+            </Text>
+            {members.map((member) => (
+              <View
+                key={member.userId}
+                className="mt-3 flex-row items-center justify-between border-b border-mindful-brown/10 pb-3"
+              >
+                <View className="flex-1 pr-3">
+                  <Text className="font-sans-semibold text-mindful-brown">{member.name}</Text>
+                  <Text className="font-sans text-sm text-mindful-brown/70">
+                    {roleLabel(member.role)}
+                    {member.email ? ` · ${member.email}` : ''}
+                  </Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remover ${member.name}`}
+                  className="rounded-lg px-3 py-2"
+                  disabled={removeMember.isPending}
+                  onPress={() => handleRemoveMember(member.userId, member.name)}
+                >
+                  <Text className="font-sans-semibold text-sm text-red-600">Remover</Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        ) : null}
 
         <View className="mt-4 rounded-2xl bg-white p-5">
           <Text className="font-sans-semibold text-lg text-mindful-brown">Assistidos</Text>
@@ -278,6 +369,10 @@ export function ProfileScreen() {
           onDeleted={handleFamilyDeleted}
         />
       ) : null}
+      <CreateFamilySheet
+        visible={createFamilyVisible}
+        onClose={() => setCreateFamilyVisible(false)}
+      />
     </>
   );
 }

@@ -37,6 +37,18 @@ jest.mock('@/core/services/usecases/goal/index.hooks', () => ({
     isError: false,
     error: null,
   }),
+  useUpdateGoalContribution: () => ({
+    mutate: jest.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+  }),
+  useDeleteGoalContribution: () => ({
+    mutate: jest.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+  }),
 }));
 
 jest.mock('@/presentation/providers/auth', () => ({

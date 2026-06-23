@@ -70,6 +70,29 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
         Escolha para quem você está cuidando agora.
       </Text>
 
+      {!isLoading ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Todos os assistidos"
+          accessibilityState={{ selected: parentId === null }}
+          className={`mt-4 flex-row items-center rounded-xl px-4 py-3 ${
+            parentId === null ? 'bg-serenity-green/15' : 'bg-white'
+          }`}
+          onPress={() => {
+            setParentId(null);
+            onClose();
+          }}
+        >
+          <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-mindful-brown/15">
+            <Text className="font-sans-semibold text-mindful-brown">∞</Text>
+          </View>
+          <View className="flex-1">
+            <Text className="font-sans-semibold text-mindful-brown">Todos os assistidos</Text>
+            <Text className="font-sans text-sm text-mindful-brown/70">Sem filtro no feed e calendário</Text>
+          </View>
+        </Pressable>
+      ) : null}
+
       {isLoading && (
         <Text className="mt-6 font-sans text-sm text-mindful-brown/70">Carregando...</Text>
       )}

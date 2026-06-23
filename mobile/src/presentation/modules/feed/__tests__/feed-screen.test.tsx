@@ -7,11 +7,15 @@ const mockRefetch = jest.fn();
 
 jest.mock('@/core/services/usecases/activity/index.hooks', () => ({
   useActivityFeed: () => ({
-    data: { items: [] },
+    data: { items: [], unreadCount: 0 },
     isLoading: false,
     isError: false,
     isRefetching: false,
     refetch: mockRefetch,
+  }),
+  useMarkActivitySeen: () => ({
+    mutate: jest.fn(),
+    isPending: false,
   }),
 }));
 

@@ -5,6 +5,7 @@ export type ParentSummary = {
   name: string;
   relationship: string;
   birthDate?: string;
+  photoData?: string;
 };
 
 export type ParentDetail = ParentSummary & {
@@ -25,6 +26,11 @@ export type CreateParentRequest = {
 export type UpdateParentRequest = CreateParentRequest & {
   medicalInfo?: string;
   emergencyBriefing?: string;
+};
+
+export type UpdateParentPhotoRequest = {
+  photoBase64?: string | null;
+  mimeType?: string;
 };
 
 export const PARENT_RELATIONSHIPS = ['Pai', 'Mãe', 'Outro'] as const;

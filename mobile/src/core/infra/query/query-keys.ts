@@ -8,6 +8,8 @@ export const queryKeys = {
     lists: () => [...queryKeys.families.all, 'list'] as const,
     list: (familyId?: string | null) =>
       [...queryKeys.families.lists(), familyId ?? 'none'] as const,
+    members: (familyId?: string | null) =>
+      [...queryKeys.families.all, 'members', familyId ?? 'none'] as const,
   },
   parents: {
     all: ['parents'] as const,

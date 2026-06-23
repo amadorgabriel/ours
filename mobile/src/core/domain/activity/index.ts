@@ -1,6 +1,18 @@
 export type ActivityId = string;
 
-export type ActivityType = 'Call' | 'Visit' | 'Medical' | 'Task' | 'Medication';
+export type ActivityType =
+  | 'Call'
+  | 'Visit'
+  | 'Medical'
+  | 'Task'
+  | 'Medication'
+  | 'Contribution';
+
+export type ActivitySeenBy = {
+  userId: string;
+  userName: string;
+  seenAt: string;
+};
 
 export type ActivityFeedItem = {
   id: ActivityId;
@@ -11,6 +23,14 @@ export type ActivityFeedItem = {
   parentId?: string;
   parentName?: string;
   notes?: string;
+  allDay?: boolean;
+  startAt?: string;
+  endAt?: string;
+  photoUrl?: string;
+  goalId?: string;
+  goalTitle?: string;
+  contributionAmount?: number;
+  seenBy?: ActivitySeenBy[];
 };
 
 export type RegisterCallRequest = {
@@ -19,6 +39,17 @@ export type RegisterCallRequest = {
 };
 
 export type RegisterCallResponse = ActivityFeedItem;
+
+export type RegisterVisitRequest = {
+  parentId?: string;
+  allDay: boolean;
+  startAt: string;
+  endAt?: string;
+  photoBase64?: string;
+  mimeType?: string;
+};
+
+export type RegisterVisitResponse = ActivityFeedItem;
 
 export type ActivityFeedParams = {
   limit?: number;
@@ -29,4 +60,5 @@ export type ActivityFeedParams = {
 
 export type ActivityFeedResponse = {
   items: ActivityFeedItem[];
+  unreadCount: number;
 };

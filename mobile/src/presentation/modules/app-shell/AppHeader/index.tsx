@@ -16,13 +16,13 @@ export function AppHeader() {
   const insets = useSafeAreaInsets();
   const { session } = useAuth();
   const { familyId, setFamilyId } = useFamily();
-  const { activeParent } = useAssistido();
+  const { activeParent, parentId } = useAssistido();
   const [assistidoSheetVisible, setAssistidoSheetVisible] = useState(false);
 
   const families = session?.families ?? [];
   const activeFamily = families.find((family) => family.id === familyId);
   const familyName = activeFamily?.name ?? 'Família';
-  const assistidoLabel = activeParent?.name ?? 'Assistido';
+  const assistidoLabel = activeParent?.name ?? (parentId === null ? 'Todos' : 'Assistido');
   const assistidoInitial = assistidoLabel.charAt(0).toUpperCase();
 
   function handleAssistidoPress() {

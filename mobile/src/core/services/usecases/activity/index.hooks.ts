@@ -1,14 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { RegisterCallRequest } from '@/core/domain/activity';
+import type { RegisterCallRequest, RegisterVisitRequest } from '@/core/domain/activity';
 import { HttpClientFactory } from '@/core/infra/http/http-client-factory';
 import { queryKeys } from '@/core/infra/query/query-keys';
 import { useAssistido } from '@/presentation/providers/assistido';
 import { useFamily } from '@/presentation/providers/family';
 
 import { ListActivityFeedUseCase } from './list-activity-feed.usecase';
+import { MarkActivitySeenUseCase } from './mark-activity-seen.usecase';
 import { getMonthRange } from './month-range';
 import { RegisterCallUseCase } from './register-call.usecase';
+import { RegisterVisitUseCase } from './register-visit.usecase';
 
 export function useActivityFeed(limit = 50) {
   const { familyId } = useFamily();
@@ -21,6 +23,11 @@ export function useActivityFeed(limit = 50) {
     queryFn: () => useCase.listFeed({ limit, parentId: parentId ?? undefined }),
     enabled: Boolean(familyId),
   });
+}
+
+export function useActivityUnreadCount() {
+  const { data } = useActivityFeed();
+  return data?.unreadCount ?? 0;
 }
 
 export function useActivitiesByMonth(year: number, month: number) {
@@ -44,13 +51,38 @@ export function useActivitiesByMonth(year: number, month: number) {
 }
 
 export function useRegisterCall() {
-  const { familyId } = useFamily();
   const queryClient = useQueryClient();
   const httpClient = HttpClientFactory.create();
   const useCase = new RegisterCallUseCase(httpClient);
 
   return useMutation({
     mutationFn: (data: RegisterCallRequest) => useCase.registerCall(data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.activities.all });
+    },
+  });
+}
+
+export function useRegisterVisit() {
+  const queryClient = useQueryClient();
+  const httpClient = HttpClientFactory.create();
+  const useCase = new RegisterVisitUseCase(httpClient);
+
+  return useMutation({
+    mutationFn: (data: RegisterVisitRequest) => useCase.registerVisit(data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.activities.all });
+    },
+  });
+}
+
+export function useMarkActivitySeen() {
+  const queryClient = useQueryClient();
+  const httpClient = HttpClientFactory.create();
+  const useCase = new MarkActivitySeenUseCase(httpClient);
+
+  return useMutation({
+    mutationFn: (activityId: string) => useCase.markSeen(activityId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.activities.all });
     },

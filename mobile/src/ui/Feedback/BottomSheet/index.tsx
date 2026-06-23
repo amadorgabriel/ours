@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
-import { Animated, Modal, Pressable, View } from 'react-native';
+import { Animated, KeyboardAvoidingView, Modal, Platform, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type BottomSheetProps = {
@@ -72,15 +72,17 @@ export function BottomSheet({
         <Animated.View
           style={{ transform: [{ translateY: sheetTranslateY }] }}
         >
-          <Pressable
-            accessibilityLabel={accessibilityLabel}
-            className="rounded-t-3xl bg-cream px-6 pt-3"
-            style={{ paddingBottom: insets.bottom + 24 }}
-            onPress={(event) => event.stopPropagation()}
-          >
-            <View className="mb-4 h-1 w-10 self-center rounded-full bg-mindful-brown/20" />
-            {children}
-          </Pressable>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <Pressable
+              accessibilityLabel={accessibilityLabel}
+              className="rounded-t-3xl bg-cream px-6 pt-3"
+              style={{ paddingBottom: insets.bottom + 24 }}
+              onPress={(event) => event.stopPropagation()}
+            >
+              <View className="mb-4 h-1 w-10 self-center rounded-full bg-mindful-brown/20" />
+              {children}
+            </Pressable>
+          </KeyboardAvoidingView>
         </Animated.View>
       </View>
     </Modal>

@@ -90,7 +90,7 @@ describe('AppHeader', () => {
     const tree = renderAppHeader();
     const json = JSON.stringify(tree.toJSON());
 
-    expect(json).toContain('Assistido');
+    expect(json).toContain('Todos');
   });
 
   it('shows active parent name when selected', () => {
@@ -139,7 +139,7 @@ describe('AppHeader', () => {
   it('opens AssistidoSheet on assistido chip tap', () => {
     const tree = renderAppHeader();
     const assistidoChip = tree.root.findByProps({
-      accessibilityLabel: 'Assistido: Assistido. Toque para selecionar',
+      accessibilityLabel: 'Assistido: Todos. Toque para selecionar',
     });
 
     act(() => {

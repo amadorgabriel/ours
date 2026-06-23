@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import { Alert, Text } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
 import { ProfileScreen } from '../index';
@@ -50,6 +50,24 @@ jest.mock('@/core/services/usecases/family/index.hooks', () => ({
     isError: false,
     error: null,
   })),
+  useCreateFamily: jest.fn(() => ({
+    mutate: jest.fn(),
+    reset: jest.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+  })),
+  useFamilyMembers: jest.fn(() => ({
+    data: { items: [] },
+    isLoading: false,
+    isError: false,
+  })),
+  useRemoveFamilyMember: jest.fn(() => ({
+    mutate: jest.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+  })),
 }));
 
 jest.mock('@/core/services/usecases/parent/index.hooks', () => ({
@@ -63,6 +81,13 @@ jest.mock('@/core/services/usecases/parent/index.hooks', () => ({
     error: null,
   })),
   useUpdateParent: jest.fn(() => ({
+    mutate: jest.fn(),
+    reset: jest.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+  })),
+  useUpdateParentPhoto: jest.fn(() => ({
     mutate: jest.fn(),
     reset: jest.fn(),
     isPending: false,
@@ -213,6 +238,11 @@ describe('ProfileScreen', () => {
   });
 
   it('calls logout and navigates to login', () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
+      const confirm = buttons?.find((button) => button.text === 'Sair');
+      confirm?.onPress?.();
+    });
+
     const tree = renderProfileScreen();
     const logoutButton = tree.root.findByProps({ accessibilityLabel: 'Sair da conta' });
 
@@ -220,8 +250,11 @@ describe('ProfileScreen', () => {
       logoutButton.props.onPress();
     });
 
+    expect(alertSpy).toHaveBeenCalled();
     expect(mockMutate).toHaveBeenCalledWith(undefined, expect.objectContaining({
       onSuccess: expect.any(Function),
     }));
+
+    alertSpy.mockRestore();
   });
 });

@@ -208,6 +208,13 @@ Gate documentado nos changes: [007](../.specs/archive/007-mobile-scaffold/) · [
 | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | OAuth Web client ID (Google Sign-In — idToken) |
 | `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` | OAuth iOS client ID |
 | `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` | OAuth Android client ID (SHA-1 no Google Console) |
+| `EXPO_PUBLIC_INVITE_BASE_URL` | Base URL para links de convite (ex.: `http://localhost:3000/join`) — usado pelo `InviteSheet` e pela página web `/join/[code]` |
+
+### Testar convite em dev (RF-54)
+
+1. Defina `EXPO_PUBLIC_INVITE_BASE_URL` apontando para o `web/` local (ex.: `http://localhost:3000/join`).
+2. No app (Perfil → Convidar familiar), gere um código e use **Compartilhar** ou copie o link.
+3. Abra o link no navegador: a rota web `/join/[code]` deve aceitar o código e permitir entrar na família.
 
 Template: [`.env.example`](.env.example)
 

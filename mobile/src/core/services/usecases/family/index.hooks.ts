@@ -24,6 +24,8 @@ import { DeleteFamilyUseCase } from './delete-family.usecase';
 import { JoinFamilyUseCase } from './join-family.usecase';
 import { ListFamiliesUseCase } from './list-families.usecase';
 import { UpdateFamilyUseCase } from './update-family.usecase';
+import { ListFamilyMembersUseCase } from './list-family-members.usecase';
+import { RemoveFamilyMemberUseCase } from './remove-family-member.usecase';
 
 async function refreshAuthSession(
   httpClient: IHttpClient,
@@ -135,6 +137,45 @@ export function useDeleteFamily() {
       setFamilyId(session.families[0]?.id ?? null);
       void queryClient.invalidateQueries({ queryKey: queryKeys.families.lists() });
       return session;
+    },
+  });
+}
+
+export function useFamilyMembers() {
+  const { familyId } = useFamily();
+  const httpClient = HttpClientFactory.create();
+  const useCase = new ListFamilyMembersUseCase(httpClient);
+
+  return useQuery({
+    queryKey: queryKeys.families.members(familyId),
+    queryFn: () => {
+      if (!familyId) {
+        throw new Error('No active family selected.');
+      }
+
+      return useCase.listMembers(familyId);
+    },
+    enabled: Boolean(familyId),
+  });
+}
+
+export function useRemoveFamilyMember() {
+  const { familyId } = useFamily();
+  const queryClient = useQueryClient();
+  const httpClient = HttpClientFactory.create();
+  const useCase = new RemoveFamilyMemberUseCase(httpClient);
+
+  return useMutation({
+    mutationFn: (memberUserId: string) => {
+      if (!familyId) {
+        throw new Error('No active family selected.');
+      }
+
+      return useCase.removeMember(familyId, memberUserId);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.families.members(familyId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.families.lists() });
     },
   });
 }

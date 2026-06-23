@@ -46,3 +46,15 @@ export type DeleteFamilyRequest = {
 };
 
 export type UpdateFamilyResponse = FamilyModel;
+
+export type FamilyMember = {
+  userId: string;
+  name: string;
+  email?: string;
+  role: 'Admin' | 'Member';
+  joinedAt: string;
+};
+
+export type FamilyMemberListResponse = {
+  items: FamilyMember[];
+};

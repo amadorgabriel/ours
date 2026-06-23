@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 import { colors } from '@/presentation/styles/tokens';
 
@@ -23,6 +23,7 @@ export type CalendarGridProps = {
   year: number;
   month: number;
   daysWithActivity: Set<number>;
+  isLoading?: boolean;
   onDayPress: (day: number) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -50,6 +51,7 @@ export function CalendarGrid({
   year,
   month,
   daysWithActivity,
+  isLoading = false,
   onDayPress,
   onPrevMonth,
   onNextMonth,
@@ -58,7 +60,7 @@ export function CalendarGrid({
   const monthLabel = `${MONTH_LABELS[month - 1]} ${year}`;
 
   return (
-    <View>
+    <View className="relative">
       <View className="mb-4 flex-row items-center justify-between">
         <Pressable
           accessibilityRole="button"
@@ -113,6 +115,12 @@ export function CalendarGrid({
           </View>
         ))}
       </View>
+
+      {isLoading ? (
+        <View className="absolute inset-0 items-center justify-center rounded-2xl bg-cream/70">
+          <ActivityIndicator color={colors.serenityGreen60} />
+        </View>
+      ) : null}
     </View>
   );
 }

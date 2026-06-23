@@ -42,3 +42,8 @@ export type CreateGoalContributionRequest = {
 };
 
 export type CreateGoalContributionResponse = GoalContribution;
+
+export type UpdateGoalContributionRequest = {
+  amount: number;
+  isPrivate: boolean;
+};

@@ -3,19 +3,17 @@ import { useLayoutEffect } from 'react';
 import renderer, { act } from 'react-test-renderer';
 
 import type { ParentSummary } from '@/core/domain/parent';
-import {
-  clearStoredParentId,
-  getStoredParentId,
-  setStoredParentId,
-} from '@/core/infra/storage/assistido-storage';
+import * as assistidoStorage from '@/core/infra/storage/assistido-storage';
 
 import { FamilyProvider, useFamily } from '../../family';
 import type { AssistidoContextValue } from '../index.types';
 import { AssistidoProvider, useAssistido } from '../index';
 
 jest.mock('@/core/infra/storage/assistido-storage', () => ({
+  getStoredAssistidoFilter: jest.fn(),
   getStoredParentId: jest.fn(),
   setStoredParentId: jest.fn(),
+  setStoredAllAssistidos: jest.fn(),
   clearStoredParentId: jest.fn(),
 }));
 
@@ -23,11 +21,22 @@ jest.mock('@/core/services/usecases/parent/index.hooks', () => ({
   useParents: jest.fn(),
 }));
 
-const mockGetStoredParentId = getStoredParentId as jest.MockedFunction<typeof getStoredParentId>;
-const mockSetStoredParentId = setStoredParentId as jest.MockedFunction<typeof setStoredParentId>;
-const mockClearStoredParentId = clearStoredParentId as jest.MockedFunction<
-  typeof clearStoredParentId
->;
+const mockGetStoredAssistidoFilter =
+  assistidoStorage.getStoredAssistidoFilter as jest.MockedFunction<
+    typeof assistidoStorage.getStoredAssistidoFilter
+  >;
+const mockSetStoredParentId =
+  assistidoStorage.setStoredParentId as jest.MockedFunction<
+    typeof assistidoStorage.setStoredParentId
+  >;
+const mockSetStoredAllAssistidos =
+  assistidoStorage.setStoredAllAssistidos as jest.MockedFunction<
+    typeof assistidoStorage.setStoredAllAssistidos
+  >;
+const mockClearStoredParentId =
+  assistidoStorage.clearStoredParentId as jest.MockedFunction<
+    typeof assistidoStorage.clearStoredParentId
+  >;
 const { useParents } = jest.requireMock('@/core/services/usecases/parent/index.hooks');
 
 function createTestQueryClient() {
@@ -105,7 +114,7 @@ async function renderAssistido(
 describe('AssistidoProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetStoredParentId.mockResolvedValue(null);
+    mockGetStoredAssistidoFilter.mockResolvedValue(null);
     useParents.mockReturnValue({ data: [], isLoading: false });
   });
 
@@ -123,11 +132,11 @@ describe('AssistidoProvider', () => {
   });
 
   it('hydrates parent id from storage when family is set', async () => {
-    mockGetStoredParentId.mockResolvedValue('parent-1');
+    mockGetStoredAssistidoFilter.mockResolvedValue('parent-1');
 
     const { getAssistido } = await renderAssistido('family-1');
 
-    expect(mockGetStoredParentId).toHaveBeenCalledWith('family-1');
+    expect(mockGetStoredAssistidoFilter).toHaveBeenCalledWith('family-1');
     expect(getAssistido().parentId).toBe('parent-1');
   });
 
@@ -153,7 +162,7 @@ describe('AssistidoProvider', () => {
       data: familyId ? parents : [],
       isLoading: false,
     }));
-    mockGetStoredParentId.mockResolvedValue('parent-stale');
+    mockGetStoredAssistidoFilter.mockResolvedValue('parent-stale');
 
     const { getAssistido } = await renderAssistido('family-1');
 

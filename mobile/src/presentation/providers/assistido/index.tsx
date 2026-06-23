@@ -11,9 +11,10 @@ import {
 
 import type { ParentId } from '@/core/domain/parent';
 import {
-  clearStoredParentId,
-  getStoredParentId,
+  getStoredAssistidoFilter,
+  setStoredAllAssistidos,
   setStoredParentId,
+  clearStoredParentId,
 } from '@/core/infra/storage/assistido-storage';
 import { useParents } from '@/core/services/usecases/parent/index.hooks';
 
@@ -27,23 +28,31 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
   const { data: parents = [], isLoading } = useParents(familyId);
   const [parentId, setParentIdState] = useState<ParentId | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
-  const autoSelectedRef = useRef(false);
+  const skipAutoSelectRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
     setIsHydrated(false);
-    autoSelectedRef.current = false;
+    skipAutoSelectRef.current = false;
 
     if (!familyId) {
       setParentIdState(null);
       return;
     }
 
-    void getStoredParentId(familyId).then((stored) => {
-      if (!cancelled) {
-        setParentIdState(stored);
-        setIsHydrated(true);
+    void getStoredAssistidoFilter(familyId).then((stored) => {
+      if (cancelled) {
+        return;
       }
+
+      if (stored === 'all') {
+        skipAutoSelectRef.current = true;
+        setParentIdState(null);
+      } else {
+        setParentIdState(stored);
+      }
+
+      setIsHydrated(true);
     });
 
     return () => {
@@ -57,16 +66,17 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
     if (parentId !== null) {
       const isValid = parents.some((parent) => parent.id === parentId);
       if (isValid) {
-        autoSelectedRef.current = true;
+        skipAutoSelectRef.current = true;
         return;
       }
 
       void clearStoredParentId(familyId);
+      setParentIdState(null);
     }
 
-    if (autoSelectedRef.current) return;
+    if (skipAutoSelectRef.current) return;
 
-    autoSelectedRef.current = true;
+    skipAutoSelectRef.current = true;
     const first = parents[0];
     setParentIdState(first.id);
     void setStoredParentId(familyId, first.id);
@@ -75,13 +85,14 @@ export function AssistidoProvider({ children }: { children: ReactNode }) {
   const setParentId = useCallback(
     (id: ParentId | null) => {
       setParentIdState(id);
+      skipAutoSelectRef.current = true;
 
       if (!familyId) return;
 
       if (id) {
         void setStoredParentId(familyId, id);
       } else {
-        void clearStoredParentId(familyId);
+        void setStoredAllAssistidos(familyId);
       }
     },
     [familyId]
@@ -111,5 +122,6 @@ export function useAssistido(): AssistidoContextValue {
   if (!context) {
     throw new Error('useAssistido must be used within AssistidoProvider');
   }
+
   return context;
 }

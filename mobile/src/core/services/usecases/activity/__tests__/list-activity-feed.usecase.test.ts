@@ -16,6 +16,7 @@ describe('ListActivityFeedUseCase', () => {
           notes: 'Tudo bem',
         },
       ],
+      unreadCount: 0,
     };
     const request = jest.fn().mockResolvedValue({ statusCode: 200, data: feed });
     const httpClient: IHttpClient = { request };
@@ -32,7 +33,7 @@ describe('ListActivityFeedUseCase', () => {
   });
 
   it('loads feed with date range params', async () => {
-    const feed: ActivityFeedResponse = { items: [] };
+    const feed: ActivityFeedResponse = { items: [], unreadCount: 0 };
     const request = jest.fn().mockResolvedValue({ statusCode: 200, data: feed });
     const httpClient: IHttpClient = { request };
 
@@ -55,7 +56,7 @@ describe('ListActivityFeedUseCase', () => {
   });
 
   it('loads feed with parentId param', async () => {
-    const feed: ActivityFeedResponse = { items: [] };
+    const feed: ActivityFeedResponse = { items: [], unreadCount: 0 };
     const request = jest.fn().mockResolvedValue({ statusCode: 200, data: feed });
     const httpClient: IHttpClient = { request };
 

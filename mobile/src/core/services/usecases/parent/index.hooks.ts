@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CreateParentRequest, ParentId, UpdateParentRequest } from '@/core/domain/parent';
+import type { CreateParentRequest, ParentId, UpdateParentPhotoRequest, UpdateParentRequest } from '@/core/domain/parent';
 import { HttpClientFactory } from '@/core/infra/http/http-client-factory';
 import { queryKeys } from '@/core/infra/query/query-keys';
 import { useFamily } from '@/presentation/providers/family';
@@ -9,6 +9,7 @@ import { CreateParentUseCase } from './create-parent.usecase';
 import { GetParentUseCase } from './get-parent.usecase';
 import { ListParentsUseCase } from './list-parents.usecase';
 import { UpdateParentUseCase } from './update-parent.usecase';
+import { UpdateParentPhotoUseCase } from './update-parent-photo.usecase';
 
 export function useParents(familyId: string | null, enabled = true) {
   const httpClient = HttpClientFactory.create();
@@ -59,6 +60,21 @@ export function useUpdateParent(parentId: ParentId) {
 
   return useMutation({
     mutationFn: (data: UpdateParentRequest) => useCase.updateParent(parentId, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.parents.all });
+    },
+    meta: { familyId, parentId },
+  });
+}
+
+export function useUpdateParentPhoto(parentId: ParentId) {
+  const { familyId } = useFamily();
+  const queryClient = useQueryClient();
+  const httpClient = HttpClientFactory.create();
+  const useCase = new UpdateParentPhotoUseCase(httpClient);
+
+  return useMutation({
+    mutationFn: (data: UpdateParentPhotoRequest) => useCase.updatePhoto(parentId, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.parents.all });
     },
