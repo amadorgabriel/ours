@@ -10,6 +10,10 @@ const mockReplace = jest.fn();
 const mockCreateMutate = jest.fn();
 const mockJoinMutate = jest.fn();
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
+}));
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
   useLocalSearchParams: () => ({}),
@@ -29,6 +33,38 @@ jest.mock('@/core/services/usecases/family/index.hooks', () => ({
     isError: false,
   }),
 }));
+
+const mockLogoutMutateAsync = jest.fn();
+
+jest.mock('@/core/services/usecases/auth/index.hooks', () => ({
+  useLogout: () => ({
+    mutateAsync: mockLogoutMutateAsync,
+    isPending: false,
+  }),
+}));
+
+jest.mock('@/presentation/providers/alert', () => ({
+  useAppAlert: () => ({
+    alert: jest.fn((_title, _message, buttons) => {
+      const confirm = buttons?.find((button: { style?: string }) => button.style === 'destructive');
+      confirm?.onPress?.();
+    }),
+  }),
+}));
+
+jest.mock('@/presentation/providers/auth', () => {
+  const actual = jest.requireActual('@/presentation/providers/auth');
+  return {
+    ...actual,
+    useAuth: () => ({
+      isAuthenticated: true,
+      isSessionLoading: false,
+      session: { familyCount: 0 },
+      setSession: jest.fn(),
+      clearSession: jest.fn(),
+    }),
+  };
+});
 
 function renderOnboardingScreen() {
   let tree!: renderer.ReactTestRenderer;
@@ -65,6 +101,7 @@ function findButtonByLabel(tree: renderer.ReactTestRenderer, label: string) {
 describe('OnboardingScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLogoutMutateAsync.mockResolvedValue(undefined);
     mockCreateMutate.mockImplementation((_payload, options) => {
       options?.onSuccess?.();
     });
@@ -122,5 +159,21 @@ describe('OnboardingScreen', () => {
       expect.objectContaining({ onSuccess: expect.any(Function) })
     );
     expect(mockReplace).toHaveBeenCalledWith('/(app)');
+  });
+
+  it('shows logout and navigates to login for authenticated users without family', async () => {
+    const tree = renderOnboardingScreen();
+    const json = JSON.stringify(tree.toJSON());
+
+    expect(json).toContain('Sair');
+
+    const logoutButton = tree.root.findByProps({ accessibilityLabel: 'Sair da conta' });
+
+    await act(async () => {
+      logoutButton.props.onPress();
+    });
+
+    expect(mockLogoutMutateAsync).toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith('/(auth)/login');
   });
 });

@@ -11,6 +11,10 @@ import { LoginScreen } from '../index';
 const mockReplace = jest.fn();
 const mockMutate = jest.fn();
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
+}));
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
@@ -85,6 +89,26 @@ describe('LoginScreen', () => {
 
     expect(json).toContain('Entrar com Google');
     expect(json).toContain('Ours');
+    expect(json).toContain('Cuidado colaborativo entre irmãos');
+    expect(json).toContain('Rotinas, metas e calendário');
+  });
+
+  it('does not show an error when Google returns no idToken', async () => {
+    (GoogleSignin.signIn as jest.Mock).mockResolvedValue({
+      data: { idToken: null },
+    });
+
+    const tree = renderLoginScreen();
+    const button = tree.root.find(
+      (node) => node.props.accessibilityRole === 'button' && node.props.onPress
+    );
+
+    await act(async () => {
+      await button.props.onPress();
+    });
+
+    expect(mockMutate).not.toHaveBeenCalled();
+    expect(JSON.stringify(tree.toJSON())).not.toContain('Não foi possível entrar');
   });
 
   it('submits idToken and routes to home after successful login', async () => {

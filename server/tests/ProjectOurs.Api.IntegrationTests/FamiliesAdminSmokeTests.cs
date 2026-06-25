@@ -11,6 +11,33 @@ namespace ProjectOurs.Api.IntegrationTests;
 public sealed class FamiliesAdminSmokeTests(PostgresApiFixture fixture)
 {
     [DockerRequiredFact]
+    public async Task Post_family_as_mobile_client_without_antiforgery_succeeds()
+    {
+        var client = fixture.CreateClient(handleCookies: false);
+
+        var loginResponse = await client.PostJsonAsMobileClientAsync(
+            "/api/auth/google",
+            new { idToken = GoogleIdTokenValidator.DevMockToken });
+        loginResponse.EnsureSuccessStatusCode();
+
+        var session = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var accessToken = session.GetProperty("accessToken").GetString()
+            ?? throw new InvalidOperationException("Missing accessToken.");
+
+        using var mobileClient = fixture.CreateClient(handleCookies: false);
+        mobileClient.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+        var createResponse = await mobileClient.PostJsonAsMobileClientAsync(
+            "/api/families",
+            new { name = "Família Mobile" });
+        createResponse.EnsureSuccessStatusCode();
+
+        var created = await createResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Família Mobile", created.GetProperty("name").GetString());
+    }
+
+    [DockerRequiredFact]
     public async Task Patch_and_delete_family_as_admin()
     {
         var client = fixture.CreateClient(handleCookies: true);

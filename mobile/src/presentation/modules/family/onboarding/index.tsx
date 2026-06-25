@@ -10,11 +10,16 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { t } from '@/core/infra/i18n';
+import { useLogout } from '@/core/services/usecases/auth/index.hooks';
 import { useCreateFamily, useJoinFamily } from '@/core/services/usecases/family/index.hooks';
 import { mobileRoutes } from '@/presentation/modules/auth/auth-redirect';
 import { useTranslation } from '@/presentation/hooks/use-translation';
+import { useAppAlert } from '@/presentation/providers/alert';
+import { useAuth } from '@/presentation/providers/auth';
 import { colors } from '@/presentation/styles/tokens';
 
 import { getFamilyErrorMessage } from '../family-api-error';
@@ -43,9 +48,13 @@ function validateCode(code: string): string | null {
 export function OnboardingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { alert } = useAppAlert();
+  const { isAuthenticated } = useAuth();
   const { invite } = useLocalSearchParams<{ invite?: string }>();
   const createFamily = useCreateFamily();
   const joinFamily = useJoinFamily();
+  const logoutMutation = useLogout();
 
   const [familyName, setFamilyName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
@@ -78,13 +87,34 @@ export function OnboardingScreen() {
     joinFamily.mutate({ inviteCode }, { onSuccess: navigateHome });
   }
 
+  function handleLogout() {
+    alert(t('alerts.logout.title'), t('alerts.logout.message'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('alerts.logout.confirm'),
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            try {
+              await logoutMutation.mutateAsync();
+              router.replace(mobileRoutes.login as Href);
+            } catch {
+              alert(t('alerts.logout.errorTitle'), t('alerts.logout.errorMessage'));
+            }
+          })();
+        },
+      },
+    ]);
+  }
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       className="flex-1 bg-cream"
     >
       <ScrollView
-        contentContainerClassName="grow px-6 py-10"
+        contentContainerClassName="grow px-6 pb-10"
+        contentContainerStyle={{ paddingTop: insets.top + 24 }}
         keyboardShouldPersistTaps="handled"
       >
         <Text className="font-sans-semibold text-2xl text-mindful-brown">{t('onboarding.welcome')}</Text>
@@ -178,6 +208,25 @@ export function OnboardingScreen() {
             )}
           </Pressable>
         </View>
+
+        {isAuthenticated && (
+          <Pressable
+            accessibilityLabel={t('profile.logoutAccessibility')}
+            accessibilityRole="button"
+            className="mt-10 flex-row items-center justify-center gap-2 rounded-xl border border-mindful-brown/20 py-3"
+            disabled={logoutMutation.isPending}
+            onPress={handleLogout}
+          >
+            {logoutMutation.isPending ? (
+              <ActivityIndicator color={colors.mindfulBrown60} />
+            ) : (
+              <>
+                <Ionicons color={colors.mindfulBrown60} name="log-out-outline" size={18} />
+                <Text className="font-sans-semibold text-mindful-brown">{t('profile.logout')}</Text>
+              </>
+            )}
+          </Pressable>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );

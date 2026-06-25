@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
+using ProjectOurs.API.Auth;
 using ProjectOurs.Application.Family;
 
 namespace ProjectOurs.API.Controllers;
@@ -19,6 +20,11 @@ internal static class ApiControllerHelper
         HttpContext httpContext,
         IAntiforgery antiforgery)
     {
+        if (MobileClientHeaders.ShouldSkipAntiforgery(httpContext.Request))
+        {
+            return null;
+        }
+
         try
         {
             await antiforgery.ValidateRequestAsync(httpContext);
