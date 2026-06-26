@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { ParentSummary } from '@/core/domain/parent';
+import { requestCreateParentSheet } from '@/core/infra/navigation/create-parent-intent';
 import { useLogout } from '@/core/services/usecases/auth/index.hooks';
 import {
   useFamilyMembers,
@@ -25,7 +26,6 @@ import { relationshipLabel } from '@/presentation/modules/family/relationship-la
 import { CreateFamilySheet } from '@/presentation/modules/profile/create-family-sheet';
 import { NotificationSettings } from '@/presentation/modules/profile/notification-settings';
 import { FamilyAdminSheet } from '@/presentation/modules/profile/family-admin-sheet';
-import { CreateParentSheet } from '@/presentation/modules/parents/create-parent-sheet';
 import { EditParentSheet } from '@/presentation/modules/parents/edit-parent-sheet';
 import { ParentDetailSheet } from '@/presentation/modules/parents/parent-detail-sheet';
 import { mobileRoutes, resolvePostLoginRoute } from '@/presentation/modules/auth/auth-redirect';
@@ -109,7 +109,6 @@ export function ProfileScreen() {
     refetch: refetchParents,
   } = useParents(familyId);
   const [inviteVisible, setInviteVisible] = useState(false);
-  const [createParentVisible, setCreateParentVisible] = useState(false);
   const [editParent, setEditParent] = useState<ParentSummary | null>(null);
   const [detailParentId, setDetailParentId] = useState<string | null>(null);
   const [familyAdminVisible, setFamilyAdminVisible] = useState(false);
@@ -131,6 +130,56 @@ export function ProfileScreen() {
   function handleFamilyDeleted() {
     const nextCount = Math.max(0, (session?.familyCount ?? 1) - 1);
     router.replace(resolvePostLoginRoute(nextCount) as Href);
+  }
+
+  function handleLeaveFamily() {
+    const familyName = activeFamily?.name ?? t('common.family');
+
+    alert(
+      t('alerts.leaveFamily.title'),
+      t('alerts.leaveFamily.message', { name: familyName }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.continue'),
+          style: 'destructive',
+          onPress: () => {
+            alert(
+              t('alerts.leaveFamily.confirmTitle'),
+              t('alerts.leaveFamily.confirmMessage'),
+              [
+                { text: t('common.cancel'), style: 'cancel' },
+                {
+                  text: t('profile.leaveFamily'),
+                  style: 'destructive',
+                  onPress: () => {
+                    if (!session?.user.id) {
+                      return;
+                    }
+
+                    removeMember.mutate(session.user.id, {
+                      onSuccess: (updatedSession) => {
+                        if (updatedSession) {
+                          router.replace(
+                            resolvePostLoginRoute(updatedSession.familyCount) as Href
+                          );
+                        }
+                      },
+                      onError: (error) => {
+                        alert(
+                          t('alerts.leaveFamily.errorTitle'),
+                          getRemoveMemberErrorMessage(error)
+                        );
+                      },
+                    });
+                  },
+                },
+              ]
+            );
+          },
+        },
+      ]
+    );
   }
 
   function handleRemoveMember(memberUserId: string, memberName: string) {
@@ -248,16 +297,26 @@ export function ProfileScreen() {
           <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
             {activeFamily ? roleLabel(activeFamily.role) : '—'}
           </Text>
-          {isAdmin ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('profile.editFamily')}
-              className="mt-4 items-center rounded-xl border border-serenity-green py-3"
-              onPress={() => setFamilyAdminVisible(true)}
-            >
-              <Text className="font-sans-semibold text-serenity-green">{t('profile.editFamily')}</Text>
-            </Pressable>
-          ) : null}
+        {isAdmin ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('profile.editFamily')}
+            className="mt-4 items-center rounded-xl border border-serenity-green py-3"
+            onPress={() => setFamilyAdminVisible(true)}
+          >
+            <Text className="font-sans-semibold text-serenity-green">{t('profile.editFamily')}</Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('profile.leaveFamilyAccessibility')}
+            className="mt-4 items-center rounded-xl border border-red-600/30 py-3"
+            disabled={removeMember.isPending}
+            onPress={handleLeaveFamily}
+          >
+            <Text className="font-sans-semibold text-red-600">{t('profile.leaveFamily')}</Text>
+          </Pressable>
+        )}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('profile.newFamily')}
@@ -268,68 +327,68 @@ export function ProfileScreen() {
           </Pressable>
         </View>
 
-        {isAdmin ? (
-          <View className="mt-4 rounded-2xl bg-white p-5">
-            <Text className="font-sans-semibold text-lg text-mindful-brown">{t('profile.members')}</Text>
-            <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
-              {t('profile.membersDescription')}
-            </Text>
-            {membersLoading ? (
-              <View className="mt-4 items-center py-4">
-                <ActivityIndicator color={colors.serenityGreen60} />
-              </View>
-            ) : null}
-            {membersError ? (
-              <View className="mt-4">
-                <QueryErrorState
-                  message={t('profile.membersLoadError')}
-                  variant="inline"
-                  onRetry={() => {
-                    void refetchMembers();
-                  }}
-                />
-              </View>
-            ) : null}
-            {!membersLoading && !membersError
-              ? members.map((member) => (
-              <View
-                key={member.userId}
-                className="mt-3 flex-row items-center justify-between border-b border-mindful-brown/10 pb-3"
-              >
-                <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-mindful-brown/15">
-                  {member.picture ? (
-                    <Image
-                      accessibilityLabel={t('profile.memberPhoto', { name: member.name })}
-                      className="h-10 w-10 rounded-full"
-                      source={{ uri: member.picture }}
-                    />
-                  ) : (
-                    <Text className="font-sans-semibold text-mindful-brown">
-                      {member.name.charAt(0).toUpperCase()}
-                    </Text>
-                  )}
-                </View>
-                <View className="flex-1 pr-3">
-                  <Text className="font-sans-semibold text-mindful-brown">{member.name}</Text>
-                  <Text className="font-sans text-sm text-mindful-brown/70">
-                    {roleLabel(member.role)}
-                    {member.email ? ` · ${member.email}` : ''}
-                  </Text>
-                </View>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t('profile.removeName', { name: member.name })}
-                  className="rounded-lg px-3 py-2"
-                  disabled={removeMember.isPending}
-                  onPress={() => handleRemoveMember(member.userId, member.name)}
+        <View className="mt-4 rounded-2xl bg-white p-5">
+          <Text className="font-sans-semibold text-lg text-mindful-brown">{t('profile.members')}</Text>
+          <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
+            {t('profile.membersDescription')}
+          </Text>
+          {membersLoading ? (
+            <View className="mt-4 items-center py-4">
+              <ActivityIndicator color={colors.serenityGreen60} />
+            </View>
+          ) : null}
+          {membersError ? (
+            <View className="mt-4">
+              <QueryErrorState
+                message={t('profile.membersLoadError')}
+                variant="inline"
+                onRetry={() => {
+                  void refetchMembers();
+                }}
+              />
+            </View>
+          ) : null}
+          {!membersLoading && !membersError
+            ? members.map((member) => (
+                <View
+                  key={member.userId}
+                  className="mt-3 flex-row items-center justify-between border-b border-mindful-brown/10 pb-3"
                 >
-                  <Text className="font-sans-semibold text-sm text-red-600">{t('profile.remove')}</Text>
-                </Pressable>
-              </View>
-            ))
-              : null}
-          </View>
-        ) : null}
+                  <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-mindful-brown/15">
+                    {member.picture ? (
+                      <Image
+                        accessibilityLabel={t('profile.memberPhoto', { name: member.name })}
+                        className="h-10 w-10 rounded-full"
+                        source={{ uri: member.picture }}
+                      />
+                    ) : (
+                      <Text className="font-sans-semibold text-mindful-brown">
+                        {member.name.charAt(0).toUpperCase()}
+                      </Text>
+                    )}
+                  </View>
+                  <View className="flex-1 pr-3">
+                    <Text className="font-sans-semibold text-mindful-brown">{member.name}</Text>
+                    <Text className="font-sans text-sm text-mindful-brown/70">
+                      {roleLabel(member.role)}
+                      {member.email ? ` · ${member.email}` : ''}
+                    </Text>
+                  </View>
+                  {isAdmin ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={t('profile.removeName', { name: member.name })}
+                      className="rounded-lg px-3 py-2"
+                      disabled={removeMember.isPending}
+                      onPress={() => handleRemoveMember(member.userId, member.name)}
+                    >
+                      <Text className="font-sans-semibold text-sm text-red-600">{t('profile.remove')}</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              ))
+            : null}
+        </View>
 
         <View className="mt-4 rounded-2xl bg-white p-5">
           <Text className="font-sans-semibold text-lg text-mindful-brown">{t('profile.assistidos')}</Text>
@@ -358,12 +417,14 @@ export function ProfileScreen() {
           {!parentsLoading && !parentsError && parents.length === 0 ? (
             <View className="mt-4">
               <EmptyState
-                title={t('profile.assistidosEmptyTitle')}
+                title={t('assistido.emptyTitle')}
                 description={
-                  isAdmin ? t('profile.assistidosEmptyAdmin') : t('profile.assistidosEmptyMember')
+                  isAdmin
+                    ? t('assistido.emptyAdminDescription')
+                    : t('assistido.emptyMemberDescription')
                 }
                 actionLabel={isAdmin ? t('profile.newAssistido') : undefined}
-                onAction={isAdmin ? () => setCreateParentVisible(true) : undefined}
+                onAction={isAdmin ? requestCreateParentSheet : undefined}
                 variant="inline"
               />
             </View>
@@ -381,12 +442,12 @@ export function ProfileScreen() {
               ))
             : null}
 
-          {isAdmin && !parentsError ? (
+          {isAdmin && !parentsError && parents.length > 0 ? (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('profile.newAssistido')}
               className="mt-4 items-center rounded-xl border border-serenity-green py-3"
-              onPress={() => setCreateParentVisible(true)}
+              onPress={requestCreateParentSheet}
             >
               <Text className="font-sans-semibold text-serenity-green">{t('profile.newAssistido')}</Text>
             </Pressable>
@@ -422,10 +483,6 @@ export function ProfileScreen() {
       </ScrollView>
 
       <InviteSheet visible={inviteVisible} onClose={() => setInviteVisible(false)} />
-      <CreateParentSheet
-        visible={createParentVisible}
-        onClose={() => setCreateParentVisible(false)}
-      />
       <EditParentSheet
         parent={editParent}
         visible={editParent !== null}

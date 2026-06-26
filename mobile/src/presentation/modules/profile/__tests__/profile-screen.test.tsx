@@ -137,6 +137,7 @@ const { useParents, useParent } = jest.requireMock('@/core/services/usecases/par
 function renderProfileScreen(options?: {
   role?: 'Admin' | 'Member';
   familyId?: string;
+  parents?: Array<{ id: string; name: string; relationship: string }>;
 }) {
   const role = options?.role ?? 'Admin';
   const familyId = options?.familyId ?? 'fam-1';
@@ -161,7 +162,7 @@ function renderProfileScreen(options?: {
   });
 
   useParents.mockReturnValue({
-    data: [],
+    data: options?.parents ?? [],
     isLoading: false,
     isError: false,
     isRefetching: false,
@@ -219,12 +220,24 @@ describe('ProfileScreen', () => {
     expect(text).toContain('Gerar código');
   });
 
-  it('shows parents admin section with create CTA (MS-50)', () => {
+  it('shows parents admin section with create CTA when list is empty (MS-50)', () => {
     const tree = renderProfileScreen({ role: 'Admin' });
     const text = getAllText(tree);
 
     expect(text).toContain('Assistidos');
     expect(text).toContain('Novo assistido');
+    expect((text.match(/Novo assistido/g) ?? []).length).toBe(1);
+  });
+
+  it('shows parents admin section with create CTA when list has items', () => {
+    const tree = renderProfileScreen({
+      role: 'Admin',
+      parents: [{ id: 'p1', name: 'João', relationship: 'Father' }],
+    });
+    const text = getAllText(tree);
+
+    expect(text).toContain('Novo assistido');
+    expect((text.match(/Novo assistido/g) ?? []).length).toBe(1);
   });
 
   it('shows parents section for Member with read access (MS-53)', () => {
@@ -233,6 +246,15 @@ describe('ProfileScreen', () => {
 
     expect(text).toContain('Assistidos');
     expect(text).not.toContain('Novo assistido');
+  });
+
+  it('shows members section and leave family CTA for Member (MS-17)', () => {
+    const tree = renderProfileScreen({ role: 'Member' });
+    const text = getAllText(tree);
+
+    expect(text).toContain('Membros');
+    expect(text).toContain('Sair da família');
+    expect(text).not.toContain('Convidar familiar');
   });
 
   it('hides invite CTA for Member (MS-17)', () => {

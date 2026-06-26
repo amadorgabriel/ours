@@ -8,6 +8,7 @@ import { CallNowSheet } from '@/presentation/modules/feed/call-now-sheet';
 import { VisitSheet } from '@/presentation/modules/feed/visit-sheet';
 import { FAB_MARGIN, FAB_SIZE } from '@/presentation/modules/app-shell/list-bottom-padding';
 import { useNotificationActions } from '@/presentation/providers/notifications';
+import { useRegisterActivity } from '@/presentation/providers/register-activity';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
@@ -18,9 +19,14 @@ export function RegisterActivityFab() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const { callNowRequested, consumeCallNowRequest } = useNotificationActions();
+  const { bindOpenHandler } = useRegisterActivity();
   const [menuVisible, setMenuVisible] = useState(false);
   const [callNowVisible, setCallNowVisible] = useState(false);
   const [visitVisible, setVisitVisible] = useState(false);
+
+  useEffect(() => {
+    return bindOpenHandler(() => setMenuVisible(true));
+  }, [bindOpenHandler]);
 
   useEffect(() => {
     if (!callNowRequested) {

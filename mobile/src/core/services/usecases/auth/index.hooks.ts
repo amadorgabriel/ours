@@ -5,6 +5,10 @@ import { clearGoogleSignInSession } from '@/core/infra/auth/google-signin-sessio
 import { registerAuthTokenGetter, unregisterAuthTokenGetter } from '@/core/infra/http/auth-token-context';
 import { HttpClientFactory } from '@/core/infra/http/http-client-factory';
 import { HttpClientError } from '@/core/infra/http/http-error';
+import {
+  cancelDailyCallReminder,
+  syncReminderScheduleForUser,
+} from '@/core/infra/notifications/notification-service';
 import { queryKeys } from '@/core/infra/query/query-keys';
 import {
   clearStoredAuthToken,
@@ -54,6 +58,8 @@ export function useSession(enabled = true) {
           await prefetchParentsForFamily(queryClient, session.families[0].id);
         }
 
+        await syncReminderScheduleForUser(session.user.id);
+
         return session;
       } catch (error) {
         if (error instanceof HttpClientError && error.statusCode === 401) {
@@ -93,6 +99,8 @@ export function useLoginWithGoogle() {
       if (session.familyCount === 1 && session.families[0]) {
         await prefetchParentsForFamily(queryClient, session.families[0].id);
       }
+
+      await syncReminderScheduleForUser(session.user.id);
     },
   });
 }
@@ -113,6 +121,7 @@ export function useLogout() {
       }
     },
     onSettled: async () => {
+      await cancelDailyCallReminder();
       await clearGoogleSignInSession();
       setInMemoryAuthToken(null);
       await clearStoredAuthToken();

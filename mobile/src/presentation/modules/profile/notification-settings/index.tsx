@@ -20,12 +20,15 @@ import {
 } from '@/core/infra/notifications/notification-service';
 import { useRegisterDevice } from '@/core/services/usecases/device/index.hooks';
 import { useTranslation } from '@/presentation/hooks/use-translation';
+import { useAuth } from '@/presentation/providers/auth';
 import { colors } from '@/presentation/styles/tokens';
 
 const CUSTOM_INTERVAL_OPTIONS = [2, 3, 5, 7, 14, 30];
 
 export function NotificationSettings() {
   const { t } = useTranslation();
+  const { session } = useAuth();
+  const userId = session?.user.id;
   const registerDevice = useRegisterDevice();
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<ReminderSettings>({
@@ -45,18 +48,28 @@ export function NotificationSettings() {
   ];
 
   useEffect(() => {
-    void loadReminderSettings().then((loaded) => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    void loadReminderSettings(userId).then((loaded) => {
       setSettings(loaded);
       setLoading(false);
     });
-  }, []);
+  }, [userId]);
 
   async function persistSettings(next: ReminderSettings, message: string) {
+    if (!userId) {
+      return;
+    }
+
     setSaving(true);
     setStatusMessage(null);
 
     try {
-      await saveReminderSettings(next);
+      await saveReminderSettings(userId, next);
       setSettings(next);
       setStatusMessage(message);
     } catch {

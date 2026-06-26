@@ -4,6 +4,7 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
+  ScrollView,
   Text,
   View,
 } from 'react-native';
@@ -56,42 +57,57 @@ export function GoalsScreen() {
     );
   }
 
-  return (
-    <View className="flex-1 bg-cream">
-      <FlatList
-        contentContainerStyle={
-          items.length === 0
-            ? { flexGrow: 1 }
-            : { padding: 16, paddingBottom: listBottomPadding }
-        }
-        data={items}
-        keyExtractor={(item) => item.id}
-        ListEmptyComponent={
+  if (items.length === 0) {
+    return (
+      <View className="flex-1 bg-cream">
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="grow px-4 pt-4"
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              tintColor={colors.serenityGreen60}
+              onRefresh={() => {
+                void refetch();
+              }}
+            />
+          }
+        >
+          <Text className="mb-4 font-sans-semibold text-xl text-mindful-brown">{t('goals.title')}</Text>
           <EmptyState
             title={t('goals.emptyTitle')}
             description={
               isAdmin ? t('goals.emptyAdminDescription') : t('goals.emptyMemberDescription')
             }
-            actionLabel={isAdmin ? t('goals.newGoal') : undefined}
+            actionLabel={isAdmin ? t('goals.createGoal') : undefined}
             onAction={isAdmin ? () => setCreateVisible(true) : undefined}
           />
-        }
+        </ScrollView>
+        <CreateGoalSheet visible={createVisible} onClose={() => setCreateVisible(false)} />
+      </View>
+    );
+  }
+
+  return (
+    <View className="flex-1 bg-cream">
+      <FlatList
+        contentContainerStyle={{ padding: 16, paddingBottom: listBottomPadding }}
+        data={items}
+        keyExtractor={(item) => item.id}
         ListHeaderComponent={
-          items.length > 0 ? (
-            <View className="mb-4 flex-row items-center justify-between">
-              <Text className="font-sans-semibold text-xl text-mindful-brown">{t('goals.title')}</Text>
-              {isAdmin ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t('goals.newGoal')}
-                  className="rounded-xl bg-serenity-green px-4 py-2"
-                  onPress={() => setCreateVisible(true)}
-                >
-                  <Text className="font-sans-semibold text-sm text-light">{t('goals.newGoal')}</Text>
-                </Pressable>
-              ) : null}
-            </View>
-          ) : null
+          <View className="mb-4 flex-row items-center justify-between">
+            <Text className="font-sans-semibold text-xl text-mindful-brown">{t('goals.title')}</Text>
+            {isAdmin ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('goals.newGoal')}
+                className="rounded-xl bg-serenity-green px-4 py-2"
+                onPress={() => setCreateVisible(true)}
+              >
+                <Text className="font-sans-semibold text-sm text-light">{t('goals.newGoal')}</Text>
+              </Pressable>
+            ) : null}
+          </View>
         }
         refreshControl={
           <RefreshControl

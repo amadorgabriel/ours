@@ -22,6 +22,12 @@ jest.mock('@/presentation/providers/auth', () => ({
   }),
 }));
 
+jest.mock('@/presentation/providers/register-activity', () => ({
+  useRegisterActivity: () => ({
+    openRegisterMenu: jest.fn(),
+  }),
+}));
+
 jest.mock('@/presentation/modules/feed/activity-detail-sheet', () => ({
   ActivityDetailSheet: 'ActivityDetailSheet',
 }));

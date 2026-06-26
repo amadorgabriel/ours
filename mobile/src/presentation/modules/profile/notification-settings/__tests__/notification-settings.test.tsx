@@ -17,6 +17,16 @@ jest.mock('@/core/infra/notifications/notification-service', () => ({
   saveReminderSettings: jest.fn(),
 }));
 
+jest.mock('@/presentation/providers/auth', () => ({
+  useAuth: () => ({
+    session: {
+      user: { id: 'user-1', name: 'Ana', email: 'a@b.com' },
+      families: [],
+      familyCount: 1,
+    },
+  }),
+}));
+
 jest.mock('@/core/services/usecases/device/index.hooks', () => ({
   useRegisterDevice: jest.fn(() => ({
     mutateAsync: jest.fn(),

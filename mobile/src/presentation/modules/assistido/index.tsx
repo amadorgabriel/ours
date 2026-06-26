@@ -1,6 +1,7 @@
 import { useRouter, type Href } from 'expo-router';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
+import { requestCreateParentSheet } from '@/core/infra/navigation/create-parent-intent';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { useAuth } from '@/presentation/providers/auth';
 import { useAssistido } from '@/presentation/providers/assistido';
@@ -70,6 +71,7 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
   function handleAdminCreate() {
     onClose();
     router.push('/(app)/(tabs)/profile' as Href);
+    requestCreateParentSheet();
   }
 
   return (
@@ -81,7 +83,7 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
       <Text className="font-sans-semibold text-xl text-mindful-brown">{t('assistido.title')}</Text>
       <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{t('assistido.description')}</Text>
 
-      {!isLoading ? (
+      {!isLoading && !isError && parents.length > 0 ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('assistido.allAccessibility')}

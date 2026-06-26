@@ -8,6 +8,12 @@ const mockSetParentId = jest.fn();
 const mockOnClose = jest.fn();
 const mockPush = jest.fn();
 
+jest.mock('@/core/infra/navigation/create-parent-intent', () => ({
+  requestCreateParentSheet: jest.fn(),
+}));
+
+const { requestCreateParentSheet } = jest.requireMock('@/core/infra/navigation/create-parent-intent');
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
@@ -82,7 +88,7 @@ describe('AssistidoSheet', () => {
     expect(json).toContain('Cadastrar assistido');
   });
 
-  it('navigates to profile when admin taps create CTA', () => {
+  it('navigates to profile and requests create sheet when admin taps create CTA', () => {
     const tree = renderAssistidoSheet({}, { isAdmin: true });
     const createButton = tree.root.findByProps({ accessibilityLabel: 'Cadastrar assistido' });
 
@@ -92,6 +98,7 @@ describe('AssistidoSheet', () => {
 
     expect(mockOnClose).toHaveBeenCalledTimes(1);
     expect(mockPush).toHaveBeenCalledWith('/(app)/(tabs)/profile');
+    expect(requestCreateParentSheet).toHaveBeenCalledTimes(1);
   });
 
   it('selects parent and closes sheet', () => {

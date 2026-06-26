@@ -65,11 +65,19 @@ function SeenByAvatars({ seenBy }: { seenBy: ActivityFeedItem['seenBy'] }) {
       {seenBy.slice(0, 4).map((viewer) => (
         <View
           key={viewer.userId}
-          className="-ml-1 h-6 w-6 items-center justify-center rounded-full border border-white bg-mindful-brown/15"
+          className="-ml-1 h-6 w-6 items-center justify-center overflow-hidden rounded-full border border-white bg-mindful-brown/15"
         >
-          <Text className="font-sans-semibold text-[10px] text-mindful-brown">
-            {viewer.userName.charAt(0).toUpperCase()}
-          </Text>
+          {viewer.picture ? (
+            <Image
+              accessibilityLabel={t('activityCard.seenByPhoto', { name: viewer.userName })}
+              className="h-6 w-6 rounded-full"
+              source={{ uri: viewer.picture }}
+            />
+          ) : (
+            <Text className="font-sans-semibold text-[10px] text-mindful-brown">
+              {viewer.userName.charAt(0).toUpperCase()}
+            </Text>
+          )}
         </View>
       ))}
       <Text className="ml-2 font-sans text-xs text-mindful-brown/60">

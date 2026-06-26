@@ -13,6 +13,7 @@ import { useTranslation } from '@/presentation/hooks/use-translation';
 import { relationshipLabel } from '@/presentation/modules/family/relationship-label';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { DatePickerField } from '@/ui/Forms/DatePickerField';
 
 import { getParentErrorMessage } from '../parents-api-error';
 
@@ -40,7 +41,7 @@ function RelationshipOption({
       accessibilityRole="button"
       accessibilityLabel={t('relationships.accessibility', { label: displayLabel })}
       accessibilityState={{ selected }}
-      className={`mr-2 rounded-full px-4 py-2 ${
+      className={`mb-2 mr-2 rounded-full px-4 py-2 ${
         selected ? 'bg-serenity-green' : 'bg-white'
       }`}
       onPress={onSelect}
@@ -58,6 +59,7 @@ export function CreateParentSheet({ visible, onClose }: CreateParentSheetProps) 
   const [name, setName] = useState('');
   const [relationship, setRelationship] = useState<ParentRelationship>('Pai');
   const [birthDate, setBirthDate] = useState('');
+  const today = new Date();
 
   function handleClose() {
     setName('');
@@ -122,14 +124,12 @@ export function CreateParentSheet({ visible, onClose }: CreateParentSheetProps) 
       </View>
 
       <View className="mt-4">
-        <Text className="font-sans text-sm text-mindful-brown">{t('parents.birthDate')}</Text>
-        <TextInput
+        <DatePickerField
           accessibilityLabel={t('parents.birthDateAccessibility')}
-          className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
-          placeholder={t('parents.birthDatePlaceholder')}
-          placeholderTextColor={colors.mindfulBrown60}
+          label={t('parents.birthDate')}
+          maximumDate={today}
           value={birthDate}
-          onChangeText={setBirthDate}
+          onChange={setBirthDate}
         />
       </View>
 

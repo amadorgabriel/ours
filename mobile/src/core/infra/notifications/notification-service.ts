@@ -42,12 +42,26 @@ export async function getExpoPushToken(): Promise<string | null> {
   }
 }
 
-export async function loadReminderSettings(): Promise<ReminderSettings> {
-  return getReminderSettings();
+export async function loadReminderSettings(userId: string): Promise<ReminderSettings> {
+  return getReminderSettings(userId);
 }
 
-export async function saveReminderSettings(settings: ReminderSettings): Promise<void> {
-  await setReminderSettings(settings);
+export async function saveReminderSettings(
+  userId: string,
+  settings: ReminderSettings
+): Promise<void> {
+  await setReminderSettings(userId, settings);
+
+  if (!settings.enabled) {
+    await cancelDailyCallReminder();
+    return;
+  }
+
+  await scheduleCallReminder(settings);
+}
+
+export async function syncReminderScheduleForUser(userId: string): Promise<void> {
+  const settings = await getReminderSettings(userId);
 
   if (!settings.enabled) {
     await cancelDailyCallReminder();

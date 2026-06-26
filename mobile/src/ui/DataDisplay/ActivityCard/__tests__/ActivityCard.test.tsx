@@ -52,4 +52,32 @@ describe('ActivityCard', () => {
     expect(json).toContain('Visita');
     expect(json).toContain('Foto da visita');
   });
+
+  it('renders seen-by avatars with profile picture when available', () => {
+    const item: ActivityFeedItem = {
+      id: 'act-3',
+      type: 'Call',
+      createdAt: new Date().toISOString(),
+      userId: 'user-1',
+      userName: 'Ana',
+      seenBy: [
+        {
+          userId: 'user-2',
+          userName: 'Bruno',
+          seenAt: new Date().toISOString(),
+          picture: 'https://example.com/bruno.jpg',
+        },
+      ],
+    };
+
+    let tree!: renderer.ReactTestRenderer;
+
+    act(() => {
+      tree = renderer.create(<ActivityCard item={item} />);
+    });
+
+    const json = JSON.stringify(tree.toJSON());
+    expect(json).toContain('https://example.com/bruno.jpg');
+    expect(json).toContain('Visto');
+  });
 });

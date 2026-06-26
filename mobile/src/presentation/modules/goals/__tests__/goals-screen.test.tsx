@@ -88,4 +88,20 @@ describe('GoalsScreen', () => {
 
     expect(emptyText.length).toBeGreaterThan(0);
   });
+
+  it('shows empty state create goal button for admin', () => {
+    let tree!: renderer.ReactTestRenderer;
+
+    act(() => {
+      tree = renderer.create(<GoalsScreen />);
+    });
+
+    const createButton = tree.root.findAll(
+      (node) =>
+        node.props.accessibilityRole === 'button' &&
+        node.props.accessibilityLabel === 'Criar meta'
+    );
+
+    expect(createButton.length).toBeGreaterThan(0);
+  });
 });

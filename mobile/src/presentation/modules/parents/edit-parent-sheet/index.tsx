@@ -50,7 +50,7 @@ function RelationshipOption({
       accessibilityRole="button"
       accessibilityLabel={t('relationships.accessibility', { label: displayLabel })}
       accessibilityState={{ selected }}
-      className={`mr-2 rounded-full px-4 py-2 ${
+      className={`mb-2 mr-2 rounded-full px-4 py-2 ${
         selected ? 'bg-serenity-green' : 'bg-white'
       }`}
       onPress={onSelect}

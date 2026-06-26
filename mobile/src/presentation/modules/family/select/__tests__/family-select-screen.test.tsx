@@ -10,6 +10,10 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
+}));
+
 jest.mock('@/presentation/providers/family', () => ({
   ...jest.requireActual('@/presentation/providers/family'),
   useFamily: () => ({
@@ -47,6 +51,7 @@ jest.mock('@/core/services/usecases/family/index.hooks', () => ({
     data: mockFamilies,
     isLoading: false,
     isError: false,
+    refetch: jest.fn(),
   }),
 }));
 
@@ -76,6 +81,14 @@ function findFamilyButton(tree: renderer.ReactTestRenderer, familyName: string) 
   return match;
 }
 
+function findContinueButton(tree: renderer.ReactTestRenderer) {
+  return tree.root.find(
+    (node) =>
+      node.props.accessibilityRole === 'button' &&
+      node.props.accessibilityLabel === 'Continuar com família selecionada'
+  );
+}
+
 describe('FamilySelectScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -90,14 +103,34 @@ describe('FamilySelectScreen', () => {
     expect(json).toContain('Família B');
     expect(json).toContain('Administrador');
     expect(json).toContain('Membro');
+    expect(json).toContain('Continuar');
   });
 
-  it('sets active family and navigates home on select', () => {
+  it('selects a family card without navigating immediately', () => {
     const tree = renderFamilySelectScreen();
     const familyButton = findFamilyButton(tree, 'Família B');
 
     act(() => {
       familyButton.props.onPress();
+    });
+
+    expect(mockSetFamilyId).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+    expect(familyButton.props.accessibilityState).toEqual({ selected: true });
+  });
+
+  it('sets active family and navigates home on continue', () => {
+    const tree = renderFamilySelectScreen();
+    const familyButton = findFamilyButton(tree, 'Família B');
+
+    act(() => {
+      familyButton.props.onPress();
+    });
+
+    const continueButton = findContinueButton(tree);
+
+    act(() => {
+      continueButton.props.onPress();
     });
 
     expect(mockSetFamilyId).toHaveBeenCalledWith('f2');

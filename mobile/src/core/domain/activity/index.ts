@@ -12,6 +12,7 @@ export type ActivitySeenBy = {
   userId: string;
   userName: string;
   seenAt: string;
+  picture?: string;
 };
 
 export type ActivityFeedItem = {
