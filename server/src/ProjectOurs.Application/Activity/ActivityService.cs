@@ -535,7 +535,7 @@ public sealed class ActivityService(
         }
 
         IReadOnlyList<ActivitySeenByDto>? seenBy = views?
-            .Select(v => new ActivitySeenByDto(v.UserId.ToString(), v.UserName, v.SeenAt))
+            .Select(v => new ActivitySeenByDto(v.UserId.ToString(), v.UserName, v.SeenAt, v.UserPicture))
             .ToList();
 
         return new ActivityFeedItemDto(

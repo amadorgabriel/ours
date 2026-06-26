@@ -10,7 +10,7 @@ public sealed record RegisterVisitRequest(
     string? PhotoBase64,
     string? MimeType);
 
-public sealed record ActivitySeenByDto(string UserId, string UserName, DateTimeOffset SeenAt);
+public sealed record ActivitySeenByDto(string UserId, string UserName, DateTimeOffset SeenAt, string? UserPicture = null);
 
 public sealed record ActivityFeedItemDto(
     string Id,

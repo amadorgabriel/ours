@@ -27,6 +27,15 @@ export type UpdateParentRequest = CreateParentRequest & {
   emergencyBriefing?: string;
 };
 
-export const PARENT_RELATIONSHIPS = ['Pai', 'Mãe', 'Outro'] as const;
+export const PARENT_RELATIONSHIPS = [
+  'Pai',
+  'Mãe',
+  'Avô(a)',
+  'Tio(a)',
+  'Irmão(a)',
+  'Primo(a)',
+  'Cônjuge',
+  'Outro',
+] as const;
 
 export type ParentRelationship = (typeof PARENT_RELATIONSHIPS)[number];

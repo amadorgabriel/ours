@@ -186,7 +186,7 @@ public sealed class ActivityRepository(ApplicationDbContext db) : IActivityRepos
             .ToDictionary(
                 g => g.Key,
                 g => (IReadOnlyList<ActivityViewInfo>)g
-                    .Select(v => new ActivityViewInfo(v.UserId, v.User.Name, v.SeenAt))
+                    .Select(v => new ActivityViewInfo(v.UserId, v.User.Name, v.SeenAt, v.User.Picture))
                     .ToList());
     }
 

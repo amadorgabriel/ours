@@ -51,4 +51,4 @@ public interface IActivityRepository
         CancellationToken cancellationToken = default);
 }
 
-public sealed record ActivityViewInfo(Guid UserId, string UserName, DateTimeOffset SeenAt);
+public sealed record ActivityViewInfo(Guid UserId, string UserName, DateTimeOffset SeenAt, string? UserPicture = null);
