@@ -115,6 +115,7 @@ export function AssistidoPickerField({
         visible={pickerVisible}
         onClose={() => setPickerVisible(false)}
         accessibilityLabel={t('assistidoPicker.sheetAccessibility')}
+        scrollable
       >
         <Text className="font-sans-semibold text-xl text-mindful-brown">
           {t('assistidoPicker.sheetTitle')}

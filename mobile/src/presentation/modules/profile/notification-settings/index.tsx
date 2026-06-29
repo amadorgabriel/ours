@@ -116,22 +116,26 @@ export function NotificationSettings() {
 
   if (loading) {
     return (
-      <View className="mt-4 items-center rounded-2xl bg-white p-5">
-        <ActivityIndicator color={colors.serenityGreen60} />
+      <View className="mt-4 items-center rounded-2xl bg-mindful-brown/10 p-5">
+        <ActivityIndicator color={colors.mindfulBrown60} />
       </View>
     );
   }
 
   return (
-    <View className="mt-4 rounded-2xl bg-white p-5">
-      <Text className="font-sans-semibold text-lg text-mindful-brown">{t('notifications.title')}</Text>
-      <Text className="mt-1 font-sans text-sm text-mindful-brown/70">{t('notifications.description')}</Text>
+    <View className="mt-4 rounded-2xl bg-mindful-brown/10 p-5">
+      <Text className="font-sans-semibold text-lg text-mindful-brown/60">{t('notifications.title')}</Text>
+      <Text className="mt-1 font-sans text-sm text-mindful-brown/50">{t('notifications.description')}</Text>
 
-      <View className="mt-4 flex-row items-center justify-between">
-        <Text className="font-sans text-mindful-brown">{t('notifications.reminders')}</Text>
+      <View className="mt-4 flex-row items-center justify-between rounded-xl bg-mindful-brown/8 px-4 py-3">
+        <View className="flex-1 pr-4">
+          <Text className="font-sans text-sm text-mindful-brown/60">{t('notifications.reminders')}</Text>
+        </View>
         <Switch
           accessibilityLabel={t('notifications.remindersAccessibility')}
           disabled={saving}
+          trackColor={{ false: colors.mindfulBrown60, true: colors.serenityGreen60 }}
+          thumbColor={colors.textLight}
           value={settings.enabled}
           onValueChange={(value) => {
             void handleToggle(value);
@@ -142,7 +146,7 @@ export function NotificationSettings() {
       {settings.enabled ? (
         <>
           <View className="mt-4">
-            <Text className="font-sans text-sm text-mindful-brown/70">{t('notifications.frequency')}</Text>
+            <Text className="font-sans text-sm text-mindful-brown/50">{t('notifications.frequency')}</Text>
             <View className="mt-2 flex-row flex-wrap gap-2">
               {frequencyOptions.map((option) => {
                 const label = t(option.labelKey);
@@ -177,7 +181,7 @@ export function NotificationSettings() {
 
           {settings.frequency === 'custom' ? (
             <View className="mt-4">
-              <Text className="font-sans text-sm text-mindful-brown/70">
+              <Text className="font-sans text-sm text-mindful-brown/50">
                 {t('notifications.customInterval')}
               </Text>
               <View className="mt-2 flex-row flex-wrap gap-2">
@@ -212,7 +216,7 @@ export function NotificationSettings() {
           ) : null}
 
           <View className="mt-4">
-            <Text className="font-sans text-sm text-mindful-brown/70">
+            <Text className="font-sans text-sm text-mindful-brown/50">
               {t('notifications.reminderTime')}
             </Text>
             <View className="mt-2 flex-row flex-wrap gap-2">
@@ -251,7 +255,7 @@ export function NotificationSettings() {
       ) : null}
 
       {statusMessage ? (
-        <Text className="mt-3 font-sans text-sm text-mindful-brown/70">{statusMessage}</Text>
+        <Text className="mt-3 font-sans text-sm text-mindful-brown/50">{statusMessage}</Text>
       ) : null}
     </View>
   );

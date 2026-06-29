@@ -19,3 +19,5 @@ jest.mock('@react-native-community/datetimepicker', () => {
     default: View,
   };
 });
+
+jest.mock('@gorhom/bottom-sheet');

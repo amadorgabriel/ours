@@ -1,18 +1,22 @@
-import type { ReactNode } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
 import {
-  Animated,
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
+import type { ReactElement, ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Dimensions,
   Keyboard,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  View,
+  StyleSheet,
+  type RefreshControlProps,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@/presentation/hooks/use-translation';
+import { colors } from '@/presentation/styles/tokens';
 
 export type BottomSheetProps = {
   visible: boolean;
@@ -20,10 +24,11 @@ export type BottomSheetProps = {
   children: ReactNode;
   accessibilityLabel?: string;
   scrollable?: boolean;
+  refreshControl?: ReactElement<RefreshControlProps>;
+  enablePanDownToClose?: boolean;
 };
 
-const SHEET_ANIMATION_MS = 280;
-const BACKDROP_FADE_MS = 150;
+const MAX_SHEET_HEIGHT_RATIO = 0.9;
 
 export function BottomSheet({
   visible,
@@ -31,105 +36,120 @@ export function BottomSheet({
   children,
   accessibilityLabel,
   scrollable = false,
+  refreshControl,
+  enablePanDownToClose = true,
 }: BottomSheetProps) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const sheetTranslateY = useRef(new Animated.Value(400)).current;
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
-  const [modalVisible, setModalVisible] = useState(visible);
+  const sheetRef = useRef<BottomSheetModal>(null);
+  const [mounted, setMounted] = useState(visible);
 
-  useEffect(() => {
-    if (visible) {
-      setModalVisible(true);
-      backdropOpacity.setValue(1);
-      sheetTranslateY.setValue(400);
-      Animated.timing(sheetTranslateY, {
-        toValue: 0,
-        duration: SHEET_ANIMATION_MS,
-        useNativeDriver: true,
-      }).start();
-      return;
-    }
-
-    if (!modalVisible) {
-      return;
-    }
-
-    Animated.parallel([
-      Animated.timing(sheetTranslateY, {
-        toValue: 400,
-        duration: SHEET_ANIMATION_MS,
-        useNativeDriver: true,
-      }),
-      Animated.timing(backdropOpacity, {
-        toValue: 0,
-        duration: BACKDROP_FADE_MS,
-        useNativeDriver: true,
-      }),
-    ]).start(({ finished }) => {
-      if (finished) {
-        setModalVisible(false);
-      }
-    });
-  }, [backdropOpacity, modalVisible, sheetTranslateY, visible]);
-
-  useEffect(() => {
-    if (!visible && !modalVisible) {
-      Keyboard.dismiss();
-    }
-  }, [modalVisible, visible]);
+  const maxDynamicContentSize = Dimensions.get('window').height * MAX_SHEET_HEIGHT_RATIO;
 
   const panelLabel = accessibilityLabel ?? t('bottomSheet.panel');
   const closeLabel = t('bottomSheet.close');
 
-  const content = scrollable ? (
-    <ScrollView
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      nestedScrollEnabled
-    >
-      {children}
-    </ScrollView>
-  ) : (
-    children
+  useEffect(() => {
+    if (visible) {
+      setMounted(true);
+      return;
+    }
+
+    if (mounted) {
+      sheetRef.current?.dismiss();
+    }
+  }, [mounted, visible]);
+
+  useEffect(() => {
+    if (!visible || !mounted) {
+      return;
+    }
+
+    sheetRef.current?.present();
+  }, [mounted, visible]);
+
+  useEffect(() => {
+    return () => {
+      sheetRef.current?.dismiss();
+    };
+  }, []);
+
+  const handleDismiss = useCallback(() => {
+    Keyboard.dismiss();
+    setMounted(false);
+    onClose();
+  }, [onClose]);
+
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        accessibilityLabel={closeLabel}
+        accessibilityRole="button"
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        opacity={0.4}
+        pressBehavior="close"
+      />
+    ),
+    [closeLabel]
   );
 
+  const contentPadding = {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: insets.bottom + 24,
+  };
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <Modal
-      animationType="none"
-      transparent
-      visible={modalVisible}
-      onRequestClose={onClose}
-      accessibilityViewIsModal
+    <BottomSheetModal
+      ref={sheetRef}
+      accessibilityLabel={panelLabel}
+      android_keyboardInputMode="adjustResize"
+      backdropComponent={renderBackdrop}
+      backgroundStyle={styles.background}
+      enableDynamicSizing
+      enablePanDownToClose={enablePanDownToClose}
+      handleIndicatorStyle={styles.handleIndicator}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      maxDynamicContentSize={maxDynamicContentSize}
+      stackBehavior="push"
+      onDismiss={handleDismiss}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1 justify-end"
-        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
-      >
-        <Animated.View
-          pointerEvents="none"
-          className="absolute inset-0 bg-black/40"
-          style={{ opacity: backdropOpacity }}
-        />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={closeLabel}
-          className="absolute inset-0"
-          onPress={onClose}
-        />
-        <Animated.View style={{ transform: [{ translateY: sheetTranslateY }] }}>
-          <Pressable
-            accessibilityLabel={panelLabel}
-            className="rounded-t-3xl bg-cream px-6 pt-3"
-            style={{ paddingBottom: insets.bottom + 24 }}
-            onPress={(event) => event.stopPropagation()}
-          >
-            <View className="mb-4 h-1 w-10 self-center rounded-full bg-mindful-brown/20" />
-            {content}
-          </Pressable>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </Modal>
+      {scrollable ? (
+        <BottomSheetScrollView
+          accessibilityLabel={panelLabel}
+          accessible
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          refreshControl={refreshControl}
+          contentContainerStyle={contentPadding}
+        >
+          {children}
+        </BottomSheetScrollView>
+      ) : (
+        <BottomSheetView accessibilityLabel={panelLabel} accessible style={contentPadding}>
+          {children}
+        </BottomSheetView>
+      )}
+    </BottomSheetModal>
   );
 }
+
+const styles = StyleSheet.create({
+  background: {
+    backgroundColor: colors.bgCream,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  handleIndicator: {
+    width: 40,
+    height: 4,
+    backgroundColor: `${colors.mindfulBrown60}33`,
+  },
+});

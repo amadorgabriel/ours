@@ -1,5 +1,6 @@
+import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useEffect, useMemo, useRef } from 'react';
-import { FlatList, Text, useWindowDimensions, View } from 'react-native';
+import { Text, useWindowDimensions, View } from 'react-native';
 import PagerView from 'react-native-pager-view';
 
 import type { ActivityFeedItem } from '@/core/domain/activity';
@@ -70,11 +71,10 @@ function DayActivities({
   }
 
   return (
-    <FlatList
+    <BottomSheetFlatList
       data={items}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => <ActivityCard item={item} />}
-      nestedScrollEnabled
       showsVerticalScrollIndicator
       style={{ maxHeight: listMaxHeight }}
     />

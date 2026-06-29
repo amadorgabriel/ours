@@ -13,6 +13,7 @@
     },
     "android": {
       "package": "com.projectours.app",
+      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#FCF8F4",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

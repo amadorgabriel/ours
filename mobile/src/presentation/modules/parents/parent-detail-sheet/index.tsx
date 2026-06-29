@@ -4,7 +4,6 @@ import {
   Keyboard,
   Pressable,
   RefreshControl,
-  ScrollView,
   Text,
   TextInput,
   View,
@@ -112,6 +111,18 @@ export function ParentDetailSheet({
       visible={visible}
       onClose={handleClose}
       accessibilityLabel={t('parents.detailAccessibility')}
+      scrollable={!isLoading && !isError && !!parent}
+      refreshControl={
+        !isEditing && !isLoading && !isError && parent ? (
+          <RefreshControl
+            refreshing={isRefetching}
+            tintColor={colors.serenityGreen60}
+            onRefresh={() => {
+              void refetch();
+            }}
+          />
+        ) : undefined
+      }
     >
       {isLoading ? (
         <View className="items-center py-10">
@@ -126,21 +137,7 @@ export function ParentDetailSheet({
           }}
         />
       ) : (
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            isEditing ? undefined : (
-              <RefreshControl
-                refreshing={isRefetching}
-                tintColor={colors.serenityGreen60}
-                onRefresh={() => {
-                  void refetch();
-                }}
-              />
-            )
-          }
-        >
+        <>
           <View className="flex-row items-start justify-between">
             <View className="flex-1 pr-3">
               <Text className="font-sans-semibold text-xl text-mindful-brown">{parent.name}</Text>
@@ -244,7 +241,7 @@ export function ParentDetailSheet({
               />
             </>
           )}
-        </ScrollView>
+        </>
       )}
     </BottomSheet>
   );

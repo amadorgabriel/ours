@@ -21,7 +21,7 @@ describe('BottomSheet', () => {
     expect(tree.toJSON()).not.toBeNull();
   });
 
-  it('renders nothing meaningful when hidden', () => {
+  it('renders nothing when hidden', () => {
     let tree!: renderer.ReactTestRenderer;
 
     act(() => {
@@ -35,7 +35,7 @@ describe('BottomSheet', () => {
     expect(tree.toJSON()).toBeNull();
   });
 
-  it('calls onClose when backdrop is pressed', () => {
+  it('calls onClose when modal dismisses', () => {
     const onClose = jest.fn();
     let tree!: renderer.ReactTestRenderer;
 
@@ -47,14 +47,28 @@ describe('BottomSheet', () => {
       );
     });
 
-    const backdrop = tree.root.find(
-      (node) => node.props.accessibilityLabel === 'Fechar' && node.props.onPress
-    );
+    const modal = tree.root.find((node) => node.props.onDismiss);
 
     act(() => {
-      backdrop.props.onPress();
+      modal.props.onDismiss();
     });
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses BottomSheetScrollView when scrollable', () => {
+    let tree!: renderer.ReactTestRenderer;
+
+    act(() => {
+      tree = renderer.create(
+        <BottomSheet visible onClose={jest.fn()} scrollable>
+          <></>
+        </BottomSheet>
+      );
+    });
+
+    expect(
+      tree.root.findAll((node) => node.props.keyboardShouldPersistTaps === 'handled').length
+    ).toBeGreaterThan(0);
   });
 });

@@ -79,6 +79,7 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
       visible={visible}
       onClose={onClose}
       accessibilityLabel={t('assistido.sheetAccessibility')}
+      scrollable
     >
       <Text className="font-sans-semibold text-xl text-mindful-brown">{t('assistido.title')}</Text>
       <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{t('assistido.description')}</Text>
@@ -139,14 +140,18 @@ export function AssistidoSheet({ visible, onClose }: AssistidoSheetProps) {
 
       {!isLoading &&
         !isError &&
-        parents.map((parent) => (
-          <ParentListItem
-            key={parent.id}
-            parent={parent}
-            isSelected={parent.id === parentId}
-            onSelect={() => handleSelect(parent.id)}
-          />
-        ))}
+        parents.length > 0 ? (
+          <View className="mt-2">
+            {parents.map((parent) => (
+              <ParentListItem
+                key={parent.id}
+                parent={parent}
+                isSelected={parent.id === parentId}
+                onSelect={() => handleSelect(parent.id)}
+              />
+            ))}
+          </View>
+        ) : null}
     </BottomSheet>
   );
 }

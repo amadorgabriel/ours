@@ -152,7 +152,7 @@ export function LoginScreen() {
           accessibilityLabel={t('auth.logoAccessibility')}
           resizeMode="contain"
           source={require('@/assets/images/logo-ours.png')}
-          style={{ height: 88, width: 88 }}
+          style={{ height: 112, width: 112 }}
         />
 
         <Text className="mt-8 font-sans-semibold text-4xl text-mindful-brown">{t('auth.appName')}</Text>

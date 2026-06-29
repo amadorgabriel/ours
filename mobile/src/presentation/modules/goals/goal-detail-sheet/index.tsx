@@ -3,9 +3,7 @@ import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
-  ScrollView,
   Text,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,7 +35,6 @@ type GoalDetailSheetProps = {
 };
 
 const ICON_HIT_SLOP = { top: 12, bottom: 12, left: 12, right: 12 };
-const SHEET_CHROME_HEIGHT = 80;
 
 function formatCurrency(value: number): string {
   return value.toLocaleString('pt-BR', {
@@ -125,7 +122,6 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
   const { alert } = useAppAlert();
   const { session } = useAuth();
   const { familyId } = useFamily();
-  const { height: windowHeight } = useWindowDimensions();
   const [contributeVisible, setContributeVisible] = useState(false);
   const [editingContribution, setEditingContribution] = useState<GoalContribution | null>(null);
   const { data: goalsData, refetch: refetchGoals } = useGoals();
@@ -149,7 +145,6 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
   const isAdmin = activeFamily?.role === 'Admin';
   const canDeleteGoal =
     session?.user.id === liveGoal.createdBy || isAdmin;
-  const scrollMaxHeight = windowHeight * 0.9 - SHEET_CHROME_HEIGHT;
 
   function handleRefresh() {
     void refetchGoals();
@@ -206,19 +201,16 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
         visible={visible}
         onClose={onClose}
         accessibilityLabel={t('goals.detailAccessibility')}
+        scrollable
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            tintColor={colors.serenityGreen60}
+            onRefresh={handleRefresh}
+          />
+        }
       >
-        <ScrollView
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefetching}
-              tintColor={colors.serenityGreen60}
-              onRefresh={handleRefresh}
-            />
-          }
-          showsVerticalScrollIndicator
-          style={{ maxHeight: scrollMaxHeight }}
-        >
-          <View className="flex-row items-start justify-between">
+        <View className="flex-row items-start justify-between">
             <View className="flex-1 pr-3">
               <Text className="font-sans-semibold text-xl text-mindful-brown">{liveGoal.title}</Text>
               <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
@@ -285,7 +277,6 @@ export function GoalDetailSheet({ visible, goal, onClose }: GoalDetailSheetProps
               />
             ))
           )}
-        </ScrollView>
       </BottomSheet>
 
       <ContributeSheet
