@@ -11,7 +11,7 @@ import { RegisterActivityProvider } from '@/presentation/providers/register-acti
 import { useActivityUnreadCount } from '@/core/services/usecases/activity/index.hooks';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
-import { WaveTabBar } from '@/ui/Navigation/WaveTabBar';
+import { WaveTabBar, type WaveTabBarProps } from '@/ui/Navigation/WaveTabBar';
 
 export default function AppTabsLayout() {
   const unreadCount = useActivityUnreadCount();
@@ -24,31 +24,39 @@ export default function AppTabsLayout() {
           <AppHeader />
           <View className="relative flex-1">
             <InAppReminderBannerHost />
-            <Tabs
-              layout={({ state, navigation, descriptors }) => (
-                <TabPagerLayout
-                  descriptors={descriptors}
-                  navigation={navigation}
-                  state={state}
-                />
-              )}
-              screenOptions={{
-                headerShown: false,
-                sceneStyle: { backgroundColor: colors.bgCream },
-              }}
-              tabBar={(props) => <WaveTabBar {...props} />}
-            >
-              <Tabs.Screen
-                name="index"
-                options={{
-                  title: t('tabs.activities'),
-                  tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+            <View className="flex-1">
+              <Tabs
+                layout={({ state, navigation, descriptors }) => (
+                  <View className="flex-1">
+                    <TabPagerLayout
+                      descriptors={descriptors}
+                      navigation={navigation}
+                      state={state}
+                    />
+                    <WaveTabBar
+                      descriptors={descriptors as WaveTabBarProps['descriptors']}
+                      navigation={navigation as WaveTabBarProps['navigation']}
+                      state={state}
+                    />
+                  </View>
+                )}
+                screenOptions={{
+                  headerShown: false,
+                  sceneStyle: { backgroundColor: colors.bgCream },
                 }}
-              />
-              <Tabs.Screen name="calendar" options={{ title: t('tabs.calendar') }} />
-              <Tabs.Screen name="goals" options={{ title: t('tabs.goals') }} />
-              <Tabs.Screen name="profile" options={{ title: t('tabs.profile') }} />
-            </Tabs>
+              >
+                <Tabs.Screen
+                  name="index"
+                  options={{
+                    title: t('tabs.activities'),
+                    tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+                  }}
+                />
+                <Tabs.Screen name="calendar" options={{ title: t('tabs.calendar') }} />
+                <Tabs.Screen name="goals" options={{ title: t('tabs.goals') }} />
+                <Tabs.Screen name="profile" options={{ title: t('tabs.profile') }} />
+              </Tabs>
+            </View>
             <RegisterActivityFab />
           </View>
           <CreateParentHost />

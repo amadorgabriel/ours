@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
 
@@ -8,7 +8,6 @@ import { colors } from '@/presentation/styles/tokens';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 
 import {
-  ACTIVE_TAB_CIRCLE_SIZE,
   tabItems,
   WAVE_TAB_BAR_HEIGHT,
 } from './tab-config';
@@ -65,43 +64,50 @@ export function WaveTabBar({ state, navigation, descriptors }: WaveTabBarProps) 
           }
         }}
       >
-        {isFocused ? (
-          <View
-            className="items-center justify-center rounded-full bg-serenity-green/20"
-            style={{ height: ACTIVE_TAB_CIRCLE_SIZE, width: ACTIVE_TAB_CIRCLE_SIZE }}
+        <View className="items-center">
+          <View>
+            <Ionicons
+              color={isFocused ? colors.serenityGreen60 : colors.mindfulBrown60}
+              name={iconName}
+              size={isFocused ? 22 : 24}
+            />
+            {showBadge ? (
+              <View className="absolute -right-2 -top-2 min-h-[16px] min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1">
+                <Text className="font-sans-semibold text-[10px] text-light">
+                  {formatBadgeLabel(badge as string | number)}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+          <Text
+            className={`mt-0.5 font-sans text-[10px] ${
+              isFocused ? 'font-sans-semibold text-serenity-green' : 'text-mindful-brown/70'
+            }`}
           >
-            <View>
-              <Ionicons color={colors.serenityGreen60} name={iconName} size={22} />
-              {showBadge ? (
-                <View className="absolute -right-2 -top-2 min-h-[16px] min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1">
-                  <Text className="font-sans-semibold text-[10px] text-light">
-                    {formatBadgeLabel(badge as string | number)}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          </View>
-        ) : (
-          <View className="items-center">
-            <View>
-              <Ionicons color={colors.mindfulBrown60} name={iconName} size={24} />
-              {showBadge ? (
-                <View className="absolute -right-2 -top-1 min-h-[16px] min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1">
-                  <Text className="font-sans-semibold text-[10px] text-light">
-                    {formatBadgeLabel(badge as string | number)}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-            <Text className="mt-0.5 font-sans text-[10px] text-mindful-brown/70">{label}</Text>
-          </View>
-        )}
+            {label}
+          </Text>
+        </View>
       </Pressable>
     );
   }
 
   return (
-    <View className="bg-cream" style={{ paddingBottom: insets.bottom }}>
+    <View
+      className="bg-white"
+      style={{
+        paddingBottom: insets.bottom,
+        ...Platform.select({
+          ios: {
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -2 },
+            shadowOpacity: 0.08,
+            shadowRadius: 8,
+          },
+          android: { elevation: 12 },
+          default: {},
+        }),
+      }}
+    >
       <View style={{ height: WAVE_TAB_BAR_HEIGHT }}>
         <WaveBarBackground />
         <View className="absolute inset-0 flex-row items-center px-1">

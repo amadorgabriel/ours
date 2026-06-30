@@ -1,8 +1,6 @@
 import { useWindowDimensions } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { colors } from '@/presentation/styles/tokens';
-
 import { WAVE_TAB_BAR_HEIGHT } from './tab-config';
 
 type WaveBarBackgroundProps = {
@@ -22,7 +20,7 @@ export function WaveBarBackground({ height = WAVE_TAB_BAR_HEIGHT }: WaveBarBackg
 
   return (
     <Svg height={height} style={{ position: 'absolute', left: 0, right: 0, top: 0 }} width={width}>
-      <Path d={path} fill={colors.bgCream} stroke="rgba(107,88,67,0.08)" strokeWidth={1} />
+      <Path d={path} fill="#FFFFFF" stroke="rgba(107,88,67,0.12)" strokeWidth={1} />
     </Svg>
   );
 }
