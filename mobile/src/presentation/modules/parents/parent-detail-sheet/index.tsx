@@ -5,7 +5,6 @@ import {
   Pressable,
   RefreshControl,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
@@ -17,6 +16,7 @@ import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
 import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
+import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
 import { getParentErrorMessage } from '../parents-api-error';
 
@@ -176,7 +176,7 @@ export function ParentDetailSheet({
                 <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
                   {t('parents.medicalInfoDescription')}
                 </Text>
-                <TextInput
+                <SheetTextInput
                   accessibilityLabel={t('parents.medicalInfoAccessibility')}
                   className="mt-2 min-h-[120px] rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
                   multiline
@@ -195,7 +195,7 @@ export function ParentDetailSheet({
                 <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
                   {t('parents.emergencyBriefingDescription')}
                 </Text>
-                <TextInput
+                <SheetTextInput
                   accessibilityLabel={t('parents.emergencyBriefingAccessibility')}
                   className="mt-2 min-h-[120px] rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
                   multiline

@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Pressable,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
@@ -17,6 +16,7 @@ import {
   AssistidoPickerField,
   resolveInitialFormParentId,
 } from '@/ui/Forms/AssistidoPickerField';
+import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
 type CallNowSheetProps = {
   visible: boolean;
@@ -85,7 +85,7 @@ export function CallNowSheet({ visible, onClose }: CallNowSheetProps) {
 
       <View className="mt-4">
         <Text className="font-sans text-sm text-mindful-brown">{t('call.notes')}</Text>
-        <TextInput
+        <SheetTextInput
           accessibilityLabel={t('call.notesAccessibility')}
           className="mt-2 min-h-[96px] rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           maxLength={MAX_NOTES_LENGTH}

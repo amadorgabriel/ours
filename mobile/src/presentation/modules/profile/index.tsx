@@ -9,8 +9,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import type { ParentSummary } from '@/core/domain/parent';
 import { requestCreateParentSheet } from '@/core/infra/navigation/create-parent-intent';
 import { useLogout } from '@/core/services/usecases/auth/index.hooks';
@@ -19,6 +17,7 @@ import {
   useRemoveFamilyMember,
 } from '@/core/services/usecases/family/index.hooks';
 import { useParents } from '@/core/services/usecases/parent/index.hooks';
+import { useListBottomPadding } from '@/presentation/modules/app-shell/list-bottom-padding';
 import { InviteSheet } from '@/presentation/modules/family/invite';
 import { getRemoveMemberErrorMessage } from '@/presentation/modules/family/family-api-error';
 import { roleLabel } from '@/presentation/modules/family/role-label';
@@ -95,7 +94,7 @@ function ParentListItem({
 
 export function ProfileScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const listBottomPadding = useListBottomPadding();
   const { t } = useTranslation();
   const { alert } = useAppAlert();
   const { session } = useAuth();
@@ -251,8 +250,8 @@ export function ProfileScreen() {
     <>
       <ScrollView
         className="flex-1 bg-cream"
-        contentContainerClassName="grow px-6 py-8"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+        contentContainerClassName="grow"
+        contentContainerStyle={{ padding: 16, paddingBottom: listBottomPadding }}
         refreshControl={
           <RefreshControl
             refreshing={parentsRefetching}
@@ -263,9 +262,9 @@ export function ProfileScreen() {
           />
         }
       >
-        <Text className="font-sans-semibold text-2xl text-mindful-brown">{t('profile.title')}</Text>
+        <Text className="mb-4 font-sans-semibold text-xl text-mindful-brown">{t('profile.title')}</Text>
 
-        <View className="mt-8 rounded-2xl bg-white p-5">
+        <View className="rounded-2xl bg-white p-5">
           <View className="flex-row items-center">
             {userPicture ? (
               <Image
@@ -467,7 +466,7 @@ export function ProfileScreen() {
           </Pressable>
         )}
 
-        <View className="mt-auto pt-8">
+        <View className="mt-6">
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('profile.logoutAccessibility')}

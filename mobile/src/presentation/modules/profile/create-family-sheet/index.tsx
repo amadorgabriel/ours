@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 import { useCreateFamily } from '@/core/services/usecases/family/index.hooks';
 import { getFamilyErrorMessage } from '@/presentation/modules/family/family-api-error';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
 type CreateFamilySheetProps = {
   visible: boolean;
@@ -52,7 +53,7 @@ export function CreateFamilySheet({ visible, onClose }: CreateFamilySheetProps) 
       </Text>
 
       <Text className="mt-6 font-sans text-sm text-mindful-brown">{t('profile.familyName')}</Text>
-      <TextInput
+      <SheetTextInput
         accessibilityLabel={t('profile.familyNameAccessibility')}
         className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
         maxLength={100}

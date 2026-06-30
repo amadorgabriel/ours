@@ -1,4 +1,5 @@
 const React = require('react');
+const { TextInput } = require('react-native');
 
 const BottomSheetModal = React.forwardRef(({ children, onDismiss }, ref) => {
   React.useImperativeHandle(ref, () => ({
@@ -21,6 +22,8 @@ function BottomSheetView({ children, ...props }) {
   return React.createElement('View', props, children);
 }
 
+const BottomSheetTextInput = TextInput;
+
 module.exports = {
   BottomSheetModal,
   BottomSheetModalProvider,
@@ -28,4 +31,5 @@ module.exports = {
   BottomSheetView,
   BottomSheetFlatList: BottomSheetScrollView,
   BottomSheetBackdrop: 'View',
+  BottomSheetTextInput,
 };

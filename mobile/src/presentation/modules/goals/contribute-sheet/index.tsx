@@ -4,7 +4,6 @@ import {
   Pressable,
   Switch,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
@@ -18,6 +17,7 @@ import {
   AssistidoPickerField,
   resolveInitialFormParentId,
 } from '@/ui/Forms/AssistidoPickerField';
+import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
 import { getContributionErrorMessage } from '../goals-api-error';
 
@@ -98,7 +98,7 @@ export function ContributeSheet({ visible, goalId, onClose }: ContributeSheetPro
 
       <View className="mt-4">
         <Text className="font-sans text-sm text-mindful-brown">{t('goals.amount')}</Text>
-        <TextInput
+        <SheetTextInput
           accessibilityLabel={t('goals.amountAccessibility')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           keyboardType="decimal-pad"

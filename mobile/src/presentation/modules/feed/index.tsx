@@ -1,178 +1,179 @@
-import { useCallback, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
-import type { ViewToken } from 'react-native';
-
-import type { ActivityFeedItem } from '@/core/domain/activity';
-import { canEditActivity } from '@/core/services/usecases/activity/activity-edit-window';
-import {
-  useActivityFeed,
-  useMarkActivitySeen,
-} from '@/core/services/usecases/activity/index.hooks';
-import { useListBottomPadding } from '@/presentation/modules/app-shell/list-bottom-padding';
-import { ActivityDetailSheet } from '@/presentation/modules/feed/activity-detail-sheet';
-import { useTranslation } from '@/presentation/hooks/use-translation';
-import { useAuth } from '@/presentation/providers/auth';
-import { useRegisterActivity } from '@/presentation/providers/register-activity';
-import { colors } from '@/presentation/styles/tokens';
-import { ActivityCard } from '@/ui/DataDisplay/ActivityCard';
-import { EmptyState } from '@/ui/Feedback/EmptyState';
-import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
-
-export function FeedScreen() {
-  const { t } = useTranslation();
-  const { session } = useAuth();
-  const { openRegisterMenu } = useRegisterActivity();
-  const listBottomPadding = useListBottomPadding();
-  const { data, isLoading, isError, isRefetching, refetch } = useActivityFeed();
-  const markSeen = useMarkActivitySeen();
-  const markedIdsRef = useRef(new Set<string>());
-  const pendingSeenIdsRef = useRef(new Set<string>());
-  const [selectedActivity, setSelectedActivity] = useState<ActivityFeedItem | null>(null);
-  const items = data?.items ?? [];
-  const currentUserId = session?.user.id;
-
-  const handleViewableItemsChanged = useCallback(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      for (const token of viewableItems) {
-        const item = token.item as ActivityFeedItem;
-        if (
-          !item?.id ||
-          markedIdsRef.current.has(item.id) ||
-          pendingSeenIdsRef.current.has(item.id)
-        ) {
-          continue;
-        }
-
-        pendingSeenIdsRef.current.add(item.id);
-        markSeen.mutate(item.id, {
-          onSuccess: () => {
-            markedIdsRef.current.add(item.id);
-            pendingSeenIdsRef.current.delete(item.id);
-          },
-          onError: () => {
-            pendingSeenIdsRef.current.delete(item.id);
-          },
-        });
-      }
-    },
-    [markSeen]
-  );
-
-  if (isLoading && items.length === 0) {
-    return (
-      <View className="flex-1 items-center justify-center bg-cream">
-        <ActivityIndicator color={colors.serenityGreen60} />
-      </View>
-    );
-  }
-
-  if (isError && items.length === 0) {
-    return (
-      <View className="flex-1 bg-cream">
-        <QueryErrorState
-          message={t('feed.loadError')}
-          onRetry={() => {
-            void refetch();
-          }}
-        />
-      </View>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <View className="flex-1 bg-cream">
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="grow px-4 pt-4"
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefetching}
-              tintColor={colors.serenityGreen60}
-              onRefresh={() => {
-                void refetch();
-              }}
-            />
-          }
-        >
-          <Text className="mb-4 font-sans-semibold text-xl text-mindful-brown">{t('feed.title')}</Text>
-          <EmptyState
-            title={t('feed.emptyTitle')}
-            description={t('feed.emptyDescription')}
-            actionLabel={t('fab.registerActivity')}
-            onAction={openRegisterMenu}
-          />
-        </ScrollView>
-      </View>
-    );
-  }
-
-  return (
-    <View className="flex-1 bg-cream">
-      <FlatList
-        contentContainerStyle={{ padding: 16, paddingBottom: listBottomPadding }}
-        data={items}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={
-          <Text className="mb-4 font-sans-semibold text-xl text-mindful-brown">
-            {t('feed.title')}
-          </Text>
-        }
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            tintColor={colors.serenityGreen60}
-            onRefresh={() => {
-              void refetch();
-            }}
-          />
-        }
-        renderItem={({ item }: { item: ActivityFeedItem }) => {
-          const editable =
-            (item.type === 'Call' || item.type === 'Visit') &&
-            canEditActivity(item.userId, currentUserId, item.createdAt);
-
-          return (
-            <ActivityCard
-              editable={editable}
-              item={item}
-              onPress={
-                editable
-                  ? (activity) => {
-                      setSelectedActivity(activity);
-                    }
-                  : undefined
-              }
-            />
-          );
-        }}
-        viewabilityConfig={{ itemVisiblePercentThreshold: 60 }}
-        onViewableItemsChanged={handleViewableItemsChanged}
-      />
-      {isError ? (
-        <View className="px-4 pb-4">
-          <QueryErrorState
-            message={t('feed.refreshError')}
-            variant="inline"
-            onRetry={() => {
-              void refetch();
-            }}
-          />
-        </View>
-      ) : null}
-      <ActivityDetailSheet
-        item={selectedActivity}
-        visible={selectedActivity !== null}
-        onClose={() => setSelectedActivity(null)}
-      />
-    </View>
-  );
-}
-
+import { useCallback, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
+import type { ViewToken } from 'react-native';
+
+import type { ActivityFeedItem } from '@/core/domain/activity';
+import { canEditActivity } from '@/core/services/usecases/activity/activity-edit-window';
+import {
+  useActivityFeed,
+  useMarkActivitySeen,
+} from '@/core/services/usecases/activity/index.hooks';
+import { useListBottomPadding } from '@/presentation/modules/app-shell/list-bottom-padding';
+import { ActivityDetailSheet } from '@/presentation/modules/feed/activity-detail-sheet';
+import { useTranslation } from '@/presentation/hooks/use-translation';
+import { useAuth } from '@/presentation/providers/auth';
+import { useRegisterActivity } from '@/presentation/providers/register-activity';
+import { colors } from '@/presentation/styles/tokens';
+import { ActivityCard } from '@/ui/DataDisplay/ActivityCard';
+import { EmptyState } from '@/ui/Feedback/EmptyState';
+import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
+
+export function FeedScreen() {
+  const { t } = useTranslation();
+  const { session } = useAuth();
+  const { openRegisterMenu } = useRegisterActivity();
+  const listBottomPadding = useListBottomPadding();
+  const { data, isLoading, isError, isRefetching, refetch } = useActivityFeed();
+  const markSeen = useMarkActivitySeen();
+  const markedIdsRef = useRef(new Set<string>());
+  const pendingSeenIdsRef = useRef(new Set<string>());
+  const [selectedActivity, setSelectedActivity] = useState<ActivityFeedItem | null>(null);
+  const items = data?.items ?? [];
+  const currentUserId = session?.user.id;
+
+  const handleViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      for (const token of viewableItems) {
+        const item = token.item as ActivityFeedItem;
+        if (
+          !item?.id ||
+          markedIdsRef.current.has(item.id) ||
+          pendingSeenIdsRef.current.has(item.id)
+        ) {
+          continue;
+        }
+
+        pendingSeenIdsRef.current.add(item.id);
+        markSeen.mutate(item.id, {
+          onSuccess: () => {
+            markedIdsRef.current.add(item.id);
+            pendingSeenIdsRef.current.delete(item.id);
+          },
+          onError: () => {
+            pendingSeenIdsRef.current.delete(item.id);
+          },
+        });
+      }
+    },
+    [markSeen]
+  );
+
+  if (isLoading && items.length === 0) {
+    return (
+      <View className="flex-1 items-center justify-center bg-cream">
+        <ActivityIndicator color={colors.serenityGreen60} />
+      </View>
+    );
+  }
+
+  if (isError && items.length === 0) {
+    return (
+      <View className="flex-1 bg-cream">
+        <QueryErrorState
+          message={t('feed.loadError')}
+          onRetry={() => {
+            void refetch();
+          }}
+        />
+      </View>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <View className="flex-1 bg-cream">
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="grow px-4 pt-4"
+          contentContainerStyle={{ paddingBottom: listBottomPadding }}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              tintColor={colors.serenityGreen60}
+              onRefresh={() => {
+                void refetch();
+              }}
+            />
+          }
+        >
+          <Text className="mb-4 font-sans-semibold text-xl text-mindful-brown">{t('feed.title')}</Text>
+          <EmptyState
+            title={t('feed.emptyTitle')}
+            description={t('feed.emptyDescription')}
+            actionLabel={t('fab.registerActivity')}
+            onAction={openRegisterMenu}
+          />
+        </ScrollView>
+      </View>
+    );
+  }
+
+  return (
+    <View className="flex-1 bg-cream">
+      <FlatList
+        contentContainerStyle={{ padding: 16, paddingBottom: listBottomPadding }}
+        data={items}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <Text className="mb-4 font-sans-semibold text-xl text-mindful-brown">
+            {t('feed.title')}
+          </Text>
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            tintColor={colors.serenityGreen60}
+            onRefresh={() => {
+              void refetch();
+            }}
+          />
+        }
+        renderItem={({ item }: { item: ActivityFeedItem }) => {
+          const editable =
+            (item.type === 'Call' || item.type === 'Visit') &&
+            canEditActivity(item.userId, currentUserId, item.createdAt);
+
+          return (
+            <ActivityCard
+              editable={editable}
+              item={item}
+              onPress={
+                editable
+                  ? (activity) => {
+                      setSelectedActivity(activity);
+                    }
+                  : undefined
+              }
+            />
+          );
+        }}
+        viewabilityConfig={{ itemVisiblePercentThreshold: 60 }}
+        onViewableItemsChanged={handleViewableItemsChanged}
+      />
+      {isError ? (
+        <View className="px-4 pb-4">
+          <QueryErrorState
+            message={t('feed.refreshError')}
+            variant="inline"
+            onRetry={() => {
+              void refetch();
+            }}
+          />
+        </View>
+      ) : null}
+      <ActivityDetailSheet
+        item={selectedActivity}
+        visible={selectedActivity !== null}
+        onClose={() => setSelectedActivity(null)}
+      />
+    </View>
+  );
+}
+

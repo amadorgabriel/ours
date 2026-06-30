@@ -63,6 +63,7 @@ export function GoalsScreen() {
         <ScrollView
           className="flex-1"
           contentContainerClassName="grow px-4 pt-4"
+          contentContainerStyle={{ paddingBottom: listBottomPadding }}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}

@@ -7,7 +7,6 @@ import {
   Pressable,
   Switch,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
@@ -25,6 +24,7 @@ import { useAppAlert } from '@/presentation/providers/alert';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 import { DatePickerField } from '@/ui/Forms/DatePickerField';
+import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
 type ActivityDetailSheetProps = {
   visible: boolean;
@@ -300,7 +300,7 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
         <>
           <View className="mt-4">
             <Text className="font-sans text-sm text-mindful-brown">{t('call.notes')}</Text>
-            <TextInput
+            <SheetTextInput
               accessibilityLabel={t('call.notesAccessibility')}
               className="mt-2 min-h-[96px] rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
               maxLength={MAX_NOTES_LENGTH}

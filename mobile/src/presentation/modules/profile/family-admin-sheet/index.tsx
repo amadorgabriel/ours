@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 import { useDeleteFamily, useUpdateFamily } from '@/core/services/usecases/family/index.hooks';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { getFamilyErrorMessage } from '@/presentation/modules/family/family-api-error';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
 type FamilyAdminSheetProps = {
   visible: boolean;
@@ -73,7 +74,7 @@ export function FamilyAdminSheet({
       {deleteStep === 0 ? (
         <>
           <Text className="mt-4 font-sans text-sm text-mindful-brown/70">{t('profile.familyName')}</Text>
-          <TextInput
+          <SheetTextInput
             accessibilityLabel={t('profile.familyNameAccessibility')}
             className="mt-2 rounded-xl border border-mindful-brown/20 bg-cream px-4 py-3 font-sans text-mindful-brown"
             maxLength={100}
@@ -139,7 +140,7 @@ export function FamilyAdminSheet({
           <Text className="mt-4 font-sans text-sm text-mindful-brown/80">
             {t('profile.confirmDeleteHint', { name: familyName })}
           </Text>
-          <TextInput
+          <SheetTextInput
             accessibilityLabel={t('profile.confirmFamilyNameAccessibility')}
             className="mt-2 rounded-xl border border-mindful-brown/20 bg-cream px-4 py-3 font-sans text-mindful-brown"
             value={confirmName}

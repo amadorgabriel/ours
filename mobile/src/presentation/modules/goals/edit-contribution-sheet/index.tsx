@@ -4,7 +4,6 @@ import {
   Pressable,
   Switch,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
@@ -14,6 +13,7 @@ import { useTranslation } from '@/presentation/hooks/use-translation';
 import { useAppAlert } from '@/presentation/providers/alert';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
 import { getContributionErrorMessage } from '../goals-api-error';
 
@@ -97,7 +97,7 @@ export function EditContributionSheet({
 
       <View className="mt-6">
         <Text className="font-sans text-sm text-mindful-brown">{t('goals.amount')}</Text>
-        <TextInput
+        <SheetTextInput
           accessibilityLabel={t('goals.amountAccessibility')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           keyboardType="decimal-pad"

@@ -3,13 +3,13 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetScrollView,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import type { ReactElement, ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
   Keyboard,
+  Platform,
   StyleSheet,
   type RefreshControlProps,
 } from 'react-native';
@@ -35,7 +35,7 @@ export function BottomSheet({
   onClose,
   children,
   accessibilityLabel,
-  scrollable = false,
+  scrollable = true,
   refreshControl,
   enablePanDownToClose = true,
 }: BottomSheetProps) {
@@ -112,31 +112,30 @@ export function BottomSheet({
       android_keyboardInputMode="adjustResize"
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.background}
+      enableBlurKeyboardOnGesture
       enableDynamicSizing
       enablePanDownToClose={enablePanDownToClose}
       handleIndicatorStyle={styles.handleIndicator}
-      keyboardBehavior="interactive"
+      keyboardBehavior="extend"
       keyboardBlurBehavior="restore"
       maxDynamicContentSize={maxDynamicContentSize}
       stackBehavior="push"
       onDismiss={handleDismiss}
     >
-      {scrollable ? (
-        <BottomSheetScrollView
-          accessibilityLabel={panelLabel}
-          accessible
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          refreshControl={refreshControl}
-          contentContainerStyle={contentPadding}
-        >
-          {children}
-        </BottomSheetScrollView>
-      ) : (
-        <BottomSheetView accessibilityLabel={panelLabel} accessible style={contentPadding}>
-          {children}
-        </BottomSheetView>
-      )}
+      <BottomSheetScrollView
+        accessibilityLabel={panelLabel}
+        accessible
+        automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled
+        scrollEnabled={scrollable}
+        showsVerticalScrollIndicator={false}
+        refreshControl={refreshControl}
+        contentContainerStyle={contentPadding}
+      >
+        {children}
+      </BottomSheetScrollView>
     </BottomSheetModal>
   );
 }

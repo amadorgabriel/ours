@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Pressable,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
@@ -14,6 +13,7 @@ import { relationshipLabel } from '@/presentation/modules/family/relationship-la
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 import { DatePickerField } from '@/ui/Forms/DatePickerField';
+import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
 import { getParentErrorMessage } from '../parents-api-error';
 
@@ -98,7 +98,7 @@ export function CreateParentSheet({ visible, onClose }: CreateParentSheetProps) 
 
       <View className="mt-6">
         <Text className="font-sans text-sm text-mindful-brown">{t('parents.name')}</Text>
-        <TextInput
+        <SheetTextInput
           accessibilityLabel={t('parents.nameAccessibility')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           maxLength={MAX_NAME_LENGTH}
