@@ -23,40 +23,42 @@ export function ImagePreview({ visible, uri, onClose, accessibilityLabel }: Imag
   const photoLabel = accessibilityLabel ?? t('imagePreview.photoAccessibility');
 
   return (
-    <Modal
-      accessibilityViewIsModal
-      animationType="fade"
-      transparent
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <StatusBar style="light" />
-      <View className="flex-1 bg-black/95">
-        <Pressable
-          accessibilityLabel={t('imagePreview.close')}
-          accessibilityRole="button"
-          className="absolute right-4 z-10 rounded-full bg-white/20 px-4 py-2"
-          style={{ top: insets.top + 8 }}
-          onPress={onClose}
-        >
-          <Text className="font-sans-semibold text-light">{t('common.close')}</Text>
-        </Pressable>
+    <>
+      <StatusBar style={visible ? 'light' : 'dark'} />
+      <Modal
+        accessibilityViewIsModal
+        animationType="fade"
+        transparent
+        visible={visible}
+        onRequestClose={onClose}
+      >
+        <View className="flex-1 bg-black/95">
+          <Pressable
+            accessibilityLabel={t('common.close')}
+            accessibilityRole="button"
+            className="absolute right-4 z-10 rounded-full bg-white/20 px-4 py-2"
+            style={{ top: insets.top + 8 }}
+            onPress={onClose}
+          >
+            <Text className="font-sans-semibold text-light">{t('common.close')}</Text>
+          </Pressable>
 
-        <Pressable
-          accessibilityLabel={t('imagePreview.close')}
-          accessibilityRole="button"
-          className="flex-1 items-center justify-center"
-          onPress={onClose}
-        >
-          <Image
-            accessibilityLabel={photoLabel}
-            contentFit="contain"
-            source={{ uri }}
-            style={styles.image}
-          />
-        </Pressable>
-      </View>
-    </Modal>
+          <Pressable
+            accessibilityLabel={t('imagePreview.dismiss')}
+            accessibilityRole="button"
+            className="flex-1 items-center justify-center"
+            onPress={onClose}
+          >
+            <Image
+              accessibilityLabel={photoLabel}
+              contentFit="contain"
+              source={{ uri }}
+              style={styles.image}
+            />
+          </Pressable>
+        </View>
+      </Modal>
+    </>
   );
 }
 

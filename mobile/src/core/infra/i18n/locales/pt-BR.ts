@@ -404,6 +404,7 @@ export const ptBR = {
   },
   imagePreview: {
     close: 'Fechar visualização',
+    dismiss: 'Toque para fechar a visualização',
     photoAccessibility: 'Foto ampliada',
   },
   datePicker: {

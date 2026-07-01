@@ -131,17 +131,23 @@ export function DayDetailSheet({
 
   useEffect(() => {
     if (!visible) {
+      setPreviewUri(null);
       return;
     }
 
     pagerRef.current?.setPageWithoutAnimation(currentPageIndex);
   }, [currentPageIndex, date.day, date.month, date.year, visible]);
 
+  function handleClose() {
+    setPreviewUri(null);
+    onClose();
+  }
+
   return (
     <>
     <BottomSheet
       visible={visible}
-      onClose={onClose}
+      onClose={handleClose}
       accessibilityLabel={t('calendar.dayDetailAccessibility')}
       scrollable
     >

@@ -40,6 +40,11 @@ jest.mock('expo-image-manipulator', () => ({
   SaveFormat: { JPEG: 'jpeg' },
 }));
 
+jest.mock('@/ui/Feedback/BottomSheet/BottomSheetKeyboardAwareScrollView', () => {
+  const { ScrollView } = require('react-native');
+  return { BottomSheetKeyboardAwareScrollView: ScrollView };
+});
+
 const callItem: ActivityFeedItem = {
   id: 'act-1',
   type: 'Call',

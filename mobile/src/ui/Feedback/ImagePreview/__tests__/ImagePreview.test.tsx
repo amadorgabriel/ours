@@ -1,4 +1,3 @@
-import { Text } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
 import { ImagePreview } from '../index';
@@ -25,8 +24,8 @@ describe('ImagePreview', () => {
       );
     });
 
-    const closeButtons = tree.root.findAllByProps({ accessibilityLabel: 'Fechar visualização' });
-    expect(closeButtons.length).toBeGreaterThan(0);
+    const closeButton = tree.root.findByProps({ accessibilityLabel: 'Fechar' });
+    expect(closeButton).toBeTruthy();
   });
 
   it('calls onClose when close button is pressed', () => {
@@ -39,8 +38,7 @@ describe('ImagePreview', () => {
       );
     });
 
-    const closeButtons = tree.root.findAllByProps({ accessibilityLabel: 'Fechar visualização' });
-    const closeButton = closeButtons[0];
+    const closeButton = tree.root.findByProps({ accessibilityLabel: 'Fechar' });
 
     act(() => {
       closeButton.props.onPress();
