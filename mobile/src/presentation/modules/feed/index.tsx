@@ -23,6 +23,7 @@ import { useRegisterActivity } from '@/presentation/providers/register-activity'
 import { colors } from '@/presentation/styles/tokens';
 import { ActivityCard } from '@/ui/DataDisplay/ActivityCard';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
+import { ImagePreview } from '@/ui/Feedback/ImagePreview';
 import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
 
 export function FeedScreen() {
@@ -35,6 +36,7 @@ export function FeedScreen() {
   const markedIdsRef = useRef(new Set<string>());
   const pendingSeenIdsRef = useRef(new Set<string>());
   const [selectedActivity, setSelectedActivity] = useState<ActivityFeedItem | null>(null);
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
   const items = data?.items ?? [];
   const currentUserId = session?.user.id;
 
@@ -144,6 +146,7 @@ export function FeedScreen() {
             <ActivityCard
               editable={editable}
               item={item}
+              onPhotoPress={(uri) => setPreviewUri(uri)}
               onPress={
                 editable
                   ? (activity) => {
@@ -172,6 +175,11 @@ export function FeedScreen() {
         item={selectedActivity}
         visible={selectedActivity !== null}
         onClose={() => setSelectedActivity(null)}
+      />
+      <ImagePreview
+        uri={previewUri ?? ''}
+        visible={previewUri !== null}
+        onClose={() => setPreviewUri(null)}
       />
     </View>
   );

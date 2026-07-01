@@ -6,6 +6,7 @@ import { useTranslation } from '@/presentation/hooks/use-translation';
 type ActivityCardProps = {
   item: ActivityFeedItem;
   onPress?: (item: ActivityFeedItem) => void;
+  onPhotoPress?: (uri: string) => void;
   editable?: boolean;
 };
 
@@ -89,7 +90,7 @@ function SeenByAvatars({ seenBy }: { seenBy: ActivityFeedItem['seenBy'] }) {
   );
 }
 
-export function ActivityCard({ item, onPress, editable = false }: ActivityCardProps) {
+export function ActivityCard({ item, onPress, onPhotoPress, editable = false }: ActivityCardProps) {
   const { t } = useTranslation();
   const typeLabel = useActivityTypeLabel(item.type);
   const relativeTime = useRelativeTime(item.createdAt);
@@ -144,12 +145,29 @@ export function ActivityCard({ item, onPress, editable = false }: ActivityCardPr
         <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{visitText}</Text>
       ) : null}
       {item.type === 'Visit' && item.photoUrl ? (
-        <Image
-          accessibilityLabel={t('activityCard.visitPhotoAccessibility')}
-          className="mt-3 h-40 w-full rounded-xl"
-          resizeMode="cover"
-          source={{ uri: item.photoUrl }}
-        />
+        onPhotoPress ? (
+          <Pressable
+            accessibilityLabel={t('activityCard.visitPhotoPreviewAccessibility')}
+            accessibilityRole="button"
+            className="mt-3 overflow-hidden rounded-xl"
+            onPress={() => onPhotoPress(item.photoUrl!)}
+          >
+            <Image
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+              className="h-40 w-full"
+              resizeMode="cover"
+              source={{ uri: item.photoUrl }}
+            />
+          </Pressable>
+        ) : (
+          <Image
+            accessibilityLabel={t('activityCard.visitPhotoAccessibility')}
+            className="mt-3 h-40 w-full rounded-xl"
+            resizeMode="cover"
+            source={{ uri: item.photoUrl }}
+          />
+        )
       ) : null}
       <SeenByAvatars seenBy={item.seenBy} />
       {editable ? (

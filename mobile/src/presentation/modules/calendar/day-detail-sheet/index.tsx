@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import PagerView from 'react-native-pager-view';
 
@@ -13,6 +13,7 @@ import { useTranslation } from '@/presentation/hooks/use-translation';
 import { ActivityCard } from '@/ui/DataDisplay/ActivityCard';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
+import { ImagePreview } from '@/ui/Feedback/ImagePreview';
 
 type DayDetailSheetProps = {
   visible: boolean;
@@ -63,9 +64,11 @@ function resolvePageItems(
 function DayPageContent({
   date,
   items,
+  onPhotoPress,
 }: {
   date: CalendarDate;
   items: ActivityFeedItem[];
+  onPhotoPress: (uri: string) => void;
 }) {
   const { t } = useTranslation();
   const dateLabel = formatCalendarDayLabel(date);
@@ -79,7 +82,9 @@ function DayPageContent({
       {items.length === 0 ? (
         <EmptyState title={t('calendar.emptyDay')} variant="inline" />
       ) : (
-        items.map((item) => <ActivityCard key={item.id} item={item} />)
+        items.map((item) => (
+          <ActivityCard key={item.id} item={item} onPhotoPress={onPhotoPress} />
+        ))
       )}
     </View>
   );
@@ -96,6 +101,7 @@ export function DayDetailSheet({
 }: DayDetailSheetProps) {
   const { t } = useTranslation();
   const pagerRef = useRef<PagerView>(null);
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
 
   const prevDate = addCalendarDays(date, -1);
   const nextDate = addCalendarDays(date, 1);
@@ -132,6 +138,7 @@ export function DayDetailSheet({
   }, [currentPageIndex, date.day, date.month, date.year, visible]);
 
   return (
+    <>
     <BottomSheet
       visible={visible}
       onClose={onClose}
@@ -163,13 +170,24 @@ export function DayDetailSheet({
               <DayPageContent
                 date={pageDate}
                 items={resolvePageItems(pageDate, date, items, getItemsForDate)}
+                onPhotoPress={(uri) => setPreviewUri(uri)}
               />
             </View>
           ))}
         </PagerView>
       ) : (
-        <DayPageContent date={date} items={items} />
+        <DayPageContent
+          date={date}
+          items={items}
+          onPhotoPress={(uri) => setPreviewUri(uri)}
+        />
       )}
     </BottomSheet>
+    <ImagePreview
+      uri={previewUri ?? ''}
+      visible={previewUri !== null}
+      onClose={() => setPreviewUri(null)}
+    />
+    </>
   );
 }

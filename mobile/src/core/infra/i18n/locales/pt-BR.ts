@@ -402,6 +402,10 @@ export const ptBR = {
     panel: 'Painel',
     close: 'Fechar',
   },
+  imagePreview: {
+    close: 'Fechar visualização',
+    photoAccessibility: 'Foto ampliada',
+  },
   datePicker: {
     selectDate: 'Selecionar data',
   },
@@ -562,6 +566,7 @@ export const ptBR = {
     seenBy: 'Visto por {{count}}',
     seenByPhoto: 'Foto de {{name}}',
     visitPhotoAccessibility: 'Foto da visita',
+    visitPhotoPreviewAccessibility: 'Ampliar foto da visita',
     editableHint: 'Toque para editar ou excluir (até 24 h)',
     openAccessibility: 'Abrir {{type}}',
   },

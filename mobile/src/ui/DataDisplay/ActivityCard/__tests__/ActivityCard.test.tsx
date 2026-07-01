@@ -80,4 +80,34 @@ describe('ActivityCard', () => {
     expect(json).toContain('https://example.com/bruno.jpg');
     expect(json).toContain('Visto');
   });
+
+  it('calls onPhotoPress when visit photo is pressed', () => {
+    const onPhotoPress = jest.fn();
+    const item: ActivityFeedItem = {
+      id: 'act-4',
+      type: 'Visit',
+      createdAt: new Date().toISOString(),
+      userId: 'user-1',
+      userName: 'Ana',
+      allDay: true,
+      startAt: new Date().toISOString(),
+      photoUrl: 'data:image/jpeg;base64,abc',
+    };
+
+    let tree!: renderer.ReactTestRenderer;
+
+    act(() => {
+      tree = renderer.create(<ActivityCard item={item} onPhotoPress={onPhotoPress} />);
+    });
+
+    const photoButton = tree.root.findByProps({
+      accessibilityLabel: 'Ampliar foto da visita',
+    });
+
+    act(() => {
+      photoButton.props.onPress();
+    });
+
+    expect(onPhotoPress).toHaveBeenCalledWith('data:image/jpeg;base64,abc');
+  });
 });

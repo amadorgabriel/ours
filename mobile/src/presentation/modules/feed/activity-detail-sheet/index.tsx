@@ -23,6 +23,7 @@ import { useTranslation } from '@/presentation/hooks/use-translation';
 import { useAppAlert } from '@/presentation/providers/alert';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { ImagePreview } from '@/ui/Feedback/ImagePreview';
 import { DatePickerField } from '@/ui/Forms/DatePickerField';
 import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
@@ -88,6 +89,7 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [photoMimeType, setPhotoMimeType] = useState<string | undefined>();
   const [removePhoto, setRemovePhoto] = useState(false);
+  const [fullscreenPhotoVisible, setFullscreenPhotoVisible] = useState(false);
 
   useEffect(() => {
     if (!item || !visible) {
@@ -103,12 +105,14 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
     setPhotoBase64(null);
     setPhotoMimeType(undefined);
     setRemovePhoto(false);
+    setFullscreenPhotoVisible(false);
     updateActivity.reset();
     deleteActivity.reset();
   }, [item, visible]);
 
   function handleClose() {
     setMode('view');
+    setFullscreenPhotoVisible(false);
     onClose();
   }
 
@@ -240,6 +244,7 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
   const hasMutationError = updateActivity.isError || deleteActivity.isError;
 
   return (
+    <>
     <BottomSheet
       visible={visible}
       onClose={handleClose}
@@ -262,12 +267,20 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
             <Text className="mt-3 font-sans text-sm text-mindful-brown">{item.notes}</Text>
           ) : null}
           {item.type === 'Visit' && item.photoUrl && !removePhoto ? (
-            <Image
-              accessibilityLabel={t('activityCard.visitPhotoAccessibility')}
-              className="mt-3 h-40 w-full rounded-xl"
-              resizeMode="cover"
-              source={{ uri: item.photoUrl }}
-            />
+            <Pressable
+              accessibilityLabel={t('activityCard.visitPhotoPreviewAccessibility')}
+              accessibilityRole="button"
+              className="mt-3 overflow-hidden rounded-xl"
+              onPress={() => setFullscreenPhotoVisible(true)}
+            >
+              <Image
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                className="h-40 w-full"
+                resizeMode="cover"
+                source={{ uri: item.photoUrl }}
+              />
+            </Pressable>
           ) : null}
 
           <Pressable
@@ -370,12 +383,20 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
 
           {photoPreview ? (
             <>
-              <Image
-                accessibilityLabel={t('visit.photoPreviewAccessibility')}
-                className="mt-4 h-40 w-full rounded-xl"
-                resizeMode="cover"
-                source={{ uri: photoPreview }}
-              />
+              <Pressable
+                accessibilityLabel={t('activityCard.visitPhotoPreviewAccessibility')}
+                accessibilityRole="button"
+                className="mt-4 overflow-hidden rounded-xl"
+                onPress={() => setFullscreenPhotoVisible(true)}
+              >
+                <Image
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                  className="h-40 w-full"
+                  resizeMode="cover"
+                  source={{ uri: photoPreview }}
+                />
+              </Pressable>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={t('activityDetail.removePhotoAccessibility')}
@@ -409,5 +430,11 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
         <Text className="mt-2 font-sans text-sm text-red-600">{t('activityDetail.saveError')}</Text>
       ) : null}
     </BottomSheet>
+    <ImagePreview
+      uri={mode === 'view' ? (item.photoUrl ?? '') : (photoPreview ?? '')}
+      visible={fullscreenPhotoVisible}
+      onClose={() => setFullscreenPhotoVisible(false)}
+    />
+  </>
   );
 }
