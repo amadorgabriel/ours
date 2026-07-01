@@ -1,9 +1,5 @@
 import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetScrollView,
-} from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { ReactElement, ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -13,10 +9,17 @@ import {
   StyleSheet,
   type RefreshControlProps,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
+
+import { BottomSheetKeyboardAwareScrollView } from './BottomSheetKeyboardAwareScrollView';
+import {
+  SHEET_KEYBOARD_BOTTOM_OFFSET,
+  SHEET_KEYBOARD_EXTRA_SPACE,
+} from './keyboard-sheet';
 
 export type BottomSheetProps = {
   visible: boolean;
@@ -115,30 +118,38 @@ export function BottomSheet({
       }
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.background}
-      enableBlurKeyboardOnGesture
+      enableBlurKeyboardOnGesture={false}
       enableDynamicSizing
       enablePanDownToClose={enablePanDownToClose}
       handleIndicatorStyle={styles.handleIndicator}
-      keyboardBehavior={Platform.OS === 'ios' ? 'extend' : 'interactive'}
-      keyboardBlurBehavior="restore"
+      keyboardBehavior="extend"
+      keyboardBlurBehavior="none"
       maxDynamicContentSize={maxDynamicContentSize}
       stackBehavior="push"
       onDismiss={handleDismiss}
     >
-      <BottomSheetScrollView
-        accessibilityLabel={panelLabel}
-        accessible
-        automaticallyAdjustKeyboardInsets
-        keyboardDismissMode="interactive"
-        keyboardShouldPersistTaps="handled"
-        nestedScrollEnabled
-        scrollEnabled={scrollable}
-        showsVerticalScrollIndicator={false}
-        refreshControl={refreshControl}
-        contentContainerStyle={contentPadding}
+      <KeyboardAvoidingView
+        automaticOffset
+        behavior="padding"
+        keyboardVerticalOffset={SHEET_KEYBOARD_BOTTOM_OFFSET}
+        style={styles.keyboardAvoiding}
       >
-        {children}
-      </BottomSheetScrollView>
+        <BottomSheetKeyboardAwareScrollView
+          accessibilityLabel={panelLabel}
+          accessible
+          bottomOffset={SHEET_KEYBOARD_BOTTOM_OFFSET}
+          extraKeyboardSpace={SHEET_KEYBOARD_EXTRA_SPACE}
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
+          scrollEnabled={scrollable}
+          showsVerticalScrollIndicator={false}
+          refreshControl={refreshControl}
+          contentContainerStyle={contentPadding}
+        >
+          {children}
+        </BottomSheetKeyboardAwareScrollView>
+      </KeyboardAvoidingView>
     </BottomSheetModal>
   );
 }
@@ -153,5 +164,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     backgroundColor: `${colors.mindfulBrown60}33`,
+  },
+  keyboardAvoiding: {
+    flex: 1,
   },
 });

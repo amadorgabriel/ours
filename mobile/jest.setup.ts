@@ -21,3 +21,14 @@ jest.mock('@react-native-community/datetimepicker', () => {
 });
 
 jest.mock('@gorhom/bottom-sheet');
+
+jest.mock('react-native-keyboard-controller', () => {
+  const React = require('react');
+  const { ScrollView } = require('react-native');
+
+  return {
+    KeyboardProvider: ({ children }: { children: unknown }) => children,
+    KeyboardAvoidingView: ({ children }: { children: unknown }) => children,
+    KeyboardAwareScrollView: ScrollView,
+  };
+});

@@ -24,6 +24,12 @@ function BottomSheetView({ children, ...props }) {
 
 const BottomSheetTextInput = TextInput;
 
+function createBottomSheetScrollableComponent(_type, Component) {
+  return Component;
+}
+
+const SCROLLABLE_TYPE = { SCROLLVIEW: 'scrollview' };
+
 module.exports = {
   BottomSheetModal,
   BottomSheetModalProvider,
@@ -32,4 +38,6 @@ module.exports = {
   BottomSheetFlatList: BottomSheetScrollView,
   BottomSheetBackdrop: 'View',
   BottomSheetTextInput,
+  createBottomSheetScrollableComponent,
+  SCROLLABLE_TYPE,
 };
