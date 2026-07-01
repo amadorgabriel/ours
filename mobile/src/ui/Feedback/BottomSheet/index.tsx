@@ -29,6 +29,7 @@ export type BottomSheetProps = {
 };
 
 const MAX_SHEET_HEIGHT_RATIO = 0.9;
+const ANDROID_KEYBOARD_INPUT_MODE = 'adjustPan' as const;
 
 export function BottomSheet({
   visible,
@@ -109,14 +110,16 @@ export function BottomSheet({
     <BottomSheetModal
       ref={sheetRef}
       accessibilityLabel={panelLabel}
-      android_keyboardInputMode="adjustResize"
+      android_keyboardInputMode={
+        Platform.OS === 'android' ? ANDROID_KEYBOARD_INPUT_MODE : 'adjustResize'
+      }
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.background}
       enableBlurKeyboardOnGesture
       enableDynamicSizing
       enablePanDownToClose={enablePanDownToClose}
       handleIndicatorStyle={styles.handleIndicator}
-      keyboardBehavior="extend"
+      keyboardBehavior={Platform.OS === 'ios' ? 'extend' : 'interactive'}
       keyboardBlurBehavior="restore"
       maxDynamicContentSize={maxDynamicContentSize}
       stackBehavior="push"
@@ -125,7 +128,7 @@ export function BottomSheet({
       <BottomSheetScrollView
         accessibilityLabel={panelLabel}
         accessible
-        automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+        automaticallyAdjustKeyboardInsets
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         nestedScrollEnabled

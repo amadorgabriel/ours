@@ -74,10 +74,10 @@ describe('BottomSheet', () => {
     const scrollViews = tree.root.findAll(
       (node) => node.props.keyboardShouldPersistTaps === 'handled'
     );
-    expect(scrollViews[0]?.props.automaticallyAdjustKeyboardInsets).toBe(Platform.OS === 'ios');
+    expect(scrollViews[0]?.props.automaticallyAdjustKeyboardInsets).toBe(true);
   });
 
-  it('uses extend keyboardBehavior on the modal', () => {
+  it('uses platform-specific keyboardBehavior on the modal', () => {
     let tree!: renderer.ReactTestRenderer;
 
     act(() => {
@@ -88,7 +88,9 @@ describe('BottomSheet', () => {
       );
     });
 
-    const modal = tree.root.find((node) => node.props.keyboardBehavior === 'extend');
-    expect(modal.props.android_keyboardInputMode).toBe('adjustResize');
+    const expectedBehavior = Platform.OS === 'ios' ? 'extend' : 'interactive';
+    const expectedInputMode = Platform.OS === 'android' ? 'adjustPan' : 'adjustResize';
+    const modal = tree.root.find((node) => node.props.keyboardBehavior === expectedBehavior);
+    expect(modal.props.android_keyboardInputMode).toBe(expectedInputMode);
   });
 });
