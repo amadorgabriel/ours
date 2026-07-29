@@ -7,13 +7,16 @@ public static class AuthCookie
 
 public sealed class AuthCookieService(IHostEnvironment environment)
 {
+    private bool UseSecureCookies =>
+        !environment.IsDevelopment() && !environment.IsEnvironment("Testing");
+
     public void Append(HttpResponse response, string jwt)
     {
         response.Cookies.Append(AuthCookie.Name, jwt, new CookieOptions
         {
             HttpOnly = true,
-            // Disabled in Development so cookies work over local HTTP; avoid exposing dev servers on public interfaces.
-            Secure = !environment.IsDevelopment(),
+            // Disabled in Development/Testing so cookies work over local HTTP; Production keeps Secure.
+            Secure = UseSecureCookies,
             SameSite = SameSiteMode.Lax,
             Path = "/",
             Expires = DateTimeOffset.UtcNow.AddDays(7),
@@ -26,7 +29,7 @@ public sealed class AuthCookieService(IHostEnvironment environment)
         {
             HttpOnly = true,
             Path = "/",
-            Secure = !environment.IsDevelopment(),
+            Secure = UseSecureCookies,
             SameSite = SameSiteMode.Lax,
         });
     }

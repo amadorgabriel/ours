@@ -49,6 +49,7 @@ export function usePendingReminder() {
     }
 
     async function evaluate() {
+      if (!userId) return;
       const settings = await loadReminderSettings(userId);
       setVisible(isReminderDue(settings));
     }

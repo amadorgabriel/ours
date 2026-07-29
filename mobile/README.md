@@ -251,6 +251,45 @@ Gera `icon.png`, `splash-icon.png`, `favicon.png`, `logo-ours.png` (login) e ada
 
 Template: [`.env.example`](.env.example)
 
+## Deploy / EAS (change 035 — free tier)
+
+**Constraint AD-013:** só EAS free (builds serializados; sem priority / multi-build pago).  
+**Constraint AD-012:** sem domínio `ours.app` — use Quick Tunnel ou placeholder; target futuro abaixo.
+
+### Perfil `preview-apk`
+
+Em [`eas.json`](./eas.json): distribution `internal`, `android.buildType: apk`. Placeholders no perfil apontam para `*.trycloudflare.com` — **sobrescreva** no [Expo dashboard](https://expo.dev) (Environment variables / EAS Secrets) com a URL real do tunnel:
+
+| Env | Agora (sem domínio) | Target futuro |
+|-----|---------------------|---------------|
+| `EXPO_PUBLIC_API_URL` | `https://<subdomain>.trycloudflare.com/api` | `https://api.ours.app/api` |
+| `EXPO_PUBLIC_INVITE_BASE_URL` | placeholder / trycloudflare `/join` até Pages (T13 blocked) | `https://ours.app/join` |
+
+Build local (operador):
+
+```bash
+cd mobile
+eas build --profile preview-apk --platform android
+```
+
+### GitHub Actions — `release-apk.yml`
+
+Tag `v*` (ex.: `v0.1.0-beta.1`) ou **workflow_dispatch** → EAS `preview-apk` → GitHub Release com APK.
+
+| Secret | Obrigatório? | Notas |
+|--------|--------------|--------|
+| `EXPO_TOKEN` | **Sim** | [expo.dev](https://expo.dev) → Account → Access tokens |
+| `ANDROID_KEYSTORE_BASE64` | Não* | *Se EAS gerencia credentials, pule. Para keystore próprio: base64 do `.jks`/`.keystore` |
+| `ANDROID_KEYSTORE_PASSWORD` | Não* | Com keystore próprio |
+| `ANDROID_KEY_ALIAS` | Não* | Com keystore próprio |
+| `ANDROID_KEY_PASSWORD` | Não* | Se diferente da keystore |
+
+**Keystore one-time (recomendado free tier):** `eas credentials` (interativo) deixa o EAS gerar/armazenar o keystore Android. Anote o **SHA-1** para T12 (Google Console OAuth Android).
+
+**Parcial até secrets:** o workflow está versionado; o primeiro run green exige `EXPO_TOKEN` no repo + login EAS no projeto `@amadorgabriel/project-ours`.
+
+Lista infra: [`scripts/infra/README.md`](../scripts/infra/README.md).
+
 ## API
 
 Mesma API REST em `server/`. Auth mobile: **Bearer JWT** no header `Authorization` + `X-Family-Id` para contexto de família (sem cookie/antiforgery do web).

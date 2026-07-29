@@ -124,6 +124,7 @@ public sealed class Program
 
         var app = builder.Build();
 
+        // Production: migrations only via CI/deploy (`dotnet ef database update`), never on boot.
         if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
         {
             using var scope = app.Services.CreateScope();
@@ -131,6 +132,7 @@ public sealed class Program
             await db.Database.MigrateAsync();
         }
 
+        // Swagger only in Development (disabled in Production / Testing).
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();

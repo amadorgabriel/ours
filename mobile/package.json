@@ -12,6 +12,7 @@
     "build:dev:android": "eas build --profile development --platform android",
     "build:dev:ios": "eas build --profile development --platform ios",
     "build:dev:ios-device": "eas build --profile development-device --platform ios",
+    "build:preview-apk": "eas build --profile preview-apk --platform android",
     "lint": "expo lint",
     "type-check": "tsc --noEmit",
     "test": "jest",

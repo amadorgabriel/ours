@@ -1,0 +1,85 @@
+# Deploy Project Ours API to Oracle VM (systemd + Cloudflare Quick Tunnel).
+# Public health via *.trycloudflare.com (AD-012: no ours.app).
+# Secrets: see scripts/infra/README.md
+name: Deploy API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "server/**"
+      - "scripts/infra/**"
+      - ".github/workflows/deploy-api.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Test
+        run: dotnet test --no-restore --verbosity minimal
+
+  deploy:
+    name: Deploy
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Install dotnet-ef
+        run: dotnet tool install --global dotnet-ef --version 8.*
+
+      - name: Install rsync
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq rsync
+
+      - name: Write SSH key
+        env:
+          ORACLE_SSH_KEY: ${{ secrets.ORACLE_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.ssh"
+          umask 077
+          printf '%s\n' "$ORACLE_SSH_KEY" > "$HOME/.ssh/oracle_deploy"
+          chmod 600 "$HOME/.ssh/oracle_deploy"
+
+      - name: Deploy (publish, migrate, rsync, health)
+        env:
+          ORACLE_HOST: ${{ secrets.ORACLE_HOST }}
+          ORACLE_SSH_KEY: /home/runner/.ssh/oracle_deploy
+          NEON_CONNECTION_STRING: ${{ secrets.NEON_CONNECTION_STRING }}
+          PUBLIC_API_BASE_URL: ${{ vars.PUBLIC_API_BASE_URL }}
+        run: |
+          set -euo pipefail
+          : "${ORACLE_HOST:?Missing secret ORACLE_HOST (e.g. ubuntu@<vm-ip>)}"
+          : "${NEON_CONNECTION_STRING:?Missing secret NEON_CONNECTION_STRING}"
+          test -f "$ORACLE_SSH_KEY" || { echo "Missing secret ORACLE_SSH_KEY (private key file empty)"; exit 1; }
+          chmod +x scripts/infra/deploy-api.sh
+          ./scripts/infra/deploy-api.sh

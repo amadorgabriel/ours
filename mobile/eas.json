@@ -23,6 +23,16 @@
     "preview": {
       "distribution": "internal"
     },
+    "preview-apk": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://PLACEHOLDER.trycloudflare.com/api",
+        "EXPO_PUBLIC_INVITE_BASE_URL": "https://PLACEHOLDER.trycloudflare.com/join"
+      }
+    },
     "production": {
       "autoIncrement": true
     }
