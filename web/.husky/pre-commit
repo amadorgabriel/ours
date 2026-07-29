@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+set -e
+cd "$(dirname "$0")/.." || exit 1
+echo "pre-commit: lint-staged + lint + type-check"
+npm run pre-commit:checks

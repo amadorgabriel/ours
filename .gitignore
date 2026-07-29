@@ -1,3 +1,6 @@
+# Specs (local only)
+.specs/
+
 # Cursor
 .cursor
 
@@ -9,11 +12,19 @@
 .env.local
 .env.*.local
 
+# .NET appsettings (proteger secrets)
+**/appsettings.Development.json
+**/appsettings.Testing.json
+**/appsettings.Local.json
+**/appsettings.*.local.json
+!**/appsettings.json
+
 # .NET / C#
 ## Build outputs
 bin/
 obj/
 out/
+.publish/
 
 ## User-specific files
 *.user
@@ -86,7 +97,3 @@ yarn-error.log*
 *.tmp
 *.temp
 *.cache
-
-# Docs (rascunhos locais)
-_docs/mvp.md
-_docs/mvp_copy.md

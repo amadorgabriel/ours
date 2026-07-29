@@ -1,0 +1,290 @@
+{
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "O endereço pode estar incorreto ou a página foi movida.",
+    "homeLink": "Voltar ao início"
+  },
+  "home": {
+    "title": "Project Ours",
+    "subtitle": "Metas e atividades em família, com privacidade entre membros.",
+    "ctaGoogle": "Entrar com Google",
+    "apiHealth": {
+      "missingUrlTitle": "URL da API",
+      "missingUrl": "Defina NEXT_PUBLIC_API_URL no .env.local (ex.: http://localhost:5280, igual ao dotnet run da API).",
+      "checking": "Verificando conexão com a API…",
+      "errorTitle": "API indisponível",
+      "error": "Confira se o servidor está em execução e se a porta coincide com launchSettings (5280).",
+      "okTitle": "Conexão com a API",
+      "ok": "Resposta: {status}"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Entrar no Project Ours",
+      "subtitle": "Use sua conta Google para acessar metas e atividades da família.",
+      "ctaGoogle": "Entrar com Google",
+      "error": "Não foi possível entrar. Tente novamente.",
+      "missingClientId": "Defina NEXT_PUBLIC_GOOGLE_CLIENT_ID no .env.local para habilitar o login."
+    },
+    "logout": {
+      "cta": "Sair",
+      "error": "Não foi possível sair. Tente novamente."
+    },
+    "session": {
+      "loading": "Carregando sessão…",
+      "navigationError": "Não foi possível redirecionar. Recarregue a página."
+    }
+  },
+  "app": {
+    "shell": {
+      "brand": "Project Ours",
+      "brandTagline": "Painel web para coordenar o cuidado da família — convites, famílias e administração.",
+      "nav": {
+        "aria": "Navegação principal",
+        "dashboard": "Dashboard",
+        "feed": "Atividades",
+        "calendar": "Calendário",
+        "goals": "Metas",
+        "parents": "Assistidos",
+        "families": "Trocar família",
+        "addFamily": "Nova família",
+        "openMenu": "Menu",
+        "closeMenu": "Fechar"
+      }
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Visão geral da família ativa e ações de administração.",
+      "roleAdmin": "Você é admin desta família",
+      "roleMember": "Membro da família",
+      "noActiveFamily": "Nenhuma família ativa. Use o menu para selecionar ou criar uma família."
+    }
+  },
+  "family": {
+    "onboarding": {
+      "title": "Comece pela sua família",
+      "subtitle": "Crie um grupo para coordenar o cuidado com seus irmãos ou entre com um código de convite.",
+      "divider": "ou",
+      "create": {
+        "title": "Criar família",
+        "description": "Você será o admin do grupo e poderá convidar irmãos depois.",
+        "nameLabel": "Nome da família",
+        "namePlaceholder": "Ex.: Família Silva",
+        "submit": "Criar família",
+        "loading": "Criando família…"
+      },
+      "join": {
+        "title": "Tenho um código",
+        "description": "Use o código de 6 caracteres que o admin da família compartilhou com você.",
+        "codeLabel": "Código de convite",
+        "codePlaceholder": "ABC123",
+        "submit": "Entrar na família",
+        "loading": "Entrando na família…"
+      }
+    },
+    "select": {
+      "title": "Selecionar família",
+      "subtitle": "Escolha com qual família você quer trabalhar agora.",
+      "roleAdmin": "Admin",
+      "roleMember": "Membro",
+      "selectButton": "Selecionar",
+      "loading": "Carregando famílias…",
+      "empty": "Nenhuma família encontrada."
+    },
+    "add": {
+      "title": "Adicionar família",
+      "subtitle": "Crie um novo grupo ou entre em outra família com um código de convite.",
+      "backToDashboard": "Voltar ao dashboard",
+      "divider": "ou",
+      "create": {
+        "title": "Criar nova família",
+        "description": "Você continuará nas famílias atuais e passará a ser admin do novo grupo.",
+        "nameLabel": "Nome da família",
+        "namePlaceholder": "Ex.: Família Costa",
+        "submit": "Criar família",
+        "loading": "Criando família…"
+      },
+      "join": {
+        "title": "Entrar com código",
+        "description": "Use um código de convite para participar de outra família.",
+        "codeLabel": "Código de convite",
+        "codePlaceholder": "ABC123",
+        "submit": "Entrar na família",
+        "loading": "Entrando na família…"
+      }
+    },
+    "invite": {
+      "dashboardCta": "Convidar irmão",
+      "modalTitle": "Convidar irmão",
+      "description": "Gere um código válido por 24 horas e compartilhe com quem você quer adicionar à família.",
+      "generate": "Gerar código",
+      "codeLabel": "Código de convite",
+      "expiresAt": "Válido até {expiresAt}",
+      "copy": "Copiar código",
+      "copied": "Código copiado!",
+      "loading": "Gerando convite…"
+    },
+    "validation": {
+      "nameRequired": "Informe o nome da família",
+      "nameMaxLength": "O nome deve ter no máximo 100 caracteres",
+      "codeRequired": "Informe o código de convite",
+      "codeLength": "O código deve ter 6 caracteres"
+    },
+    "errors": {
+      "invalidName": "Nome deve ter entre 1 e 100 caracteres",
+      "codeNotFound": "Código não encontrado",
+      "inviteExpired": "Este convite expirou",
+      "alreadyMember": "Você já faz parte desta família",
+      "notAdmin": "Apenas o admin pode convidar",
+      "missingFamilyId": "Família ativa não informada",
+      "createFailed": "Não foi possível criar a família. Tente novamente.",
+      "joinFailed": "Não foi possível entrar na família. Tente novamente.",
+      "inviteFailed": "Não foi possível gerar o convite. Tente novamente.",
+      "generic": "Algo deu errado. Tente novamente."
+    }
+  },
+  "goals": {
+    "title": "Metas",
+    "subtitle": "Acompanhe e contribua para os objetivos financeiros da família.",
+    "createCta": "Nova meta",
+    "loading": "Carregando metas…",
+    "loadError": "Não foi possível carregar as metas.",
+    "retry": "Tentar novamente",
+    "noFamily": "Selecione uma família ativa para ver as metas.",
+    "emptyTitle": "Nenhuma meta ainda",
+    "emptyAdmin": "Crie a primeira meta financeira da família.",
+    "emptyMember": "Peça ao administrador da família para criar uma meta.",
+    "create": {
+      "title": "Nova meta",
+      "description": "Defina um objetivo financeiro para o cuidado da família.",
+      "titleLabel": "Título",
+      "titlePlaceholder": "Ex.: Reserva de emergência",
+      "targetLabel": "Valor alvo (R$)",
+      "targetPlaceholder": "Ex.: 500",
+      "targetHint": "Mínimo R$ {min}",
+      "submit": "Criar meta"
+    },
+    "contribute": {
+      "title": "Contribuir",
+      "description": "Registre quanto você está contribuindo para esta meta.",
+      "amountLabel": "Valor (R$)",
+      "amountPlaceholder": "Ex.: 50",
+      "amountHint": "Mínimo R$ {min}",
+      "privateLabel": "Contribuição privada",
+      "privateHint": "Outros membros não verão o valor",
+      "privateOn": "Privada: sim",
+      "privateOff": "Privada: não",
+      "submit": "Registrar contribuição"
+    },
+    "detail": {
+      "createdAt": "Criada em {date}",
+      "progress": "Progresso",
+      "remaining": "Faltam {amount}",
+      "contributeCta": "Contribuir",
+      "contributionsTitle": "Contribuições",
+      "contributionsEmpty": "Nenhuma contribuição ainda."
+    },
+    "errors": {
+      "createFailed": "Não foi possível criar a meta. Tente novamente.",
+      "contributeFailed": "Não foi possível registrar a contribuição. Tente novamente.",
+      "invalidInput": "Verifique título e valor alvo (mínimo R$ 10,00).",
+      "invalidContribution": "Informe um valor válido (mínimo R$ 1,00).",
+      "notAdmin": "Apenas administradores podem criar metas.",
+      "generic": "Algo deu errado. Tente novamente."
+    }
+  },
+  "parents": {
+    "title": "Assistidos",
+    "subtitle": "Gerencie quem a família cuida e consulte informações médicas.",
+    "createCta": "Novo assistido",
+    "loading": "Carregando assistidos…",
+    "loadError": "Não foi possível carregar os assistidos.",
+    "retry": "Tentar novamente",
+    "noFamily": "Selecione uma família ativa para ver os assistidos.",
+    "emptyTitle": "Nenhum assistido cadastrado",
+    "emptyAdmin": "Cadastre quem a família cuida (Pai, Mãe ou outro).",
+    "emptyMember": "Peça ao administrador para cadastrar um assistido.",
+    "create": {
+      "title": "Novo assistido",
+      "description": "Cadastre quem a família cuida (Pai, Mãe ou outro).",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Ex.: João Silva",
+      "relationshipLabel": "Relação",
+      "birthDateLabel": "Data de nascimento (opcional)",
+      "birthDatePlaceholder": "AAAA-MM-DD",
+      "submit": "Cadastrar"
+    },
+    "detail": {
+      "title": "Ficha do assistido",
+      "medicalLabel": "Informações médicas",
+      "medicalEmpty": "Nenhuma informação médica registrada.",
+      "emergencyLabel": "Briefing de emergência",
+      "emergencyEmpty": "Nenhum briefing de emergência registrado.",
+      "edit": "Editar informações",
+      "save": "Salvar",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "createFailed": "Não foi possível cadastrar o assistido. Tente novamente.",
+      "updateFailed": "Não foi possível atualizar o assistido. Tente novamente.",
+      "invalidInput": "Informe nome e relação válidos.",
+      "notAdmin": "Apenas administradores podem gerenciar assistidos.",
+      "generic": "Algo deu errado. Tente novamente."
+    }
+  },
+  "feed": {
+    "title": "Atividades",
+    "subtitle": "Acompanhe ligações e outras atividades recentes da família.",
+    "registerCallCta": "Registrar ligação",
+    "loading": "Carregando atividades…",
+    "loadError": "Não foi possível carregar as atividades.",
+    "retry": "Tentar novamente",
+    "emptyTitle": "Nenhuma atividade ainda",
+    "emptyDescription": "Registre a primeira ligação para começar o histórico da família.",
+    "activityTypes": {
+      "Call": "Ligação",
+      "Visit": "Visita",
+      "Medical": "Médico",
+      "Task": "Tarefa",
+      "Medication": "Medicação"
+    },
+    "registerCall": {
+      "title": "Registrar ligação",
+      "description": "Registre que você ligou para o assistido ou para a família.",
+      "parentLabel": "Assistido (opcional)",
+      "noParent": "Sem assistido",
+      "notesLabel": "Observações (opcional)",
+      "notesPlaceholder": "Ex.: Conversamos sobre a consulta",
+      "submit": "Registrar",
+      "error": "Não foi possível registrar a ligação. Tente novamente."
+    }
+  },
+  "calendar": {
+    "title": "Calendário",
+    "subtitle": "Veja as atividades da família organizadas por dia no mês.",
+    "noFamily": "Selecione ou crie uma família no menu para ver o calendário.",
+    "loading": "Carregando calendário…",
+    "loadError": "Não foi possível carregar o calendário.",
+    "refreshError": "Não foi possível atualizar o calendário.",
+    "retry": "Tentar novamente",
+    "prevMonth": "Mês anterior",
+    "nextMonth": "Próximo mês",
+    "activityTypes": {
+      "Call": "Ligação",
+      "Visit": "Visita",
+      "Medical": "Médico",
+      "Task": "Tarefa",
+      "Medication": "Medicação"
+    },
+    "dayDetail": {
+      "countOne": "1 atividade",
+      "countMany": "{count} atividades",
+      "empty": "Nenhuma atividade neste dia.",
+      "registerCallLink": "Registrar ligação nas atividades"
+    }
+  },
+  "metadata": {
+    "title": "Project Ours",
+    "description": "Colaboração familiar sem rankings."
+  }
+}

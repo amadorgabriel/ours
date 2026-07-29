@@ -1,0 +1,27 @@
+meta {
+  name: Delete Family
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/families/{{familyId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Cookie: {{authCookie}}
+}
+
+body:json {
+  {
+    "confirmName": "Família Atualizada"
+  }
+}
+
+docs {
+  Admin-only. Hard delete com confirmação do nome exato.
+  Resposta 204 sem corpo.
+}

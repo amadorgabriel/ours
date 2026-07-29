@@ -1,0 +1,112 @@
+# Release APK via EAS (free tier) to GitHub Release.
+# AD-013: no paid features (one build at a time; no priority).
+# AD-012: EXPO_PUBLIC_* via EAS env / preview-apk profile (trycloudflare), not ours.app live.
+# Secrets: see scripts/infra/README.md and mobile/README.md Deploy section.
+name: Release APK
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Tag/Release name (e.g. v0.1.0-beta.1) — workflow_dispatch only"
+        required: true
+        type: string
+
+concurrency:
+  group: release-apk
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: EAS preview-apk + GitHub Release
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Build APK (EAS free tier)
+        id: eas
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          set -euo pipefail
+          : "${EXPO_TOKEN:?Missing secret EXPO_TOKEN — create at expo.dev Access tokens}"
+          BUILD_JSON="$(eas build --profile preview-apk --platform android --non-interactive --wait --json)"
+          echo "$BUILD_JSON" > /tmp/eas-build.json
+          ARTIFACT_URL="$(node -e "
+            const j=JSON.parse(require('fs').readFileSync('/tmp/eas-build.json','utf8'));
+            const b=Array.isArray(j)?j[0]:j;
+            const url=b?.artifacts?.applicationArchiveUrl||b?.artifacts?.buildUrl||b?.applicationArchiveUrl;
+            if(!url){console.error('No APK URL in EAS JSON');console.error(JSON.stringify(b,null,2));process.exit(1)}
+            console.log(url);
+          ")"
+          echo "artifact_url=$ARTIFACT_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Download APK
+        run: |
+          set -euo pipefail
+          curl -fsSL -o project-ours.apk "${{ steps.eas.outputs.artifact_url }}"
+          ls -lh project-ours.apk
+
+      - name: Resolve release tag
+        id: tag
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ inputs.tag_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: Project Ours ${{ steps.tag.outputs.name }}
+          body: |
+            ## Changelog
+
+            - (Fill in: what changed in this build)
+
+            ## Install (Android)
+
+            1. Download `project-ours.apk` below
+            2. Allow install from unknown sources if prompted
+            3. API: current Quick Tunnel URL (EAS env `EXPO_PUBLIC_API_URL`) — not `api.ours.app` until AD-012
+
+            ## Notes
+
+            - EAS profile: `preview-apk` (APK, free tier)
+            - Keystore: managed by EAS (or ANDROID_KEYSTORE_* secrets if configured)
+          files: mobile/project-ours.apk
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,27 @@
+meta {
+  name: Update Family
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/families/{{familyId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Cookie: {{authCookie}}
+}
+
+body:json {
+  {
+    "name": "Família Atualizada"
+  }
+}
+
+docs {
+  Admin-only. Atualiza o nome da família.
+  Resposta 200: `{ "id": "...", "name": "Família Atualizada" }`.
+}

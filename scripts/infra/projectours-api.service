@@ -1,0 +1,24 @@
+[Unit]
+Description=Project Ours API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/projectours/api
+ExecStart=/usr/bin/dotnet /opt/projectours/api/ProjectOurs.API.dll
+EnvironmentFile=/etc/projectours/env
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=30
+SyslogIdentifier=projectours-api
+
+# Hardening (loopback-only binding expected via ASPNETCORE_URLS)
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,55 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using ProjectOurs.Application.Abstractions.Auth;
+using ProjectOurs.Application.Abstractions.Persistence;
+using ProjectOurs.Application.Activity;
+using ProjectOurs.Application.Auth;
+using ProjectOurs.Application.Devices;
+using ProjectOurs.Application.Family;
+using ProjectOurs.Application.Goals;
+using ProjectOurs.Application.Parents;
+using ProjectOurs.Infrastructure.Auth;
+using ProjectOurs.Application.Abstractions.Media;
+using ProjectOurs.Infrastructure.Media;
+using ProjectOurs.Infrastructure.Options;
+using ProjectOurs.Infrastructure.Persistence;
+
+namespace ProjectOurs.Infrastructure;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("PostgreSQL");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("Connection string 'PostgreSQL' is not configured.");
+        }
+
+        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+        services.Configure<GoogleAuthOptions>(configuration.GetSection(GoogleAuthOptions.SectionName));
+
+        services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IFamilyRepository, FamilyRepository>();
+        services.AddScoped<IActivityRepository, ActivityRepository>();
+        services.AddScoped<IGoalRepository, GoalRepository>();
+        services.AddScoped<IGoalContributionRepository, GoalContributionRepository>();
+        services.AddScoped<IParentRepository, ParentRepository>();
+        services.AddScoped<IDeviceRepository, DeviceRepository>();
+        services.AddScoped<IMediaStorage, InlineBase64MediaStorage>();
+        services.AddScoped<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
+        services.AddScoped<IJwtTokenFactory, JwtTokenFactory>();
+        services.AddScoped<AuthService>();
+        services.AddScoped<IInviteCodeGenerator, InviteCodeGenerator>();
+        services.AddScoped<FamilyService>();
+        services.AddScoped<ActivityService>();
+        services.AddScoped<GoalService>();
+        services.AddScoped<GoalContributionService>();
+        services.AddScoped<ParentService>();
+        services.AddScoped<DeviceService>();
+
+        return services;
+    }
+}
