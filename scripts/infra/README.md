@@ -64,8 +64,9 @@ Template: [`server/.env.production.example`](../../server/.env.production.exampl
 3. [ ] Secret `NEON_CONNECTION_STRING`
 4. [ ] (Opcional) Variable `PUBLIC_API_BASE_URL` com a URL trycloudflare atual
 5. [ ] VM `RUNNING` + `projectours-api` + `cloudflared-quick` ativos
-6. [ ] Rodar **Actions → Deploy API → Run workflow** (ou push em `server/**` / `scripts/infra/**` em `main`)
-7. [ ] Job `Test` green → job `Deploy` green → `/health` 200
+6. [ ] **Security List:** ingress TCP **22** com source `0.0.0.0/0` (MVP) — runners GHA usam IPs dinâmicos; `/32` só do operador → `Connection timed out` no rsync. Auth continua **só por chave** (`PasswordAuthentication no`). Não abrir **5280**.
+7. [ ] Rodar **Actions → Deploy API → Run workflow** (ou push em `server/**` / `scripts/infra/**` em `main`)
+8. [ ] Job `Test` green → job `Deploy` green → `/health` 200
 
 **Nota:** IP Oracle muda se a VM for recriada — atualize `ORACLE_HOST`. URL Quick Tunnel muda se `cloudflared-quick` reiniciar — atualize `PUBLIC_API_BASE_URL` ou deixe vazio para auto-detect.
 
