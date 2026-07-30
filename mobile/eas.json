@@ -30,7 +30,8 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://iso-longer-june-spice.trycloudflare.com/api",
-        "EXPO_PUBLIC_INVITE_BASE_URL": "https://iso-longer-june-spice.trycloudflare.com/join"
+        "EXPO_PUBLIC_INVITE_BASE_URL": "https://iso-longer-june-spice.trycloudflare.com/join",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "385042091210-d3mrb52t2jpb742oi63itqa9ucdvet46.apps.googleusercontent.com"
       }
     },
     "production": {
