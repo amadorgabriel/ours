@@ -264,6 +264,9 @@ Em [`eas.json`](./eas.json): distribution `internal`, `android.buildType: apk`. 
 |-----|---------------------|---------------|
 | `EXPO_PUBLIC_API_URL` | `https://<subdomain>.trycloudflare.com/api` | `https://api.ours.app/api` |
 | `EXPO_PUBLIC_INVITE_BASE_URL` | placeholder / trycloudflare `/join` até Pages (T13 blocked) | `https://ours.app/join` |
+| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | OAuth Web client ID (público; no perfil `preview-apk` em `eas.json`) | mesmo client (prod) |
+
+**Google Sign-In no APK:** o perfil `preview-apk` injeta `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (obrigatório para idToken). Client IDs IOS/ANDROID vazios não vão no perfil. SHA-1 do keystore release deve estar no OAuth Android (`com.projectours.app`) — ver T12.
 
 Build local (operador):
 
@@ -284,9 +287,9 @@ Tag `v*` (ex.: `v0.1.0-beta.1`) ou **workflow_dispatch** → EAS `preview-apk` �
 | `ANDROID_KEY_ALIAS` | Não* | Com keystore próprio |
 | `ANDROID_KEY_PASSWORD` | Não* | Se diferente da keystore |
 
-**Keystore one-time (recomendado free tier):** `eas credentials` (interativo) deixa o EAS gerar/armazenar o keystore Android. Anote o **SHA-1** para T12 (Google Console OAuth Android).
+**Keystore one-time (recomendado free tier):** `eas credentials` (interativo) deixa o EAS gerar/armazenar o keystore Android. **SHA-1** do keystore release → Google Cloud Console → OAuth Android client, package `com.projectours.app` (T12).
 
-**Parcial até secrets:** o workflow está versionado; o primeiro run green exige `EXPO_TOKEN` no repo + login EAS no projeto `@amadorgabriel/project-ours`.
+**T12 (2026-07-29):** SHA-1 do keystore release já registrado no Google Console. Smoke Google Sign-In no APK pendente após rebuild com `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` no perfil `preview-apk`.
 
 Lista infra: [`scripts/infra/README.md`](../scripts/infra/README.md).
 

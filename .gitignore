@@ -1,5 +1,6 @@
 # Specs (local only)
 .specs/
+.keys/
 
 # Cursor
 .cursor
