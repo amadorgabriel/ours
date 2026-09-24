@@ -65,26 +65,35 @@ rsync -az --delete \
   "${PUBLISH_DIR}/" \
   "${SSH_USER_HOST}:${REMOTE_DIR}/"
 
-log "Restart systemd projectours-api"
+# Port must match ASPNETCORE_URLS on the VM (/etc/projectours/env) and
+# server/.env.production.example — documented as 127.0.0.1:5280.
+log "Restart systemd projectours-api and wait for local /health"
 ssh "${SSH_OPTS[@]}" "${SSH_USER_HOST}" 'bash -s' <<'REMOTE'
 set -euo pipefail
 
+HEALTH_URL="http://127.0.0.1:5280/health"
+
+dump_unit_logs() {
+  echo "=== systemctl status projectours-api ===" >&2
+  sudo systemctl status projectours-api --no-pager >&2 || true
+  echo "=== journalctl -u projectours-api -n 80 ===" >&2
+  sudo journalctl -u projectours-api -n 80 --no-pager >&2 || true
+}
+
 sudo systemctl restart projectours-api
 
-for attempt in $(seq 1 30); do
+# Type=simple: "active" means the process was started, not that Kestrel is listening yet.
+became_active=0
+for _ in $(seq 1 30); do
   state="$(sudo systemctl is-active projectours-api || true)"
-
-  case "$state" in
+  case "${state}" in
     active)
-      exit 0
-      ;;
-    activating)
-      sleep 1
+      became_active=1
+      break
       ;;
     failed|inactive|deactivating)
-      echo "projectours-api entered state: $state" >&2
-      sudo systemctl status projectours-api --no-pager >&2 || true
-      sudo journalctl -u projectours-api -n 100 --no-pager >&2 || true
+      echo "[deploy-api] projectours-api entered state: ${state}" >&2
+      dump_unit_logs
       exit 1
       ;;
     *)
@@ -93,17 +102,44 @@ for attempt in $(seq 1 30); do
   esac
 done
 
-echo "projectours-api did not become active within 30 seconds" >&2
-sudo systemctl status projectours-api --no-pager >&2 || true
-sudo journalctl -u projectours-api -n 100 --no-pager >&2 || true
+if [[ "${became_active}" != "1" ]]; then
+  echo "[deploy-api] projectours-api did not become active within 30s (last state=$(sudo systemctl is-active projectours-api || true))" >&2
+  dump_unit_logs
+  exit 1
+fi
+
+# Wait for the port to accept connections and /health to return 200.
+last_code=""
+last_curl_err=""
+for _ in $(seq 1 45); do
+  set +e
+  last_code="$(curl -sS -o /tmp/po-health.json -w "%{http_code}" \
+    --connect-timeout 2 --max-time 5 "${HEALTH_URL}" 2>/tmp/po-health.err)"
+  curl_rc=$?
+  set -e
+  last_curl_err="$(cat /tmp/po-health.err 2>/dev/null || true)"
+
+  if [[ "${curl_rc}" -eq 0 && "${last_code}" == "200" ]]; then
+    echo "[deploy-api] Local /health → 200"
+    exit 0
+  fi
+
+  state="$(sudo systemctl is-active projectours-api || true)"
+  if [[ "${state}" == "failed" || "${state}" == "inactive" ]]; then
+    echo "[deploy-api] projectours-api became ${state} while waiting for ${HEALTH_URL} (HTTP=${last_code:-none}, curl_rc=${curl_rc})" >&2
+    [[ -n "${last_curl_err}" ]] && printf '%s\n' "${last_curl_err}" >&2
+    dump_unit_logs
+    exit 1
+  fi
+
+  sleep 1
+done
+
+echo "[deploy-api] local ${HEALTH_URL} did not return HTTP 200 within 45s (last HTTP=${last_code:-none}, curl_rc=${curl_rc:-n/a}). Connection refused usually means nothing is listening on 5280 — check ASPNETCORE_URLS and journal below." >&2
+[[ -n "${last_curl_err}" ]] && printf '%s\n' "${last_curl_err}" >&2
+dump_unit_logs
 exit 1
 REMOTE
-
-log "Health check (local via SSH)"
-LOCAL_CODE="$(ssh "${SSH_OPTS[@]}" "${SSH_USER_HOST}" \
-  'curl -sS -o /tmp/po-health.json -w "%{http_code}" http://127.0.0.1:5280/health')"
-[[ "${LOCAL_CODE}" == "200" ]] || die "local /health returned HTTP ${LOCAL_CODE} (expected 200)"
-log "Local /health → 200"
 
 if [[ "${SKIP_PUBLIC_HEALTH:-0}" != "1" ]]; then
   if [[ -z "${PUBLIC_API_BASE_URL:-}" ]]; then
