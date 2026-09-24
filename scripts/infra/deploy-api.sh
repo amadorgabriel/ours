@@ -40,7 +40,7 @@ mkdir -p "${PUBLISH_DIR}"
   dotnet publish src/ProjectOurs.API \
     -c Release \
     -r linux-x64 \
-    --self-contained false \
+    --self-contained true \
     -o "${PUBLISH_DIR}"
 )
 
@@ -65,6 +65,11 @@ rsync -az --delete \
   "${PUBLISH_DIR}/" \
   "${SSH_USER_HOST}:${REMOTE_DIR}/"
 
+log "Install systemd unit"
+scp "${SSH_OPTS[@]}" \
+  "${REPO_ROOT}/scripts/infra/projectours-api.service" \
+  "${SSH_USER_HOST}:/tmp/projectours-api.service"
+
 # Port must match ASPNETCORE_URLS on the VM (/etc/projectours/env) and
 # server/.env.production.example — documented as 127.0.0.1:5280.
 log "Restart systemd projectours-api and wait for local /health"
@@ -80,6 +85,10 @@ dump_unit_logs() {
   sudo journalctl -u projectours-api -n 80 --no-pager >&2 || true
 }
 
+sudo cp /tmp/projectours-api.service /etc/systemd/system/projectours-api.service
+sudo chmod 755 /opt/projectours/api/ProjectOurs.API
+sudo systemctl daemon-reload
+sudo systemctl reset-failed projectours-api || true
 sudo systemctl restart projectours-api
 
 # Type=simple: "active" means the process was started, not that Kestrel is listening yet.

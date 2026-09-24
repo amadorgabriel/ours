@@ -8,7 +8,9 @@ Type=simple
 User=ubuntu
 Group=ubuntu
 WorkingDirectory=/opt/projectours/api
-ExecStart=/usr/bin/dotnet /opt/projectours/api/ProjectOurs.API.dll
+# Self-contained apphost (linux-x64). Do not use /usr/bin/dotnet: the VM
+# shared framework store can be empty, and the muxer then exits 150.
+ExecStart=/opt/projectours/api/ProjectOurs.API
 EnvironmentFile=/etc/projectours/env
 Restart=on-failure
 RestartSec=5
