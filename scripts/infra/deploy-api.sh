@@ -66,8 +66,38 @@ rsync -az --delete \
   "${SSH_USER_HOST}:${REMOTE_DIR}/"
 
 log "Restart systemd projectours-api"
-ssh "${SSH_OPTS[@]}" "${SSH_USER_HOST}" \
-  'sudo systemctl restart projectours-api && sleep 2 && systemctl is-active projectours-api'
+ssh "${SSH_OPTS[@]}" "${SSH_USER_HOST}" 'bash -s' <<'REMOTE'
+set -euo pipefail
+
+sudo systemctl restart projectours-api
+
+for attempt in $(seq 1 30); do
+  state="$(sudo systemctl is-active projectours-api || true)"
+
+  case "$state" in
+    active)
+      exit 0
+      ;;
+    activating)
+      sleep 1
+      ;;
+    failed|inactive|deactivating)
+      echo "projectours-api entered state: $state" >&2
+      sudo systemctl status projectours-api --no-pager >&2 || true
+      sudo journalctl -u projectours-api -n 100 --no-pager >&2 || true
+      exit 1
+      ;;
+    *)
+      sleep 1
+      ;;
+  esac
+done
+
+echo "projectours-api did not become active within 30 seconds" >&2
+sudo systemctl status projectours-api --no-pager >&2 || true
+sudo journalctl -u projectours-api -n 100 --no-pager >&2 || true
+exit 1
+REMOTE
 
 log "Health check (local via SSH)"
 LOCAL_CODE="$(ssh "${SSH_OPTS[@]}" "${SSH_USER_HOST}" \
