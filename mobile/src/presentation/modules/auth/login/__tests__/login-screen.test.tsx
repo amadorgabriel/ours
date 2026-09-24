@@ -1,4 +1,4 @@
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { GoogleSignin, isErrorWithCode } from '@react-native-google-signin/google-signin';
 import renderer, { act } from 'react-test-renderer';
 
 import { prepareGoogleSignInForAccountPicker } from '@/core/infra/auth/google-signin-session';
@@ -45,7 +45,7 @@ jest.mock('@react-native-google-signin/google-signin', () => ({
   },
   isSuccessResponse: (response: unknown) =>
     typeof response === 'object' && response !== null && 'data' in response,
-  isErrorWithCode: () => false,
+  isErrorWithCode: jest.fn(() => false),
   statusCodes: { SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED' },
 }));
 
@@ -68,6 +68,7 @@ function renderLoginScreen() {
 describe('LoginScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (isErrorWithCode as jest.Mock).mockReturnValue(false);
     (GoogleSignin.hasPlayServices as jest.Mock).mockResolvedValue(true);
     (GoogleSignin.signIn as jest.Mock).mockResolvedValue({
       data: { idToken: 'google-id-token' },
@@ -128,5 +129,21 @@ describe('LoginScreen', () => {
       expect.objectContaining({ onSuccess: expect.any(Function) })
     );
     expect(mockReplace).toHaveBeenCalledWith('/(app)');
+  });
+
+  it('shows Google developer error detail when sign-in returns code 10', async () => {
+    (isErrorWithCode as jest.Mock).mockReturnValue(true);
+    (GoogleSignin.signIn as jest.Mock).mockRejectedValue({ code: 10 });
+
+    const tree = renderLoginScreen();
+    const button = tree.root.find(
+      (node) => node.props.accessibilityRole === 'button' && node.props.onPress
+    );
+
+    await act(async () => {
+      await button.props.onPress();
+    });
+
+    expect(JSON.stringify(tree.toJSON())).toContain('SHA-1 ou pacote incorreto');
   });
 });

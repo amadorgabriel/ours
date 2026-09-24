@@ -51,7 +51,17 @@ public sealed class GoogleIdTokenValidator(
             Audience = audiences,
         };
 
-        var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+        GoogleJsonWebSignature.Payload payload;
+        try
+        {
+            payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+        }
+        catch (InvalidJwtException ex)
+        {
+            // Map Google JWT failures to InvalidOperationException so AuthController
+            // returns 400 (not an unhandled 500) for bad/mismatched audience tokens.
+            throw new InvalidOperationException("Google id token validation failed.", ex);
+        }
 
         if (string.IsNullOrWhiteSpace(payload.Email))
         {

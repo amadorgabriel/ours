@@ -50,10 +50,11 @@ function getLoginErrorDetail(error: unknown): string {
   }
 
   if (isErrorWithCode(error)) {
-    if (error.code === '10') {
+    // Native Android often returns numeric 10; some bridges stringify it.
+    if (String(error.code) === '10') {
       return t('auth.googleDeveloperError');
     }
-    return t('auth.googleError', { code: error.code });
+    return t('auth.googleError', { code: String(error.code) });
   }
 
   if (error instanceof Error) {
@@ -90,12 +91,14 @@ export function LoginScreen() {
     });
   }, [isConfigured]);
 
-  function reportError(error: unknown, fallback = t('auth.signInFailed')) {
+  function reportError(error: unknown) {
     console.error('[Login]', error);
 
     setHasError(true);
 
-    setErrorDetail(__DEV__ ? getLoginErrorDetail(error) : fallback);
+    // Always surface Google code / API status — release builds previously hid these
+    // behind a generic message, making post-deploy OAuth failures undiagnosable.
+    setErrorDetail(getLoginErrorDetail(error));
   }
 
   async function handleGoogleSignIn() {
