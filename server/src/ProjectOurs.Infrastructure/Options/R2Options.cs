@@ -10,6 +10,7 @@ public sealed class R2Options
     public string SecretAccessKey { get; set; } = string.Empty;
     public string PublicBaseUrl { get; set; } = string.Empty;
 
+    /// <summary>Indicates whether all five required R2 settings contain non-whitespace values.</summary>
     public bool IsConfigured =>
         !string.IsNullOrWhiteSpace(BucketName)
         && !string.IsNullOrWhiteSpace(AccountId)

@@ -9,6 +9,7 @@ namespace ProjectOurs.UnitTests.Infrastructure;
 
 public sealed class R2MediaStorageTests
 {
+    /// <summary>Verifies that an image URL under the configured public base URL yields its object key.</summary>
     [Fact]
     public void TryExtractObjectKey_WithPublicBaseUrl_ReturnsKey()
     {
@@ -22,6 +23,7 @@ public sealed class R2MediaStorageTests
         Assert.Equal("families/g/parents/p/photo.jpg", key);
     }
 
+    /// <summary>Verifies that a URL from another host is rejected when extracting an R2 object key.</summary>
     [Fact]
     public void TryExtractObjectKey_WithForeignUrl_ReturnsFalse()
     {
@@ -32,6 +34,7 @@ public sealed class R2MediaStorageTests
         Assert.False(ok);
     }
 
+    /// <summary>Creates R2 storage with synthetic options and a mock S3 client for URL extraction tests.</summary>
     private static R2MediaStorage CreateStorage(string publicBaseUrl)
     {
         var options = Options.Create(new R2Options

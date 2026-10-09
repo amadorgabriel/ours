@@ -19,6 +19,9 @@ namespace ProjectOurs.Infrastructure;
 
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Registers PostgreSQL persistence, authentication, application services, and media storage selected by configuration.
+    /// </summary>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("PostgreSQL");

@@ -8,6 +8,9 @@ namespace ProjectOurs.Infrastructure.Media;
 
 internal static class MediaStorageDependencyInjection
 {
+    /// <summary>
+    /// Registers R2 storage when all required settings are present, otherwise selecting inline base64 storage.
+    /// </summary>
     public static IServiceCollection AddMediaStorage(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<R2Options>(configuration.GetSection(R2Options.SectionName));

@@ -87,6 +87,9 @@ public sealed class ParentService(
         return MapToDetailDto(updated);
     }
 
+    /// <summary>
+    /// Requires a family admin, removes the previous photo, and saves a replacement or clears the photo reference.
+    /// </summary>
     public async Task<ParentDetailDto> UpdatePhotoAsync(
         Guid userId,
         Guid familyId,

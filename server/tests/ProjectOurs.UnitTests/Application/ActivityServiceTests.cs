@@ -363,6 +363,7 @@ public sealed class ActivityServiceTests
         Assert.Null(result.PhotoUrl);
     }
 
+    /// <summary>Verifies that replacing a legacy visit photo stores the new image and returns its reference.</summary>
     [Fact]
     public async Task UpdateVisit_WithNewPhoto_ReplacesStoredPhoto()
     {

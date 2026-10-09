@@ -52,6 +52,9 @@ public sealed class ActivityService(
         return MapToDto(created);
     }
 
+    /// <summary>
+    /// Validates family membership and visit details, stores an optional photo, and creates a visit feed item.
+    /// </summary>
     public async Task<ActivityFeedItemDto> RegisterVisitAsync(
         Guid userId,
         Guid familyId,
@@ -342,6 +345,9 @@ public sealed class ActivityService(
             : JsonSerializer.Serialize(new CallActivityMetadata(notes), JsonOptions);
     }
 
+    /// <summary>
+    /// Validates updated visit dates and rewrites metadata, removing or replacing the stored photo when requested.
+    /// </summary>
     private async Task ApplyVisitUpdateAsync(
         ActivityEntity activity,
         UpdateActivityRequest request,
@@ -385,6 +391,9 @@ public sealed class ActivityService(
             JsonOptions);
     }
 
+    /// <summary>
+    /// Reads visit metadata with legacy photoBase64 support, defaulting when metadata is empty or JSON parsing fails.
+    /// </summary>
     private static VisitActivityMetadata DeserializeVisitMetadata(string? metadata)
     {
         if (string.IsNullOrWhiteSpace(metadata))
@@ -513,6 +522,9 @@ public sealed class ActivityService(
         }
     }
 
+    /// <summary>
+    /// Maps an activity and its views to a feed item, accepting both photoUrl and legacy photoBase64 metadata.
+    /// </summary>
     internal static ActivityFeedItemDto MapToDto(
         ActivityEntity activity,
         IReadOnlyList<ActivityViewInfo>? views = null)
@@ -602,6 +614,9 @@ public sealed class ActivityService(
 
     private sealed record CallActivityMetadata(string? Notes);
 
+    /// <summary>
+    /// Holds visit dates and an optional photo reference, which may be a public URL or an inline data URI.
+    /// </summary>
     private sealed record VisitActivityMetadata(
         bool AllDay,
         DateTimeOffset StartAt,
