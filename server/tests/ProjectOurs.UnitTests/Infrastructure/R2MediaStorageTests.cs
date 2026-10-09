@@ -15,12 +15,15 @@ public sealed class R2MediaStorageTests
     {
         var storage = CreateStorage("https://cdn.ours.app");
 
+        const string objectKey =
+            "families/11111111-1111-1111-1111-111111111111/parents/22222222-2222-2222-2222-222222222222/33333333-3333-3333-3333-333333333333.jpg";
+
         var ok = storage.TryExtractObjectKey(
-            "https://cdn.ours.app/families/g/parents/p/photo.jpg",
+            $"https://cdn.ours.app/{objectKey}",
             out var key);
 
         Assert.True(ok);
-        Assert.Equal("families/g/parents/p/photo.jpg", key);
+        Assert.Equal(objectKey, key);
     }
 
     /// <summary>Verifies that a URL from another host is rejected when extracting an R2 object key.</summary>
@@ -32,6 +35,19 @@ public sealed class R2MediaStorageTests
         var ok = storage.TryExtractObjectKey("https://other.example/object.jpg", out _);
 
         Assert.False(ok);
+    }
+
+    [Fact]
+    public void TryExtractObjectKey_WithLegacyPublicBaseUrl_StillReturnsKey()
+    {
+        var storage = CreateStorage("https://pub-new.r2.dev");
+        const string key =
+            "families/11111111-1111-1111-1111-111111111111/parents/22222222-2222-2222-2222-222222222222/33333333-3333-3333-3333-333333333333.jpg";
+
+        var ok = storage.TryExtractObjectKey($"https://pub-old.r2.dev/{key}", out var extracted);
+
+        Assert.True(ok);
+        Assert.Equal(key, extracted);
     }
 
     /// <summary>Creates R2 storage with synthetic options and a mock S3 client for URL extraction tests.</summary>

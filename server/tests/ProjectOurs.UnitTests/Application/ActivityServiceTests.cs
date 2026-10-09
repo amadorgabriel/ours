@@ -361,6 +361,9 @@ public sealed class ActivityServiceTests
             new UpdateActivityRequest(null, null, null, null, null, null, RemovePhoto: true));
 
         Assert.Null(result.PhotoUrl);
+        _media.Verify(
+            x => x.DeleteByReferenceAsync("https://old-photo", It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     /// <summary>Verifies that replacing a legacy visit photo stores the new image and returns its reference.</summary>
@@ -417,6 +420,42 @@ public sealed class ActivityServiceTests
                 "image/jpeg",
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>()),
+            Times.Once);
+        _media.Verify(
+            x => x.DeleteByReferenceAsync("https://old-photo", It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteVisit_WithPhoto_DeletesStoredReference()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var activityId = Guid.NewGuid();
+        const string photoUrl = "https://storage/visit-photo";
+        var metadata = $$"""{"allDay":true,"startAt":"2026-01-01T00:00:00Z","endAt":null,"photoUrl":"{{photoUrl}}"}""";
+
+        SetupMembership(userId, familyId);
+
+        var activity = new Activity
+        {
+            Id = activityId,
+            FamilyId = familyId,
+            UserId = userId,
+            Type = ActivityType.Visit,
+            Metadata = metadata,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+
+        _activities
+            .Setup(x => x.GetByIdAndFamilyIdAsync(activityId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(activity);
+
+        await _sut.DeleteAsync(userId, familyId, activityId);
+
+        _activities.Verify(x => x.DeleteAsync(activity, It.IsAny<CancellationToken>()), Times.Once);
+        _media.Verify(
+            x => x.DeleteByReferenceAsync(photoUrl, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 

@@ -105,9 +105,10 @@ public sealed class ParentService(
             throw new ParentNotFoundException("Parent not found.");
         }
 
+        var previousPhoto = existing.PhotoData;
+
         if (string.IsNullOrWhiteSpace(request.PhotoBase64))
         {
-            await mediaStorage.DeleteByReferenceAsync(existing.PhotoData, cancellationToken);
             existing.PhotoData = null;
         }
         else
@@ -128,8 +129,6 @@ public sealed class ParentService(
                 throw new ParentValidationException(ex.Message);
             }
 
-            await mediaStorage.DeleteByReferenceAsync(existing.PhotoData, cancellationToken);
-
             await using var stream = new MemoryStream(bytes);
             var objectKey = MediaObjectKeys.ParentPhoto(familyId, parentId, mimeType);
             existing.PhotoData = await mediaStorage.StoreAsync(
@@ -140,6 +139,7 @@ public sealed class ParentService(
         }
 
         var updated = await parents.UpdateAsync(existing, cancellationToken);
+        await mediaStorage.TryDeleteByReferenceAsync(previousPhoto, cancellationToken);
         return MapToDetailDto(updated);
     }
 

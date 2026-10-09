@@ -167,19 +167,21 @@ public sealed class ActivityService(
 
         var activity = await GetEditableActivityAsync(userId, familyId, activityId, cancellationToken);
 
+        string? mediaToDelete = null;
         switch (activity.Type)
         {
             case ActivityType.Call:
                 ApplyCallUpdate(activity, request);
                 break;
             case ActivityType.Visit:
-                await ApplyVisitUpdateAsync(activity, request, cancellationToken);
+                mediaToDelete = await ApplyVisitUpdateAsync(activity, request, cancellationToken);
                 break;
             default:
                 throw new ActivityForbiddenException("This activity type cannot be edited here.");
         }
 
         await activities.UpdateAsync(activity, cancellationToken);
+        await mediaStorage.TryDeleteByReferenceAsync(mediaToDelete, cancellationToken);
         return MapToDto(activity);
     }
 
@@ -192,7 +194,15 @@ public sealed class ActivityService(
         await EnsureMembershipAsync(userId, familyId, cancellationToken);
 
         var activity = await GetEditableActivityAsync(userId, familyId, activityId, cancellationToken);
+
+        string? photoToDelete = null;
+        if (activity.Type == ActivityType.Visit)
+        {
+            photoToDelete = DeserializeVisitMetadata(activity.Metadata).PhotoUrl;
+        }
+
         await activities.DeleteAsync(activity, cancellationToken);
+        await mediaStorage.TryDeleteByReferenceAsync(photoToDelete, cancellationToken);
     }
 
     public async Task<ActivityFeedItemDto> CreateContributionActivityAsync(
@@ -348,7 +358,7 @@ public sealed class ActivityService(
     /// <summary>
     /// Validates updated visit dates and rewrites metadata, removing or replacing the stored photo when requested.
     /// </summary>
-    private async Task ApplyVisitUpdateAsync(
+    private async Task<string?> ApplyVisitUpdateAsync(
         ActivityEntity activity,
         UpdateActivityRequest request,
         CancellationToken cancellationToken)
@@ -368,10 +378,11 @@ public sealed class ActivityService(
 
         string? photoUrl = existing.PhotoUrl;
         string? mimeType = existing.MimeType;
+        string? photoToDelete = null;
 
         if (request.RemovePhoto)
         {
-            await mediaStorage.DeleteByReferenceAsync(photoUrl, cancellationToken);
+            photoToDelete = photoUrl;
             photoUrl = null;
             mimeType = null;
         }
@@ -379,7 +390,7 @@ public sealed class ActivityService(
         {
             var resolvedMimeType = string.IsNullOrWhiteSpace(request.MimeType) ? "image/jpeg" : request.MimeType;
             var bytes = DecodeBase64Image(request.PhotoBase64);
-            await mediaStorage.DeleteByReferenceAsync(photoUrl, cancellationToken);
+            photoToDelete = photoUrl;
             await using var stream = new MemoryStream(bytes);
             var objectKey = MediaObjectKeys.ActivityVisitPhoto(activity.FamilyId, activity.Id, resolvedMimeType);
             photoUrl = await mediaStorage.StoreAsync(stream, resolvedMimeType, objectKey, cancellationToken);
@@ -389,6 +400,8 @@ public sealed class ActivityService(
         activity.Metadata = JsonSerializer.Serialize(
             new VisitActivityMetadata(allDay, startAt, endAt, photoUrl, mimeType),
             JsonOptions);
+
+        return photoToDelete;
     }
 
     /// <summary>

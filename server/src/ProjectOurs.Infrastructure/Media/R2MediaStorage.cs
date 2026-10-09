@@ -2,6 +2,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.Extensions.Options;
 using ProjectOurs.Application.Abstractions.Media;
+using ProjectOurs.Application.Common;
 using ProjectOurs.Infrastructure.Options;
 
 namespace ProjectOurs.Infrastructure.Media;
@@ -56,7 +57,7 @@ public sealed class R2MediaStorage(IAmazonS3 s3, IOptions<R2Options> options) : 
             ContentType = normalizedMime,
             Headers =
             {
-                CacheControl = "public, max-age=31536000, immutable",
+                CacheControl = "public, max-age=3600",
             },
         };
 
@@ -88,23 +89,9 @@ public sealed class R2MediaStorage(IAmazonS3 s3, IOptions<R2Options> options) : 
         await s3.DeleteObjectAsync(_options.BucketName, key, cancellationToken);
     }
 
-    /// <summary>Extracts a nonempty object key from a reference matching the configured public base URL.</summary>
-    internal bool TryExtractObjectKey(string storedReference, out string key)
-    {
-        key = string.Empty;
-        var baseUrl = _options.PublicBaseUrl.TrimEnd('/');
-        if (!storedReference.StartsWith(baseUrl + "/", StringComparison.OrdinalIgnoreCase)
-            && !storedReference.Equals(baseUrl, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        key = storedReference.Length <= baseUrl.Length
-            ? string.Empty
-            : storedReference[(baseUrl.Length + 1)..];
-
-        return !string.IsNullOrWhiteSpace(key);
-    }
+    /// <summary>Extracts a validated R2 object key from a public URL or path, regardless of the configured base URL.</summary>
+    internal bool TryExtractObjectKey(string storedReference, out string key) =>
+        MediaReferenceKeys.TryGetObjectKey(storedReference, out key);
 
     /// <summary>Appends the object key to the public base URL after trimming its trailing slashes.</summary>
     private string BuildPublicUrl(string objectKey) =>
