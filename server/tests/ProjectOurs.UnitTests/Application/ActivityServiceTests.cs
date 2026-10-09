@@ -396,7 +396,11 @@ public sealed class ActivityServiceTests
             .Returns(Task.CompletedTask);
 
         _media
-            .Setup(x => x.StoreAsync(It.IsAny<Stream>(), "image/jpeg", It.IsAny<CancellationToken>()))
+            .Setup(x => x.StoreAsync(
+                It.IsAny<Stream>(),
+                "image/jpeg",
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(newPhotoUrl);
 
         var result = await _sut.UpdateAsync(
@@ -407,7 +411,11 @@ public sealed class ActivityServiceTests
 
         Assert.Equal(newPhotoUrl, result.PhotoUrl);
         _media.Verify(
-            x => x.StoreAsync(It.IsAny<Stream>(), "image/jpeg", It.IsAny<CancellationToken>()),
+            x => x.StoreAsync(
+                It.IsAny<Stream>(),
+                "image/jpeg",
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
             Times.Once);
     }
 

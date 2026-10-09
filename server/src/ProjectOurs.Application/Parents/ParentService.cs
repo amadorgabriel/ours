@@ -104,6 +104,7 @@ public sealed class ParentService(
 
         if (string.IsNullOrWhiteSpace(request.PhotoBase64))
         {
+            await mediaStorage.DeleteByReferenceAsync(existing.PhotoData, cancellationToken);
             existing.PhotoData = null;
         }
         else
@@ -124,8 +125,15 @@ public sealed class ParentService(
                 throw new ParentValidationException(ex.Message);
             }
 
+            await mediaStorage.DeleteByReferenceAsync(existing.PhotoData, cancellationToken);
+
             await using var stream = new MemoryStream(bytes);
-            existing.PhotoData = await mediaStorage.StoreAsync(stream, mimeType, cancellationToken);
+            var objectKey = MediaObjectKeys.ParentPhoto(familyId, parentId, mimeType);
+            existing.PhotoData = await mediaStorage.StoreAsync(
+                stream,
+                mimeType,
+                objectKey,
+                cancellationToken);
         }
 
         var updated = await parents.UpdateAsync(existing, cancellationToken);

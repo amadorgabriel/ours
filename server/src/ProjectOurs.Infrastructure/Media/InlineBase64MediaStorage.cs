@@ -14,9 +14,13 @@ public sealed class InlineBase64MediaStorage : IMediaStorage
         "image/jpg",
     ];
 
+    public Task DeleteByReferenceAsync(string? storedReference, CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
+
     public async Task<string> StoreAsync(
         Stream content,
         string mimeType,
+        string objectKey,
         CancellationToken cancellationToken = default)
     {
         if (!AllowedMimeTypes.Contains(mimeType.ToLowerInvariant()))

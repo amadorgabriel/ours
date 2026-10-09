@@ -38,7 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IGoalContributionRepository, GoalContributionRepository>();
         services.AddScoped<IParentRepository, ParentRepository>();
         services.AddScoped<IDeviceRepository, DeviceRepository>();
-        services.AddScoped<IMediaStorage, InlineBase64MediaStorage>();
+        services.AddMediaStorage(configuration);
         services.AddScoped<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
         services.AddScoped<IJwtTokenFactory, JwtTokenFactory>();
         services.AddScoped<AuthService>();

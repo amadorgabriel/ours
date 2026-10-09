@@ -57,6 +57,8 @@ Estes ficam só na VM (chmod 600). O deploy **não** sobrescreve o env file.
 
 Template: [`server/.env.production.example`](../../server/.env.production.example).
 
+**Mídia (R2):** vars `R2__*` na VM — passo a passo Cloudflare em [`.cursor/skills/cloudflare-r2/project-ours-setup.md`](../../.cursor/skills/cloudflare-r2/project-ours-setup.md).
+
 ### Checklist operador (T9)
 
 1. [ ] Secret `ORACLE_SSH_KEY` (chave privada completa, incluindo headers)
