@@ -52,6 +52,9 @@ public sealed class ActivityService(
         return MapToDto(created);
     }
 
+    /// <summary>
+    /// Validates family membership and visit details, stores an optional photo, and creates a visit feed item.
+    /// </summary>
     public async Task<ActivityFeedItemDto> RegisterVisitAsync(
         Guid userId,
         Guid familyId,
@@ -63,13 +66,15 @@ public sealed class ActivityService(
         var parentId = await ResolveRequiredParentIdAsync(request.ParentId, familyId, cancellationToken);
         ValidateVisitDates(request);
 
+        var activityId = Guid.NewGuid();
         string? photoUrl = null;
         if (!string.IsNullOrWhiteSpace(request.PhotoBase64))
         {
             var mimeType = string.IsNullOrWhiteSpace(request.MimeType) ? "image/jpeg" : request.MimeType;
             var bytes = DecodeBase64Image(request.PhotoBase64);
             await using var stream = new MemoryStream(bytes);
-            photoUrl = await mediaStorage.StoreAsync(stream, mimeType, cancellationToken);
+            var objectKey = MediaObjectKeys.ActivityVisitPhoto(familyId, activityId, mimeType);
+            photoUrl = await mediaStorage.StoreAsync(stream, mimeType, objectKey, cancellationToken);
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -84,7 +89,7 @@ public sealed class ActivityService(
 
         var activity = new ActivityEntity
         {
-            Id = Guid.NewGuid(),
+            Id = activityId,
             FamilyId = familyId,
             UserId = userId,
             ParentId = parentId,
@@ -162,19 +167,21 @@ public sealed class ActivityService(
 
         var activity = await GetEditableActivityAsync(userId, familyId, activityId, cancellationToken);
 
+        string? mediaToDelete = null;
         switch (activity.Type)
         {
             case ActivityType.Call:
                 ApplyCallUpdate(activity, request);
                 break;
             case ActivityType.Visit:
-                await ApplyVisitUpdateAsync(activity, request, cancellationToken);
+                mediaToDelete = await ApplyVisitUpdateAsync(activity, request, cancellationToken);
                 break;
             default:
                 throw new ActivityForbiddenException("This activity type cannot be edited here.");
         }
 
         await activities.UpdateAsync(activity, cancellationToken);
+        await mediaStorage.TryDeleteByReferenceAsync(mediaToDelete, cancellationToken);
         return MapToDto(activity);
     }
 
@@ -187,7 +194,15 @@ public sealed class ActivityService(
         await EnsureMembershipAsync(userId, familyId, cancellationToken);
 
         var activity = await GetEditableActivityAsync(userId, familyId, activityId, cancellationToken);
+
+        string? photoToDelete = null;
+        if (activity.Type == ActivityType.Visit)
+        {
+            photoToDelete = DeserializeVisitMetadata(activity.Metadata).PhotoUrl;
+        }
+
         await activities.DeleteAsync(activity, cancellationToken);
+        await mediaStorage.TryDeleteByReferenceAsync(photoToDelete, cancellationToken);
     }
 
     public async Task<ActivityFeedItemDto> CreateContributionActivityAsync(
@@ -340,7 +355,10 @@ public sealed class ActivityService(
             : JsonSerializer.Serialize(new CallActivityMetadata(notes), JsonOptions);
     }
 
-    private async Task ApplyVisitUpdateAsync(
+    /// <summary>
+    /// Validates updated visit dates and rewrites metadata, removing or replacing the stored photo when requested.
+    /// </summary>
+    private async Task<string?> ApplyVisitUpdateAsync(
         ActivityEntity activity,
         UpdateActivityRequest request,
         CancellationToken cancellationToken)
@@ -358,11 +376,13 @@ public sealed class ActivityService(
             null,
             null));
 
-        string? photoUrl = existing.PhotoBase64;
+        string? photoUrl = existing.PhotoUrl;
         string? mimeType = existing.MimeType;
+        string? photoToDelete = null;
 
         if (request.RemovePhoto)
         {
+            photoToDelete = photoUrl;
             photoUrl = null;
             mimeType = null;
         }
@@ -370,16 +390,23 @@ public sealed class ActivityService(
         {
             var resolvedMimeType = string.IsNullOrWhiteSpace(request.MimeType) ? "image/jpeg" : request.MimeType;
             var bytes = DecodeBase64Image(request.PhotoBase64);
+            photoToDelete = photoUrl;
             await using var stream = new MemoryStream(bytes);
-            photoUrl = await mediaStorage.StoreAsync(stream, resolvedMimeType, cancellationToken);
+            var objectKey = MediaObjectKeys.ActivityVisitPhoto(activity.FamilyId, activity.Id, resolvedMimeType);
+            photoUrl = await mediaStorage.StoreAsync(stream, resolvedMimeType, objectKey, cancellationToken);
             mimeType = resolvedMimeType;
         }
 
         activity.Metadata = JsonSerializer.Serialize(
             new VisitActivityMetadata(allDay, startAt, endAt, photoUrl, mimeType),
             JsonOptions);
+
+        return photoToDelete;
     }
 
+    /// <summary>
+    /// Reads visit metadata with legacy photoBase64 support, defaulting when metadata is empty or JSON parsing fails.
+    /// </summary>
     private static VisitActivityMetadata DeserializeVisitMetadata(string? metadata)
     {
         if (string.IsNullOrWhiteSpace(metadata))
@@ -387,8 +414,40 @@ public sealed class ActivityService(
             return new VisitActivityMetadata(true, DateTimeOffset.UtcNow, null, null, null);
         }
 
-        return JsonSerializer.Deserialize<VisitActivityMetadata>(metadata, JsonOptions)
-            ?? new VisitActivityMetadata(true, DateTimeOffset.UtcNow, null, null, null);
+        try
+        {
+            using var doc = JsonDocument.Parse(metadata);
+            var root = doc.RootElement;
+
+            var allDay = root.TryGetProperty("allDay", out var allDayProp) && allDayProp.GetBoolean();
+            var startAt = root.TryGetProperty("startAt", out var startProp)
+                ? startProp.GetDateTimeOffset()
+                : DateTimeOffset.UtcNow;
+            DateTimeOffset? endAt = root.TryGetProperty("endAt", out var endProp)
+                                     && endProp.ValueKind != JsonValueKind.Null
+                ? endProp.GetDateTimeOffset()
+                : null;
+
+            string? photoUrl = null;
+            if (root.TryGetProperty("photoUrl", out var photoUrlProp))
+            {
+                photoUrl = photoUrlProp.GetString();
+            }
+            else if (root.TryGetProperty("photoBase64", out var photoLegacyProp))
+            {
+                photoUrl = photoLegacyProp.GetString();
+            }
+
+            var mimeType = root.TryGetProperty("mimeType", out var mimeProp)
+                ? mimeProp.GetString()
+                : null;
+
+            return new VisitActivityMetadata(allDay, startAt, endAt, photoUrl, mimeType);
+        }
+        catch (JsonException)
+        {
+            return new VisitActivityMetadata(true, DateTimeOffset.UtcNow, null, null, null);
+        }
     }
 
     private async Task<Guid> ResolveRequiredParentIdAsync(
@@ -476,6 +535,9 @@ public sealed class ActivityService(
         }
     }
 
+    /// <summary>
+    /// Maps an activity and its views to a feed item, accepting both photoUrl and legacy photoBase64 metadata.
+    /// </summary>
     internal static ActivityFeedItemDto MapToDto(
         ActivityEntity activity,
         IReadOnlyList<ActivityViewInfo>? views = null)
@@ -511,9 +573,15 @@ public sealed class ActivityService(
                         endAt = root.TryGetProperty("endAt", out var endProp) && endProp.ValueKind != JsonValueKind.Null
                             ? endProp.GetDateTimeOffset()
                             : null;
-                        photoUrl = root.TryGetProperty("photoBase64", out var photoProp)
-                            ? photoProp.GetString()
-                            : null;
+                        if (root.TryGetProperty("photoUrl", out var photoUrlProp))
+                        {
+                            photoUrl = photoUrlProp.GetString();
+                        }
+                        else if (root.TryGetProperty("photoBase64", out var photoLegacyProp))
+                        {
+                            photoUrl = photoLegacyProp.GetString();
+                        }
+
                         break;
                     case ActivityType.Contribution:
                         goalId = root.TryGetProperty("goalId", out var goalIdProp)
@@ -559,11 +627,14 @@ public sealed class ActivityService(
 
     private sealed record CallActivityMetadata(string? Notes);
 
+    /// <summary>
+    /// Holds visit dates and an optional photo reference, which may be a public URL or an inline data URI.
+    /// </summary>
     private sealed record VisitActivityMetadata(
         bool AllDay,
         DateTimeOffset StartAt,
         DateTimeOffset? EndAt,
-        string? PhotoBase64,
+        string? PhotoUrl,
         string? MimeType);
 
     internal sealed record ContributionActivityMetadata(

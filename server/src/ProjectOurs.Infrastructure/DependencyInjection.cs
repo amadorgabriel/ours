@@ -19,6 +19,9 @@ namespace ProjectOurs.Infrastructure;
 
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Registers PostgreSQL persistence, authentication, application services, and media storage selected by configuration.
+    /// </summary>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("PostgreSQL");
@@ -38,7 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IGoalContributionRepository, GoalContributionRepository>();
         services.AddScoped<IParentRepository, ParentRepository>();
         services.AddScoped<IDeviceRepository, DeviceRepository>();
-        services.AddScoped<IMediaStorage, InlineBase64MediaStorage>();
+        services.AddMediaStorage(configuration);
         services.AddScoped<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
         services.AddScoped<IJwtTokenFactory, JwtTokenFactory>();
         services.AddScoped<AuthService>();

@@ -87,6 +87,9 @@ public sealed class ParentService(
         return MapToDetailDto(updated);
     }
 
+    /// <summary>
+    /// Requires a family admin, removes the previous photo, and saves a replacement or clears the photo reference.
+    /// </summary>
     public async Task<ParentDetailDto> UpdatePhotoAsync(
         Guid userId,
         Guid familyId,
@@ -101,6 +104,8 @@ public sealed class ParentService(
         {
             throw new ParentNotFoundException("Parent not found.");
         }
+
+        var previousPhoto = existing.PhotoData;
 
         if (string.IsNullOrWhiteSpace(request.PhotoBase64))
         {
@@ -125,10 +130,16 @@ public sealed class ParentService(
             }
 
             await using var stream = new MemoryStream(bytes);
-            existing.PhotoData = await mediaStorage.StoreAsync(stream, mimeType, cancellationToken);
+            var objectKey = MediaObjectKeys.ParentPhoto(familyId, parentId, mimeType);
+            existing.PhotoData = await mediaStorage.StoreAsync(
+                stream,
+                mimeType,
+                objectKey,
+                cancellationToken);
         }
 
         var updated = await parents.UpdateAsync(existing, cancellationToken);
+        await mediaStorage.TryDeleteByReferenceAsync(previousPhoto, cancellationToken);
         return MapToDetailDto(updated);
     }
 

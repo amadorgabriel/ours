@@ -51,6 +51,14 @@ Secrets **não** vão no git. Template: [`.env.production.example`](./.env.produ
 | `Authentication__Google__ClientId` | sim | OAuth Web |
 | `Authentication__Google__AndroidClientId` | sim | OAuth Android |
 | `Cors__AllowedOrigins__0` | sim | `https://ours.app` (+ extras se Quick Tunnel) |
+| `R2__BucketName` | não* | Com `R2__AccountId`, `R2__AccessKeyId`, `R2__SecretAccessKey`, `R2__PublicBaseUrl`: uploads vão para R2 (CDN público). Se omitido, dev usa base64 inline no Postgres. |
+| `R2__AccountId` | não* | ID da conta Cloudflare (endpoint S3). |
+| `R2__AccessKeyId` / `R2__SecretAccessKey` | não* | Token R2 com permissão Object Read & Write. |
+| `R2__PublicBaseUrl` | não* | URL base do bucket público (ex.: `https://cdn.ours.app`, sem barra final). |
+
+\* Conjunto R2: ou **todas** as cinco vars ou **nenhuma** (fallback inline).
+
+Fotos antigas em `data:` no banco continuam legíveis; novos uploads usam R2 quando configurado.
 
 **Windows (migrations locais contra Neon):** use `$env:PROJECTOURS_CONNECTION_STRING` — nome **diferente** do binding ASP.NET na VM (`ConnectionStrings__PostgreSQL`). Não misturar.
 
