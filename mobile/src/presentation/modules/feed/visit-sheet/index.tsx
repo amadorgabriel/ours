@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import type { ParentId } from '@/core/domain/parent';
+import { HttpClientError } from '@/core/infra/http/http-error';
 import { useRegisterVisit } from '@/core/services/usecases/activity/index.hooks';
 import {
   formatLocalDateInput,
@@ -34,6 +35,23 @@ type VisitSheetProps = {
 
 function toIsoDateInput(date: Date): string {
   return formatLocalDateInput(date);
+}
+
+function formatRegisterVisitError(error: unknown): string | null {
+  if (!(error instanceof HttpClientError)) {
+    return null;
+  }
+
+  const payload = error.data as { message?: string } | undefined;
+  const parts: string[] = [];
+  if (error.statusCode) {
+    parts.push(`HTTP ${error.statusCode}`);
+  }
+  if (payload?.message) {
+    parts.push(payload.message);
+  }
+
+  return parts.length > 0 ? parts.join(': ') : null;
 }
 
 async function pickCompressedPhoto(
@@ -255,7 +273,15 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
       ) : null}
 
       {registerVisit.isError ? (
-        <Text className="mt-2 font-sans text-sm text-red-600">{t('visit.registerError')}</Text>
+        <View className="mt-2">
+          <Text className="font-sans text-sm text-red-600">{t('visit.registerError')}</Text>
+          {(() => {
+            const detail = formatRegisterVisitError(registerVisit.error);
+            return detail ? (
+              <Text className="mt-1 font-sans text-xs text-red-600/90">{detail}</Text>
+            ) : null;
+          })()}
+        </View>
       ) : null}
 
       <Pressable

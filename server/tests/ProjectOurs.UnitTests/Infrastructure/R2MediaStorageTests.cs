@@ -1,4 +1,5 @@
 using Amazon.S3;
+using Amazon.S3.Model;
 using Microsoft.Extensions.Options;
 using Moq;
 using ProjectOurs.Infrastructure.Media;
@@ -35,6 +36,36 @@ public sealed class R2MediaStorageTests
         var ok = storage.TryExtractObjectKey("https://other.example/object.jpg", out _);
 
         Assert.False(ok);
+    }
+
+    [Fact]
+    public async Task StoreAsync_UsesR2CompatiblePutObjectFlags()
+    {
+        PutObjectRequest? captured = null;
+        var s3 = new Mock<IAmazonS3>();
+        s3.Setup(x => x.PutObjectAsync(It.IsAny<PutObjectRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<PutObjectRequest, CancellationToken>((request, _) => captured = request)
+            .ReturnsAsync(new PutObjectResponse());
+
+        var options = Options.Create(new R2Options
+        {
+            BucketName = "project-ours-media",
+            AccountId = "acc",
+            AccessKeyId = "key",
+            SecretAccessKey = "secret",
+            PublicBaseUrl = "https://pub-example.r2.dev",
+        });
+
+        var storage = new R2MediaStorage(s3.Object, options);
+        await using var image = new MemoryStream([0xFF, 0xD8, 0xFF, 0xD9]);
+
+        var url = await storage.StoreAsync(image, "image/jpeg", "families/test/photo.jpg");
+
+        Assert.Equal("https://pub-example.r2.dev/families/test/photo.jpg", url);
+        Assert.NotNull(captured);
+        Assert.False(captured!.UseChunkEncoding);
+        Assert.True(captured.DisablePayloadSigning);
+        Assert.True(captured.DisableDefaultChecksumValidation);
     }
 
     [Fact]
