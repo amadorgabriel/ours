@@ -49,12 +49,17 @@ public sealed class R2MediaStorage(IAmazonS3 s3, IOptions<R2Options> options) : 
                 $"Image exceeds maximum size of {InlineBase64MediaStorage.MaxBytes / 1024}KB.");
         }
 
+        // R2 rejects STREAMING-AWS4-HMAC-SHA256-PAYLOAD (aws-chunked uploads). Buffer is
+        // already in memory — use a single signed payload compatible with S3-compatible APIs.
         var request = new PutObjectRequest
         {
             BucketName = _options.BucketName,
             Key = objectKey,
             InputStream = new MemoryStream(bytes),
             ContentType = normalizedMime,
+            DisablePayloadSigning = true,
+            UseChunkEncoding = false,
+            DisableDefaultChecksumValidation = true,
             Headers =
             {
                 CacheControl = "public, max-age=3600",
