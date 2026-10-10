@@ -1,7 +1,12 @@
-import { Text } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
+import { Text } from 'react-native';
 
 import { DayDetailSheet } from '../index';
+
+jest.mock('@/ui/Feedback/BottomSheet/BottomSheetKeyboardAwareScrollView', () => {
+  const { ScrollView } = require('react-native');
+  return { BottomSheetKeyboardAwareScrollView: ScrollView };
+});
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
