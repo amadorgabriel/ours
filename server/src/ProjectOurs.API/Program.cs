@@ -139,6 +139,16 @@ public sealed class Program
             app.UseSwaggerUI();
         }
 
+        if (app.Environment.IsDevelopment())
+        {
+            app.Use(async (context, next) =>
+            {
+                // Browser on localhost calling the LAN API (Expo web) sends a private-network preflight.
+                context.Response.Headers["Access-Control-Allow-Private-Network"] = "true";
+                await next();
+            });
+        }
+
         app.UseCors("NextJsDev");
         app.UseAuthentication();
         app.UseAuthorization();

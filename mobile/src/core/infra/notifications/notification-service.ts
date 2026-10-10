@@ -72,6 +72,10 @@ export async function syncReminderScheduleForUser(userId: string): Promise<void>
 }
 
 export async function scheduleCallReminder(settings: ReminderSettings): Promise<void> {
+  if (Platform.OS === 'web') {
+    return;
+  }
+
   await cancelDailyCallReminder();
 
   await Notifications.scheduleNotificationAsync({
@@ -90,6 +94,10 @@ export async function scheduleDailyCallReminder(time: ReminderTime): Promise<voi
 }
 
 export async function cancelDailyCallReminder(): Promise<void> {
+  if (Platform.OS === 'web') {
+    return;
+  }
+
   await Notifications.cancelScheduledNotificationAsync(getDailyReminderIdentifier());
 }
 

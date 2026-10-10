@@ -1,7 +1,7 @@
 import type { FamilyId } from '@/core/domain/family';
 import type { ParentId } from '@/core/domain/parent';
 
-import * as SecureStore from 'expo-secure-store';
+import { deleteSecureItem, getSecureItem, setSecureItem } from './secure-kv';
 
 const ALL_ASSISTIDOS_SENTINEL = '__all__';
 
@@ -22,7 +22,7 @@ async function readStoredValue(familyId: FamilyId): Promise<string | null> {
   let value: string | null = null;
 
   try {
-    value = await SecureStore.getItemAsync(key);
+    value = await getSecureItem(key);
   } catch {
     // degrade silently (web/simulator)
   }
@@ -35,7 +35,7 @@ async function readStoredValue(familyId: FamilyId): Promise<string | null> {
   let legacyValue: string | null = null;
 
   try {
-    legacyValue = await SecureStore.getItemAsync(legacyKey);
+    legacyValue = await getSecureItem(legacyKey);
   } catch {
     return null;
   }
@@ -45,8 +45,8 @@ async function readStoredValue(familyId: FamilyId): Promise<string | null> {
   }
 
   try {
-    await SecureStore.setItemAsync(key, legacyValue);
-    await SecureStore.deleteItemAsync(legacyKey);
+    await setSecureItem(key, legacyValue);
+    await deleteSecureItem(legacyKey);
   } catch {
     return legacyValue;
   }
@@ -99,7 +99,7 @@ export async function setStoredParentId(
   }
 
   try {
-    await SecureStore.setItemAsync(storageKey(familyId), parentId);
+    await setSecureItem(storageKey(familyId), parentId);
   } catch {
     // degrade silently (web/simulator)
   }
@@ -113,7 +113,7 @@ export async function setStoredAllAssistidos(
   }
 
   try {
-    await SecureStore.setItemAsync(storageKey(familyId), ALL_ASSISTIDOS_SENTINEL);
+    await setSecureItem(storageKey(familyId), ALL_ASSISTIDOS_SENTINEL);
   } catch {
     // degrade silently (web/simulator)
   }
@@ -127,8 +127,8 @@ export async function clearStoredParentId(
   }
 
   try {
-    await SecureStore.deleteItemAsync(storageKey(familyId));
-    await SecureStore.deleteItemAsync(legacyStorageKey(familyId));
+    await deleteSecureItem(storageKey(familyId));
+    await deleteSecureItem(legacyStorageKey(familyId));
   } catch {
     // degrade silently (web/simulator)
   }

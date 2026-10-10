@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -33,39 +33,38 @@ export function FeedScreen() {
   const listBottomPadding = useListBottomPadding();
   const { data, isLoading, isError, isRefetching, refetch } = useActivityFeed();
   const markSeen = useMarkActivitySeen();
+  const markSeenRef = useRef(markSeen);
+  markSeenRef.current = markSeen;
   const markedIdsRef = useRef(new Set<string>());
   const pendingSeenIdsRef = useRef(new Set<string>());
   const [selectedActivity, setSelectedActivity] = useState<ActivityFeedItem | null>(null);
   const [previewUri, setPreviewUri] = useState<string | null>(null);
   const items = data?.items ?? [];
   const currentUserId = session?.user.id;
-
-  const handleViewableItemsChanged = useCallback(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      for (const token of viewableItems) {
-        const item = token.item as ActivityFeedItem;
-        if (
-          !item?.id ||
-          markedIdsRef.current.has(item.id) ||
-          pendingSeenIdsRef.current.has(item.id)
-        ) {
-          continue;
-        }
-
-        pendingSeenIdsRef.current.add(item.id);
-        markSeen.mutate(item.id, {
-          onSuccess: () => {
-            markedIdsRef.current.add(item.id);
-            pendingSeenIdsRef.current.delete(item.id);
-          },
-          onError: () => {
-            pendingSeenIdsRef.current.delete(item.id);
-          },
-        });
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 }).current;
+  const handleViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    for (const token of viewableItems) {
+      const item = token.item as ActivityFeedItem;
+      if (
+        !item?.id ||
+        markedIdsRef.current.has(item.id) ||
+        pendingSeenIdsRef.current.has(item.id)
+      ) {
+        continue;
       }
-    },
-    [markSeen]
-  );
+
+      pendingSeenIdsRef.current.add(item.id);
+      markSeenRef.current.mutate(item.id, {
+        onSuccess: () => {
+          markedIdsRef.current.add(item.id);
+          pendingSeenIdsRef.current.delete(item.id);
+        },
+        onError: () => {
+          pendingSeenIdsRef.current.delete(item.id);
+        },
+      });
+    }
+  }).current;
 
   if (isLoading && items.length === 0) {
     return (
@@ -157,7 +156,7 @@ export function FeedScreen() {
             />
           );
         }}
-        viewabilityConfig={{ itemVisiblePercentThreshold: 60 }}
+        viewabilityConfig={viewabilityConfig}
         onViewableItemsChanged={handleViewableItemsChanged}
       />
       {isError ? (

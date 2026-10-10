@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import { deleteSecureItem, getSecureItem, setSecureItem } from './secure-kv';
 
 import type { ReminderFrequency, ReminderSettings, ReminderTime } from '@/core/domain/device';
 import {
@@ -45,7 +45,7 @@ function normalizeSettings(parsed: Partial<ReminderSettings>): ReminderSettings 
 }
 
 async function readStoredSettings(key: string): Promise<ReminderSettings | null> {
-  const raw = await SecureStore.getItemAsync(key);
+  const raw = await getSecureItem(key);
   if (!raw) {
     return null;
   }
@@ -60,8 +60,8 @@ async function migrateLegacySettings(userId: string): Promise<ReminderSettings |
     return null;
   }
 
-  await SecureStore.setItemAsync(reminderSettingsKey(userId), JSON.stringify(legacy));
-  await SecureStore.deleteItemAsync(LEGACY_REMINDER_SETTINGS_KEY);
+  await setSecureItem(reminderSettingsKey(userId), JSON.stringify(legacy));
+  await deleteSecureItem(LEGACY_REMINDER_SETTINGS_KEY);
   return legacy;
 }
 
@@ -87,7 +87,7 @@ export async function setReminderSettings(
   userId: string,
   settings: ReminderSettings
 ): Promise<void> {
-  await SecureStore.setItemAsync(reminderSettingsKey(userId), JSON.stringify(settings));
+  await setSecureItem(reminderSettingsKey(userId), JSON.stringify(settings));
 }
 
 export async function acknowledgeReminderNow(userId: string): Promise<ReminderSettings> {

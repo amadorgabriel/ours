@@ -10,7 +10,7 @@ import { useRouter, type Href } from 'expo-router';
 
 import { useEffect, useState } from 'react';
 
-import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Platform, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -30,6 +30,7 @@ import { applyActiveFamilyFromSession } from '@/core/services/usecases/auth/appl
 import { useLoginWithGoogle } from '@/core/services/usecases/auth/index.hooks';
 
 import { resolvePostLoginRoute } from '@/presentation/modules/auth/auth-redirect';
+import { GoogleWebSignInButton } from '@/presentation/modules/auth/login/google-web-sign-in-button';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
 
@@ -81,17 +82,7 @@ export function LoginScreen() {
 
   const isConfigured = isGoogleSignInConfigured();
 
-  useEffect(() => {
-    if (!isConfigured) return;
-
-    GoogleSignin.configure({
-      webClientId: getGoogleWebClientId(),
-
-      iosClientId: getGoogleIosClientId(),
-
-      offlineAccess: false,
-    });
-  }, [isConfigured]);
+  const isWeb = Platform.OS === 'web';
 
   function reportError(error: unknown) {
     console.error('[Login]', error);
@@ -102,6 +93,32 @@ export function LoginScreen() {
     // behind a generic message, making post-deploy OAuth failures undiagnosable.
     setErrorDetail(getLoginErrorDetail(error));
   }
+
+  function submitIdToken(idToken: string) {
+    loginMutation.mutate(
+      { idToken },
+      {
+        onSuccess: (session) => {
+          applyActiveFamilyFromSession(session, setFamilyId);
+          router.replace(resolvePostLoginRoute(session.familyCount) as Href);
+        },
+        onError: (error) => reportError(error),
+        onSettled: () => setSigningIn(false),
+      }
+    );
+  }
+
+  useEffect(() => {
+    if (!isConfigured || isWeb) return;
+
+    GoogleSignin.configure({
+      webClientId: getGoogleWebClientId(),
+
+      iosClientId: getGoogleIosClientId(),
+
+      offlineAccess: false,
+    });
+  }, [isConfigured, isWeb]);
 
   async function handleGoogleSignIn() {
     if (signingIn || loginMutation.isPending) {
@@ -123,17 +140,7 @@ export function LoginScreen() {
         return;
       }
 
-      loginMutation.mutate(
-        { idToken: response.data.idToken },
-        {
-          onSuccess: (session) => {
-            applyActiveFamilyFromSession(session, setFamilyId);
-            router.replace(resolvePostLoginRoute(session.familyCount) as Href);
-          },
-          onError: (error) => reportError(error),
-          onSettled: () => setSigningIn(false),
-        }
-      );
+      submitIdToken(response.data.idToken);
     } catch (error) {
       setSigningIn(false);
 
@@ -183,6 +190,24 @@ export function LoginScreen() {
           <Text className="text-center font-sans text-sm text-red-600">
             {t('auth.googleNotConfigured')}
           </Text>
+        ) : isWeb ? (
+          signingIn || loginMutation.isPending ? (
+            <ActivityIndicator color={colors.mindfulBrown60} />
+          ) : (
+            <GoogleWebSignInButton
+              clientId={getGoogleWebClientId() ?? ''}
+              onCredential={(idToken) => {
+                setHasError(false);
+                setErrorDetail(null);
+                setSigningIn(true);
+                submitIdToken(idToken);
+              }}
+              onError={() => {
+                setHasError(true);
+                setErrorDetail(t('auth.googleWebLoadFailed'));
+              }}
+            />
+          )
         ) : (
           <Pressable
             accessibilityRole="button"
