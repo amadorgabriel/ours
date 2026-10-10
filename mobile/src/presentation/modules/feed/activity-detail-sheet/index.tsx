@@ -1,5 +1,3 @@
-import * as ImageManipulator from 'expo-image-manipulator';
-import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -20,6 +18,7 @@ import {
   parseLocalDateInput,
 } from '@/core/services/usecases/activity/month-range';
 import { useTranslation } from '@/presentation/hooks/use-translation';
+import { pickCompressedVisitPhoto, type VisitPhotoSource } from '@/presentation/modules/feed/pick-visit-photo';
 import { useAppAlert } from '@/presentation/providers/alert';
 import { colors } from '@/presentation/styles/tokens';
 import { BottomSheet } from '@/ui/Feedback/BottomSheet';
@@ -34,42 +33,6 @@ type ActivityDetailSheetProps = {
 };
 
 const MAX_NOTES_LENGTH = 500;
-
-async function pickCompressedPhoto(
-  onPermissionDenied: () => void
-): Promise<{ base64: string; mimeType: string } | null> {
-  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permission.granted) {
-    onPermissionDenied();
-    return null;
-  }
-
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ['images'],
-    quality: 0.8,
-    base64: true,
-  });
-
-  if (result.canceled || !result.assets[0]) {
-    return null;
-  }
-
-  const asset = result.assets[0];
-  const manipulated = await ImageManipulator.manipulateAsync(
-    asset.uri,
-    [{ resize: { width: 1024 } }],
-    { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG, base64: true }
-  );
-
-  if (!manipulated.base64) {
-    return null;
-  }
-
-  return {
-    base64: `data:image/jpeg;base64,${manipulated.base64}`,
-    mimeType: 'image/jpeg',
-  };
-}
 
 function toIsoDateInput(date: Date): string {
   return formatLocalDateInput(date);
@@ -135,12 +98,22 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
     ]);
   }
 
-  async function handlePickPhoto() {
+  function handlePickPhoto() {
+    alert(t('visit.photoSourceTitle'), t('visit.photoSourceMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('visit.photoGallery'), onPress: () => void capturePhoto('library') },
+      { text: t('visit.photoCamera'), onPress: () => void capturePhoto('camera') },
+    ]);
+  }
+
+  async function capturePhoto(source: VisitPhotoSource) {
     try {
-      const photo = await pickCompressedPhoto(() => {
+      const photo = await pickCompressedVisitPhoto(source, () => {
         alert(
           t('alerts.galleryPermission.title'),
-          t('alerts.galleryPermission.visitMessage')
+          source === 'camera'
+            ? t('alerts.cameraPermission.visitMessage')
+            : t('alerts.galleryPermission.visitMessage')
         );
       });
       if (!photo) return;

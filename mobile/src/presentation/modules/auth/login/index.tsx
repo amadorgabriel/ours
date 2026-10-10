@@ -77,6 +77,8 @@ export function LoginScreen() {
 
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
+  const [signingIn, setSigningIn] = useState(false);
+
   const isConfigured = isGoogleSignInConfigured();
 
   useEffect(() => {
@@ -102,39 +104,44 @@ export function LoginScreen() {
   }
 
   async function handleGoogleSignIn() {
-    setHasError(false);
+    if (signingIn || loginMutation.isPending) {
+      return;
+    }
 
+    setHasError(false);
     setErrorDetail(null);
+    setSigningIn(true);
 
     try {
       await GoogleSignin.hasPlayServices();
-
       await prepareGoogleSignInForAccountPicker();
 
       const response = await GoogleSignin.signIn();
 
       if (!isSuccessResponse(response) || !response.data.idToken) {
+        setSigningIn(false);
         return;
       }
 
       loginMutation.mutate(
         { idToken: response.data.idToken },
-
         {
           onSuccess: (session) => {
             applyActiveFamilyFromSession(session, setFamilyId);
-
             router.replace(resolvePostLoginRoute(session.familyCount) as Href);
           },
-
           onError: (error) => reportError(error),
+          onSettled: () => setSigningIn(false),
         }
       );
     } catch (error) {
-      if (
-        isErrorWithCode(error) &&
-        error.code === statusCodes.SIGN_IN_CANCELLED
-      ) {
+      setSigningIn(false);
+
+      if (isErrorWithCode(error) && error.code === statusCodes.SIGN_IN_CANCELLED) {
+        return;
+      }
+
+      if (isErrorWithCode(error) && error.code === statusCodes.IN_PROGRESS) {
         return;
       }
 
@@ -180,10 +187,10 @@ export function LoginScreen() {
           <Pressable
             accessibilityRole="button"
             className="w-full flex-row items-center justify-center gap-2 rounded-xl bg-serenity-green py-3.5"
-            disabled={loginMutation.isPending}
+            disabled={signingIn || loginMutation.isPending}
             onPress={() => void handleGoogleSignIn()}
           >
-            {loginMutation.isPending ? (
+            {signingIn || loginMutation.isPending ? (
               <ActivityIndicator color={colors.textLight} />
             ) : (
               <>

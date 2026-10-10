@@ -5,11 +5,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
   Keyboard,
-  Platform,
   StyleSheet,
   type RefreshControlProps,
 } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTranslation } from '@/presentation/hooks/use-translation';
@@ -32,7 +30,6 @@ export type BottomSheetProps = {
 };
 
 const MAX_SHEET_HEIGHT_RATIO = 0.9;
-const ANDROID_KEYBOARD_INPUT_MODE = 'adjustPan' as const;
 
 export function BottomSheet({
   visible,
@@ -113,43 +110,34 @@ export function BottomSheet({
     <BottomSheetModal
       ref={sheetRef}
       accessibilityLabel={panelLabel}
-      android_keyboardInputMode={
-        Platform.OS === 'android' ? ANDROID_KEYBOARD_INPUT_MODE : 'adjustResize'
-      }
+      android_keyboardInputMode="adjustResize"
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.background}
       enableBlurKeyboardOnGesture={false}
       enableDynamicSizing
       enablePanDownToClose={enablePanDownToClose}
       handleIndicatorStyle={styles.handleIndicator}
-      keyboardBehavior="extend"
-      keyboardBlurBehavior="none"
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
       maxDynamicContentSize={maxDynamicContentSize}
       stackBehavior="push"
       onDismiss={handleDismiss}
     >
-      <KeyboardAvoidingView
-        automaticOffset
-        behavior="padding"
-        keyboardVerticalOffset={SHEET_KEYBOARD_BOTTOM_OFFSET}
-        style={styles.keyboardAvoiding}
+      <BottomSheetKeyboardAwareScrollView
+        accessibilityLabel={panelLabel}
+        accessible
+        bottomOffset={SHEET_KEYBOARD_BOTTOM_OFFSET}
+        extraKeyboardSpace={SHEET_KEYBOARD_EXTRA_SPACE}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled
+        scrollEnabled={scrollable}
+        showsVerticalScrollIndicator={false}
+        refreshControl={refreshControl}
+        contentContainerStyle={contentPadding}
       >
-        <BottomSheetKeyboardAwareScrollView
-          accessibilityLabel={panelLabel}
-          accessible
-          bottomOffset={SHEET_KEYBOARD_BOTTOM_OFFSET}
-          extraKeyboardSpace={SHEET_KEYBOARD_EXTRA_SPACE}
-          keyboardDismissMode="interactive"
-          keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled
-          scrollEnabled={scrollable}
-          showsVerticalScrollIndicator={false}
-          refreshControl={refreshControl}
-          contentContainerStyle={contentPadding}
-        >
-          {children}
-        </BottomSheetKeyboardAwareScrollView>
-      </KeyboardAvoidingView>
+        {children}
+      </BottomSheetKeyboardAwareScrollView>
     </BottomSheetModal>
   );
 }
@@ -164,8 +152,5 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     backgroundColor: `${colors.mindfulBrown60}33`,
-  },
-  keyboardAvoiding: {
-    flex: 1,
   },
 });
