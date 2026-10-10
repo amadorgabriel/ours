@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
-import PagerView from 'react-native-pager-view';
+
+import { DayPager, type DayPagerRef } from './day-pager';
 
 import type { ActivityFeedItem } from '@/core/domain/activity';
 import {
@@ -100,7 +101,7 @@ export function DayDetailSheet({
   onDateChange,
 }: DayDetailSheetProps) {
   const { t } = useTranslation();
-  const pagerRef = useRef<PagerView>(null);
+  const pagerRef = useRef<DayPagerRef>(null);
   const [previewUri, setPreviewUri] = useState<string | null>(null);
 
   const prevDate = addCalendarDays(date, -1);
@@ -152,12 +153,11 @@ export function DayDetailSheet({
       scrollable
     >
       {pages.length > 1 ? (
-        <PagerView
+        <DayPager
           ref={pagerRef}
-          initialPage={currentPageIndex}
-          style={{ height: pagerHeight }}
-          onPageSelected={(event) => {
-            const position = event.nativeEvent.position;
+          currentPageIndex={currentPageIndex}
+          height={pagerHeight}
+          onPageSelected={(position) => {
             if (position === currentPageIndex) {
               return;
             }
@@ -180,7 +180,7 @@ export function DayDetailSheet({
               />
             </View>
           ))}
-        </PagerView>
+        </DayPager>
       ) : (
         <DayPageContent
           date={date}

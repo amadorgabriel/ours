@@ -76,6 +76,7 @@ export function CallNowSheet({ visible, onClose }: CallNowSheetProps) {
 
       <View className="mt-6">
         <AssistidoPickerField
+          inline
           parents={parents}
           requiredHint={t('assistidoPicker.requiredHint')}
           value={formParentId}

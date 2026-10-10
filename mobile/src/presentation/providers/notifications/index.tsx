@@ -7,9 +7,10 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
 
 import { isCallReminderNotification } from '@/core/infra/notifications/notification-service';
-import * as Notifications from 'expo-notifications';
 
 type NotificationContextValue = {
   callNowRequested: boolean;
@@ -29,6 +30,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (Platform.OS === 'web') {
+      return;
+    }
+
     const subscription = Notifications.addNotificationResponseReceivedListener(
       handleNotificationResponse
     );

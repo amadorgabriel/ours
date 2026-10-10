@@ -104,6 +104,10 @@ export const ptBR = {
       parentMessage:
         'Permita o acesso à galeria nas configurações do dispositivo para alterar a foto.',
     },
+    cameraPermission: {
+      visitMessage:
+        'Permita o acesso à câmera nas configurações do dispositivo para fotografar a visita.',
+    },
     photoError: {
       title: 'Erro',
       processMessage: 'Não foi possível processar a foto. Tente outra imagem.',
@@ -342,6 +346,10 @@ export const ptBR = {
     end: 'Fim',
     addPhoto: 'Adicionar foto',
     changePhoto: 'Trocar foto',
+    photoSourceTitle: 'Foto da visita',
+    photoSourceMessage: 'Escolha de onde vem a imagem.',
+    photoGallery: 'Galeria',
+    photoCamera: 'Câmera',
     register: 'Registrar',
     registerError: 'Não foi possível registrar a visita. Tente novamente.',
     photoPreviewAccessibility: 'Prévia da foto da visita',

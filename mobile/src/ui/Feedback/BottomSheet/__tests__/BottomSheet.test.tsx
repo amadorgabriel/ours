@@ -1,4 +1,3 @@
-import { Platform } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
 import { BottomSheet } from '../index';
@@ -96,7 +95,7 @@ describe('BottomSheet', () => {
     expect(scrollViews[0]?.props.extraKeyboardSpace).toBe(SHEET_KEYBOARD_EXTRA_SPACE);
   });
 
-  it('delegates keyboard handling to react-native-keyboard-controller', () => {
+  it('lifts the sheet above the keyboard', () => {
     let tree!: renderer.ReactTestRenderer;
 
     act(() => {
@@ -107,11 +106,9 @@ describe('BottomSheet', () => {
       );
     });
 
-    const modal = tree.root.find((node) => node.props.keyboardBehavior === 'extend');
-    expect(modal.props.keyboardBlurBehavior).toBe('none');
+    const modal = tree.root.find((node) => node.props.keyboardBehavior === 'interactive');
+    expect(modal.props.keyboardBlurBehavior).toBe('restore');
     expect(modal.props.enableBlurKeyboardOnGesture).toBe(false);
-    expect(modal.props.android_keyboardInputMode).toBe(
-      Platform.OS === 'android' ? 'adjustPan' : 'adjustResize'
-    );
+    expect(modal.props.android_keyboardInputMode).toBe('adjustResize');
   });
 });
