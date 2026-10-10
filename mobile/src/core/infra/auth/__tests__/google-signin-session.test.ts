@@ -1,4 +1,5 @@
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { Platform } from 'react-native';
 
 import {
   clearGoogleSignInSession,
@@ -47,6 +48,17 @@ describe('clearGoogleSignInSession', () => {
     mockRevokeAccess.mockRejectedValue(new Error('revoke failed'));
 
     await expect(clearGoogleSignInSession()).resolves.toBeUndefined();
+  });
+
+  it('skips the native SDK on web', async () => {
+    const originalOs = Platform.OS;
+    Platform.OS = 'web';
+
+    await clearGoogleSignInSession();
+
+    expect(mockSignOut).not.toHaveBeenCalled();
+    expect(mockRevokeAccess).not.toHaveBeenCalled();
+    Platform.OS = originalOs;
   });
 });
 
