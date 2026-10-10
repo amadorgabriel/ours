@@ -405,6 +405,7 @@ export const ptBR = {
     registerVisit: 'Registrar visita',
     call: 'Ligação',
     visit: 'Visita',
+    close: 'Fechar',
   },
   bottomSheet: {
     panel: 'Painel',
@@ -535,6 +536,7 @@ export const ptBR = {
     signInGoogle: 'Entrar com Google',
     signInFailed: 'Não foi possível entrar. Tente novamente.',
     googleNotConfigured: 'Configure EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID em .env.local',
+    googleWebLoadFailed: 'Não foi possível carregar o login do Google no navegador.',
     unknownError: 'Erro desconhecido',
     googleDeveloperError: 'Google (10): SHA-1 ou pacote incorreto no Console — confira credencial Android',
     googleError: 'Google ({{code}})',

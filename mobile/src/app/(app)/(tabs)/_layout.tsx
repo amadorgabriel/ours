@@ -21,10 +21,11 @@ export default function AppTabsLayout() {
     <FamilySelectGuard>
       <RegisterActivityProvider>
         <View className="flex-1 bg-cream">
-          <AppHeader />
-          <View className="relative flex-1">
-            <InAppReminderBannerHost />
+          <View className="flex-1" style={{ position: 'relative' }}>
+            <AppHeader />
             <View className="flex-1">
+              <InAppReminderBannerHost />
+              <View className="flex-1">
               <Tabs
                 layout={({ state, navigation, descriptors }) => (
                   <View className="flex-1">
@@ -56,6 +57,7 @@ export default function AppTabsLayout() {
                 <Tabs.Screen name="goals" options={{ title: t('tabs.goals') }} />
                 <Tabs.Screen name="profile" options={{ title: t('tabs.profile') }} />
               </Tabs>
+              </View>
             </View>
             <RegisterActivityFab />
           </View>
