@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "skills": {
+    "eas-hosting": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-hosting/SKILL.md",
+      "computedHash": "87603d0adca02454d87b4d96c5e33edd94cddccc7d3d98847d2c589913d543d1"
+    },
+    "eas-observe": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-observe/SKILL.md",
+      "computedHash": "1173366109b33145ff03999813fc26d51f7d458a4f5ece095bc94a23d58e6570"
+    },
+    "eas-simulator": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-simulator/SKILL.md",
+      "computedHash": "f2abfe01fb8c9b28d413486564995c02c8a73f421bb34c1d6f0a7e3ce2a85d0b"
+    },
+    "eas-update-insights": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-update-insights/SKILL.md",
+      "computedHash": "00a3ebec0de9e056488567277a7bc137a0d53ab23584503abfdc93aec541f4b3"
+    },
+    "eas-workflows": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-workflows/SKILL.md",
+      "computedHash": "45ae128c7328a149b61b367ca667400543d7f7fc9ba2f3be973fca219c40d490"
+    },
+    "expo-animation": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-animation/SKILL.md",
+      "computedHash": "8f37108472fb5bcaa9978049864a09861c1e4a1980dc13c46b317865452300ab"
+    },
+    "expo-data-fetching": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-data-fetching/SKILL.md",
+      "computedHash": "4422e8a6484d0843878bc1b954ae385b9b2deb6271ab1aa42876d800ffcf6276"
+    },
+    "expo-design-system": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-design-system/SKILL.md",
+      "computedHash": "83c9772c14be17d62d0ede65bab366aef0ae3ea51eca8638d0492163bef1d76f"
+    },
+    "expo-dev-client": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-dev-client/SKILL.md",
+      "computedHash": "c9ae54e5a7e37a3bb02e98ccd63de02167f99c56f0e5131eb832f8d50e6420af"
+    },
+    "expo-examples": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-examples/SKILL.md",
+      "computedHash": "de8d1c92fa0053f4b83c14e976dc855ebb42a6a8fa8c42b22df86b78b58e099c"
+    },
+    "expo-native-ui": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-native-ui/SKILL.md",
+      "computedHash": "e8b0afc3f853e2248726ff77fc79d91e7d784f4f1db1cda89e0a41b389326591"
+    },
+    "expo-overview": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-overview/SKILL.md",
+      "computedHash": "2c36678b83153fdc259ac1cad0866806a9d1c4a48b5dec958b1e85c46ba13870"
+    },
+    "expo-router": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-router/SKILL.md",
+      "computedHash": "feef393db7b7b59c8180c917e3edc2f3db9e3dbfe4b6dcfeb2cfe2e4c47f8e7c"
+    },
+    "expo-skill-feedback": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-skill-feedback/SKILL.md",
+      "computedHash": "7dbd7e3325d416401fe3d889d6450faee08740e73c3f974aa71ed124d06cec7c"
+    },
+    "expo-ui": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-ui/SKILL.md",
+      "computedHash": "a4e73e1a419ac4fe0fee837cb234de211999443cf83d1a6656f7967bfe7643fa"
+    },
+    "expo-upgrade": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-upgrade/SKILL.md",
+      "computedHash": "72c4890a8f18181e0df66fd883d040f51ad0b860b7fef426004e4413e2223248"
+    }
+  }
+}
