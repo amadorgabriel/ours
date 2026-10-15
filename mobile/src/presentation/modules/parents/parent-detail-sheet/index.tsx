@@ -56,7 +56,7 @@ export function ParentDetailSheet({
   onClose,
 }: ParentDetailSheetProps) {
   const { t } = useTranslation();
-  const { data: parent, isLoading, isError, refetch } = useParent(parentId, visible);
+  const { data: parent, isLoading, isError, isRefetching, refetch } = useParent(parentId, visible);
   const updateParent = useUpdateParent(parentId ?? '');
   const [isEditing, setIsEditing] = useState(false);
   const [medicalInfo, setMedicalInfo] = useState('');
@@ -132,6 +132,22 @@ export function ParentDetailSheet({
                 {relationshipLabel(parent.relationship)}
               </Text>
             </View>
+            <View className="flex-row">
+            {!isEditing ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('parents.refreshDetailAccessibility')}
+                className="rounded-lg px-3 py-2"
+                disabled={isRefetching}
+                onPress={() => {
+                  void refetch();
+                }}
+              >
+                <Text className="font-sans-semibold text-sm text-serenity-green">
+                  {isRefetching ? t('common.loading') : t('parents.refreshDetail')}
+                </Text>
+              </Pressable>
+            ) : null}
             {isAdmin ? (
               <Pressable
                 accessibilityRole="button"
@@ -152,6 +168,7 @@ export function ParentDetailSheet({
                 </Text>
               </Pressable>
             ) : null}
+            </View>
           </View>
 
           {isEditing ? (

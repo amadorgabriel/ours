@@ -1,5 +1,7 @@
 import { Modal, Pressable, Text, View } from 'react-native';
 
+import { useTranslation } from '@/presentation/hooks/use-translation';
+
 export type ConfirmDialogButton = {
   text: string;
   style?: 'default' | 'cancel' | 'destructive';
@@ -22,6 +24,8 @@ export function ConfirmDialog({
   buttons,
   onRequestClose,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation();
+
   if (!visible) {
     return null;
   }
@@ -40,7 +44,7 @@ export function ConfirmDialog({
       <View className="flex-1 bg-black/40">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={title}
+          accessibilityLabel={t('common.closeDialog')}
           className="absolute inset-0"
           onPress={onRequestClose}
         />

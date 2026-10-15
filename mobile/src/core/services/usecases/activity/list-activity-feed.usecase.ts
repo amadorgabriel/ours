@@ -39,7 +39,7 @@ function normalizeFeedItem(item: ActivityFeedItem): ActivityFeedItem {
         userId: raw.userId,
         userName: raw.userName,
         seenAt: raw.seenAt,
-        picture: raw.picture ?? raw.userPicture,
+        picture: raw.picture || raw.userPicture,
       };
     }),
   };

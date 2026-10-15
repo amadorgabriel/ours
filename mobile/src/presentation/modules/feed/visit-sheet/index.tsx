@@ -19,6 +19,7 @@ import { buildVisitSchedule } from '@/presentation/modules/feed/visit-schedule';
 import { useAppAlert } from '@/presentation/providers/alert';
 import { useAssistido } from '@/presentation/providers/assistido';
 import { type } from '@/presentation/styles/tokens';
+import { ImagePreview } from '@/ui/Feedback/ImagePreview';
 import { DatePickerField } from '@/ui/Forms/DatePickerField';
 import { resolveInitialFormParentId } from '@/ui/Forms/AssistidoPickerField';
 
@@ -59,6 +60,7 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
   const [startDate, setStartDate] = useState(toIsoDateInput(new Date()));
   const [endDate, setEndDate] = useState(toIsoDateInput(new Date()));
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [fullscreenPhotoVisible, setFullscreenPhotoVisible] = useState(false);
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [photoMimeType, setPhotoMimeType] = useState<string | undefined>();
 
@@ -73,6 +75,7 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
     setStartDate(toIsoDateInput(new Date()));
     setEndDate(toIsoDateInput(new Date()));
     setPhotoPreview(null);
+    setFullscreenPhotoVisible(false);
     setPhotoBase64(null);
     setPhotoMimeType(undefined);
     registerVisit.reset();
@@ -163,9 +166,14 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
 
       {photoPreview ? (
         <FormHost>
-          <Pressable accessibilityRole="button">
+          <Pressable
+            accessibilityLabel={t('activityCard.visitPhotoPreviewAccessibility')}
+            accessibilityRole="button"
+            onPress={() => setFullscreenPhotoVisible(true)}
+          >
             <Image
-              accessibilityLabel={t('visit.photoPreviewAccessibility')}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
               source={{ uri: photoPreview }}
               style={visitPhotoPreviewStyle}
             />
@@ -195,6 +203,11 @@ export function VisitSheet({ visible, onClose }: VisitSheetProps) {
         }
       />
     </ActivityFormSheet>
+    <ImagePreview
+      uri={photoPreview ?? ''}
+      visible={fullscreenPhotoVisible}
+      onClose={() => setFullscreenPhotoVisible(false)}
+    />
     </>
   );
 }

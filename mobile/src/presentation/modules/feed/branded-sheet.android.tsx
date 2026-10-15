@@ -30,10 +30,10 @@ export function BrandedSheet({
     }
 
     void SystemUI.setBackgroundColorAsync(colors.bgCream).catch(() => undefined);
-    // Absent from the current dev client. Optional lookup does not throw or load the JS package.
+    // Native "dark" means dark icons on a light bar. The module is missing until a dev client rebuild.
     requireOptionalNativeModule<{ setStyle(style: 'light' | 'dark'): void }>(
       'ExpoNavigationBar',
-    )?.setStyle('light');
+    )?.setStyle('dark');
   }, [isPresented]);
 
   useEffect(() => {
