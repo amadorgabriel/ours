@@ -1,4 +1,4 @@
-import { colors, spacing } from '../tokens';
+import { colors, spacing, type } from '../tokens';
 
 describe('design tokens', () => {
   it('exports core color tokens from DESIGN.md', () => {
@@ -9,5 +9,11 @@ describe('design tokens', () => {
 
   it('exports spacing scale', () => {
     expect(spacing.md).toBe(16);
+  });
+
+  it('exports type styles from the existing font families', () => {
+    expect(type.title.fontFamily).toBe('Urbanist_600SemiBold');
+    expect(type.body.fontSize).toBe(14);
+    expect(type.danger.color).toBe(colors.danger);
   });
 });

@@ -418,6 +418,8 @@ export const ptBR = {
   },
   datePicker: {
     selectDate: 'Selecionar data',
+    clear: 'Limpar',
+    clearAccessibility: 'Limpar data',
   },
   assistido: {
     title: 'Assistido',

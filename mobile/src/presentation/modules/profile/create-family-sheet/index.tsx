@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
 
 import { useCreateFamily } from '@/core/services/usecases/family/index.hooks';
 import { getFamilyErrorMessage } from '@/presentation/modules/family/family-api-error';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { colors } from '@/presentation/styles/tokens';
-import { BottomSheet } from '@/ui/Feedback/BottomSheet';
-import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
+import { AppSheet } from '@/presentation/modules/feed/activity-form-sheet';
 
 type CreateFamilySheetProps = {
   visible: boolean;
@@ -41,19 +40,15 @@ export function CreateFamilySheet({ visible, onClose }: CreateFamilySheetProps) 
   }
 
   return (
-    <BottomSheet
+    <AppSheet
+      description={t('profile.createFamilyDescription')}
+      testID="create-family-sheet"
+      title={t('profile.newFamily')}
       visible={visible}
       onClose={handleClose}
-      accessibilityLabel={t('profile.newFamily')}
-      scrollable
     >
-      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('profile.newFamily')}</Text>
-      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
-        {t('profile.createFamilyDescription')}
-      </Text>
-
-      <Text className="mt-6 font-sans text-sm text-mindful-brown">{t('profile.familyName')}</Text>
-      <SheetTextInput
+      <Text className="mt-2 font-sans text-sm text-mindful-brown">{t('profile.familyName')}</Text>
+      <TextInput
         accessibilityLabel={t('profile.familyNameAccessibility')}
         className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
         maxLength={100}
@@ -82,6 +77,6 @@ export function CreateFamilySheet({ visible, onClose }: CreateFamilySheetProps) 
           <Text className="font-sans-semibold text-light">{t('profile.createFamily')}</Text>
         )}
       </Pressable>
-    </BottomSheet>
+    </AppSheet>
   );
 }

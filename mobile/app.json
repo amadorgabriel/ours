@@ -30,6 +30,12 @@
       "expo-router",
       "expo-dev-client",
       [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": false
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#FCF8F4",

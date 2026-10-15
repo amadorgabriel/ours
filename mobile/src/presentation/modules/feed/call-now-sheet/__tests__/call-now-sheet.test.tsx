@@ -44,11 +44,7 @@ describe('CallNowSheet', () => {
       tree = renderer.create(<CallNowSheet visible onClose={onClose} />);
     });
 
-    const registerButton = tree.root.find(
-      (node) =>
-        node.props.accessibilityRole === 'button' &&
-        node.props.accessibilityLabel === 'Registrar ligação'
-    );
+    const registerButton = tree.root.find((node) => node.props.testID === 'register-call');
 
     act(() => {
       registerButton.props.onPress();

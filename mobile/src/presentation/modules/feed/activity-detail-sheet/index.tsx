@@ -1,12 +1,6 @@
+import { Text } from '@expo/ui';
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  Switch,
-  Text,
-  View,
-} from 'react-native';
+import { Image, Pressable, Text as NativeText, View } from 'react-native';
 
 import type { ActivityFeedItem } from '@/core/domain/activity';
 import {
@@ -18,21 +12,24 @@ import {
   parseLocalDateInput,
 } from '@/core/services/usecases/activity/month-range';
 import { useTranslation } from '@/presentation/hooks/use-translation';
-import { pickCompressedVisitPhoto, type VisitPhotoSource } from '@/presentation/modules/feed/pick-visit-photo';
+import { relationshipLabel } from '@/presentation/modules/family/relationship-label';
+import { ActivityFormSheet } from '@/presentation/modules/feed/activity-form-sheet';
+import { AllDayField, FormActionRow, FormHost, FormTextAction, NotesField } from '@/presentation/modules/feed/form-controls';
+import { visitPhotoPreviewStyle } from '@/presentation/modules/feed/form-metrics';
+import { useVisitPhotoPicker } from '@/presentation/modules/feed/use-visit-photo';
+import { buildVisitSchedule } from '@/presentation/modules/feed/visit-schedule';
 import { useAppAlert } from '@/presentation/providers/alert';
-import { colors } from '@/presentation/styles/tokens';
-import { BottomSheet } from '@/ui/Feedback/BottomSheet';
-import { ImagePreview } from '@/ui/Feedback/ImagePreview';
+import { useOptionalAssistido } from '@/presentation/providers/assistido';
+import { type } from '@/presentation/styles/tokens';
+import { PersonAvatar } from '@/ui/DataDisplay/PersonAvatar';
 import { DatePickerField } from '@/ui/Forms/DatePickerField';
-import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
+import { ImagePreview } from '@/ui/Feedback/ImagePreview';
 
 type ActivityDetailSheetProps = {
   visible: boolean;
   item: ActivityFeedItem | null;
   onClose: () => void;
 };
-
-const MAX_NOTES_LENGTH = 500;
 
 function toIsoDateInput(date: Date): string {
   return formatLocalDateInput(date);
@@ -41,10 +38,12 @@ function toIsoDateInput(date: Date): string {
 export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSheetProps) {
   const { t } = useTranslation();
   const { alert } = useAppAlert();
+  const assistido = useOptionalAssistido();
   const updateActivity = useUpdateActivity();
   const deleteActivity = useDeleteActivity();
-  const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const { choosePhoto } = useVisitPhotoPicker();
   const [notes, setNotes] = useState('');
+  const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [allDay, setAllDay] = useState(true);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -53,17 +52,29 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
   const [photoMimeType, setPhotoMimeType] = useState<string | undefined>();
   const [removePhoto, setRemovePhoto] = useState(false);
   const [fullscreenPhotoVisible, setFullscreenPhotoVisible] = useState(false);
+  const [baseline, setBaseline] = useState({
+    notes: '',
+    allDay: true,
+    startDate: '',
+    endDate: '',
+  });
 
   useEffect(() => {
     if (!item || !visible) {
       return;
     }
 
+    const nextNotes = item.notes ?? '';
+    const nextAllDay = item.allDay ?? true;
+    const nextStart = item.startAt ? toIsoDateInput(new Date(item.startAt)) : toIsoDateInput(new Date());
+    const nextEnd = item.endAt ? toIsoDateInput(new Date(item.endAt)) : toIsoDateInput(new Date());
+
     setMode('view');
-    setNotes(item.notes ?? '');
-    setAllDay(item.allDay ?? true);
-    setStartDate(item.startAt ? toIsoDateInput(new Date(item.startAt)) : toIsoDateInput(new Date()));
-    setEndDate(item.endAt ? toIsoDateInput(new Date(item.endAt)) : toIsoDateInput(new Date()));
+    setNotes(nextNotes);
+    setAllDay(nextAllDay);
+    setStartDate(nextStart);
+    setEndDate(nextEnd);
+    setBaseline({ notes: nextNotes, allDay: nextAllDay, startDate: nextStart, endDate: nextEnd });
     setPhotoPreview(item.photoUrl ?? null);
     setPhotoBase64(null);
     setPhotoMimeType(undefined);
@@ -71,6 +82,8 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
     setFullscreenPhotoVisible(false);
     updateActivity.reset();
     deleteActivity.reset();
+    // Reset only when the opened activity changes. Mutation objects are unstable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item, visible]);
 
   function handleClose() {
@@ -98,35 +111,6 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
     ]);
   }
 
-  function handlePickPhoto() {
-    alert(t('visit.photoSourceTitle'), t('visit.photoSourceMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('visit.photoGallery'), onPress: () => void capturePhoto('library') },
-      { text: t('visit.photoCamera'), onPress: () => void capturePhoto('camera') },
-    ]);
-  }
-
-  async function capturePhoto(source: VisitPhotoSource) {
-    try {
-      const photo = await pickCompressedVisitPhoto(source, () => {
-        alert(
-          t('alerts.galleryPermission.title'),
-          source === 'camera'
-            ? t('alerts.cameraPermission.visitMessage')
-            : t('alerts.galleryPermission.visitMessage')
-        );
-      });
-      if (!photo) return;
-
-      setPhotoPreview(photo.base64);
-      setPhotoBase64(photo.base64);
-      setPhotoMimeType(photo.mimeType);
-      setRemovePhoto(false);
-    } catch {
-      alert(t('alerts.photoError.title'), t('alerts.photoError.processMessage'));
-    }
-  }
-
   function handleRemovePhoto() {
     setPhotoPreview(null);
     setPhotoBase64(null);
@@ -137,10 +121,11 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
   function handleSaveCall() {
     if (!item) return;
 
+    const trimmed = notes.trim();
     updateActivity.mutate(
       {
         activityId: item.id,
-        data: { notes: notes.trim() || undefined },
+        data: { notes: trimmed || undefined },
       },
       {
         onSuccess: () => {
@@ -153,49 +138,25 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
   function handleSaveVisit() {
     if (!item) return;
 
-    const start = parseLocalDateInput(startDate);
-    if (!start) {
-      alert(
-        t('alerts.visit.invalidStartDate.title'),
-        t('alerts.visit.invalidStartDate.message')
-      );
+    const schedule = buildVisitSchedule({ allDay, startDate, endDate });
+    if (!schedule.ok) {
+      if (schedule.error === 'invalidStart') {
+        alert(t('alerts.visit.invalidStartDate.title'), t('alerts.visit.invalidStartDate.message'));
+      } else if (schedule.error === 'invalidEnd') {
+        alert(t('alerts.visit.invalidEndDate.title'), t('alerts.visit.invalidEndDate.message'));
+      } else {
+        alert(t('alerts.visit.endBeforeStart.title'), t('alerts.visit.endBeforeStart.message'));
+      }
       return;
     }
-
-    let end: Date | undefined;
-    if (!allDay) {
-      const parsedEnd = parseLocalDateInput(endDate);
-      if (!parsedEnd) {
-        alert(
-          t('alerts.visit.invalidEndDate.title'),
-          t('alerts.visit.invalidEndDate.message')
-        );
-        return;
-      }
-
-      if (parsedEnd < start) {
-        alert(
-          t('alerts.visit.endBeforeStart.title'),
-          t('alerts.visit.endBeforeStart.message')
-        );
-        return;
-      }
-
-      end = parsedEnd;
-    }
-
-    const startAt = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0, 0);
-    const endAt = end
-      ? new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59, 999)
-      : undefined;
 
     updateActivity.mutate(
       {
         activityId: item.id,
         data: {
           allDay,
-          startAt: startAt.toISOString(),
-          endAt: endAt?.toISOString(),
+          startAt: schedule.startAt,
+          endAt: schedule.endAt,
           photoBase64: photoBase64 ?? undefined,
           mimeType: photoMimeType,
           removePhoto,
@@ -215,199 +176,188 @@ export function ActivityDetailSheet({ visible, item, onClose }: ActivityDetailSh
 
   const isPending = updateActivity.isPending || deleteActivity.isPending;
   const hasMutationError = updateActivity.isError || deleteActivity.isError;
+  const photoUri = mode === 'view' ? (item.photoUrl ?? '') : (photoPreview ?? '');
+  const parent = item.parentId
+    ? assistido?.parents.find((candidate) => candidate.id === item.parentId)
+    : undefined;
+  const assistidoName = item.parentName ?? parent?.name;
+  const callDirty = notes.trim() !== baseline.notes.trim();
+  const visitDirty =
+    allDay !== baseline.allDay ||
+    startDate !== baseline.startDate ||
+    endDate !== baseline.endDate ||
+    Boolean(photoBase64) ||
+    removePhoto;
 
   return (
     <>
-    <BottomSheet
-      visible={visible}
-      onClose={handleClose}
-      accessibilityLabel={t('activityDetail.sheetAccessibility')}
-      scrollable
-    >
-      <Text className="font-sans-semibold text-xl text-mindful-brown">
-        {mode === 'edit' ? t('activityDetail.editTitle') : t('activityDetail.title')}
-      </Text>
+      <ActivityFormSheet
+        testID="activity-detail-sheet"
+        title={mode === 'edit' ? t('activityDetail.editTitle') : t('activityDetail.title')}
+        visible={visible}
+        onClose={handleClose}
+      >
+        {mode === 'view' ? (
+          <>
+            <FormHost>
+              <View className="rounded-2xl bg-white px-4 py-3">
+                {assistidoName ? (
+                  <View className="flex-row items-center">
+                    <PersonAvatar name={assistidoName} photoUri={parent?.photoData} />
+                    <View className="ml-3 min-w-0 flex-1">
+                      <NativeText className="font-sans text-xs text-mindful-brown/60">
+                        {t('common.assistido')}
+                      </NativeText>
+                      <NativeText className="font-sans-semibold text-base text-mindful-brown" numberOfLines={1}>
+                        {assistidoName}
+                      </NativeText>
+                      {parent?.relationship ? (
+                        <NativeText className="font-sans text-sm text-mindful-brown/70" numberOfLines={1}>
+                          {relationshipLabel(parent.relationship)}
+                        </NativeText>
+                      ) : null}
+                    </View>
+                  </View>
+                ) : null}
+                <NativeText className={`font-sans text-sm text-mindful-brown ${assistidoName ? 'mt-3' : ''}`}>
+                  {item.userName}
+                </NativeText>
+                {item.notes ? (
+                  <NativeText className="mt-2 font-sans text-sm text-mindful-brown/80">{item.notes}</NativeText>
+                ) : null}
+              </View>
+            </FormHost>
+            {item.type === 'Visit' && item.photoUrl && !removePhoto ? (
+              <FormHost>
+                <Pressable
+                  accessibilityLabel={t('activityCard.visitPhotoPreviewAccessibility')}
+                  accessibilityRole="button"
+                  onPress={() => setFullscreenPhotoVisible(true)}
+                >
+                  <Image
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                    source={{ uri: item.photoUrl }}
+                    style={visitPhotoPreviewStyle}
+                  />
+                </Pressable>
+              </FormHost>
+            ) : null}
 
-      {mode === 'view' ? (
-        <>
-          <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{item.userName}</Text>
-          {item.parentName ? (
-            <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
-              {t('activityCard.assistido', { name: item.parentName })}
-            </Text>
-          ) : null}
-          {item.notes ? (
-            <Text className="mt-3 font-sans text-sm text-mindful-brown">{item.notes}</Text>
-          ) : null}
-          {item.type === 'Visit' && item.photoUrl && !removePhoto ? (
-            <Pressable
-              accessibilityLabel={t('activityCard.visitPhotoPreviewAccessibility')}
-              accessibilityRole="button"
-              className="mt-3 overflow-hidden rounded-xl"
-              onPress={() => setFullscreenPhotoVisible(true)}
-            >
-              <Image
-                accessibilityElementsHidden
-                importantForAccessibility="no-hide-descendants"
-                className="h-40 w-full"
-                resizeMode="cover"
-                source={{ uri: item.photoUrl }}
-              />
-            </Pressable>
-          ) : null}
+            <FormActionRow
+              primaryDisabled={isPending}
+              primaryLabel={t('common.edit')}
+              primaryTestID="activity-edit"
+              secondaryDisabled={isPending}
+              secondaryLabel={t('common.delete')}
+              secondaryTestID="activity-delete"
+              secondaryTone="danger"
+              onPrimary={() => setMode('edit')}
+              onSecondary={handleDelete}
+            />
+          </>
+        ) : null}
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('activityDetail.editAccessibility')}
-            className="mt-6 items-center rounded-xl border border-serenity-green py-3"
-            disabled={isPending}
-            onPress={() => setMode('edit')}
-          >
-            <Text className="font-sans-semibold text-serenity-green">{t('common.edit')}</Text>
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('activityDetail.deleteAccessibility')}
-            className="mt-3 items-center rounded-xl border border-red-500 py-3"
-            disabled={isPending}
-            onPress={handleDelete}
-          >
-            {deleteActivity.isPending ? (
-              <ActivityIndicator color="#DC2626" />
-            ) : (
-              <Text className="font-sans-semibold text-red-600">{t('common.delete')}</Text>
-            )}
-          </Pressable>
-        </>
-      ) : null}
-
-      {mode === 'edit' && item.type === 'Call' ? (
-        <>
-          <View className="mt-4">
-            <Text className="font-sans text-sm text-mindful-brown">{t('call.notes')}</Text>
-            <SheetTextInput
-              accessibilityLabel={t('call.notesAccessibility')}
-              className="mt-2 min-h-[96px] rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
-              maxLength={MAX_NOTES_LENGTH}
-              multiline
+        {mode === 'edit' && item.type === 'Call' ? (
+          <>
+            <NotesField
+              label={t('call.notes')}
               placeholder={t('call.notesPlaceholder')}
-              placeholderTextColor={colors.mindfulBrown60}
-              textAlignVertical="top"
+              testID="call-notes"
               value={notes}
               onChangeText={setNotes}
             />
-          </View>
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('activityDetail.saveAccessibility')}
-            className="mt-4 items-center rounded-xl bg-serenity-green py-3"
-            disabled={isPending}
-            onPress={handleSaveCall}
-          >
-            {updateActivity.isPending ? (
-              <ActivityIndicator color={colors.textLight} />
-            ) : (
-              <Text className="font-sans-semibold text-light">{t('common.save')}</Text>
-            )}
-          </Pressable>
-        </>
-      ) : null}
-
-      {mode === 'edit' && item.type === 'Visit' ? (
-        <>
-          <View className="mt-4 flex-row items-center justify-between rounded-xl bg-white px-4 py-3">
-            <Text className="font-sans text-sm text-mindful-brown">{t('visit.allDay')}</Text>
-            <Switch accessibilityLabel={t('visit.allDay')} value={allDay} onValueChange={setAllDay} />
-          </View>
-
-          <View className="mt-4">
-            <DatePickerField
-              accessibilityLabel={t('visit.start')}
-              label={t('visit.start')}
-              value={startDate}
-              onChange={setStartDate}
+            <FormActionRow
+              primaryDisabled={isPending || !callDirty}
+              primaryLabel={t('common.save')}
+              primaryPending={isPending}
+              primaryTestID="activity-save"
+              onPrimary={handleSaveCall}
             />
-          </View>
+          </>
+        ) : null}
 
-          {!allDay ? (
-            <View className="mt-4">
+        {mode === 'edit' && item.type === 'Visit' ? (
+          <>
+            <AllDayField label={t('visit.allDay')} value={allDay} onValueChange={setAllDay} />
+
+            <FormHost>
               <DatePickerField
-                accessibilityLabel={t('visit.end')}
-                label={t('visit.end')}
-                minimumDate={parseLocalDateInput(startDate) ?? undefined}
-                value={endDate}
-                onChange={setEndDate}
+                allowClear
+                accessibilityLabel={t('visit.start')}
+                label={t('visit.start')}
+                value={startDate}
+                onChange={setStartDate}
               />
-            </View>
-          ) : null}
+            </FormHost>
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={photoPreview ? t('visit.changePhoto') : t('visit.addPhoto')}
-            className="mt-4 items-center rounded-xl border border-serenity-green py-3"
-            onPress={() => void handlePickPhoto()}
-          >
-            <Text className="font-sans-semibold text-serenity-green">
-              {photoPreview ? t('visit.changePhoto') : t('visit.addPhoto')}
-            </Text>
-          </Pressable>
-
-          {photoPreview ? (
-            <>
-              <Pressable
-                accessibilityLabel={t('activityCard.visitPhotoPreviewAccessibility')}
-                accessibilityRole="button"
-                className="mt-4 overflow-hidden rounded-xl"
-                onPress={() => setFullscreenPhotoVisible(true)}
-              >
-                <Image
-                  accessibilityElementsHidden
-                  importantForAccessibility="no-hide-descendants"
-                  className="h-40 w-full"
-                  resizeMode="cover"
-                  source={{ uri: photoPreview }}
+            {!allDay ? (
+              <FormHost>
+                <DatePickerField
+                  allowClear
+                  accessibilityLabel={t('visit.end')}
+                  label={t('visit.end')}
+                  minimumDate={parseLocalDateInput(startDate) ?? undefined}
+                  value={endDate}
+                  onChange={setEndDate}
                 />
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('activityDetail.removePhotoAccessibility')}
-                className="mt-3 items-center rounded-xl border border-red-500 py-3"
+              </FormHost>
+            ) : null}
+
+            {photoPreview ? (
+              <FormHost>
+                <Pressable
+                  accessibilityLabel={t('activityCard.visitPhotoPreviewAccessibility')}
+                  accessibilityRole="button"
+                  onPress={() => setFullscreenPhotoVisible(true)}
+                >
+                  <Image
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                    source={{ uri: photoPreview }}
+                    style={visitPhotoPreviewStyle}
+                  />
+                </Pressable>
+              </FormHost>
+            ) : null}
+
+            {photoPreview ? (
+              <FormTextAction
+                label={t('activityDetail.removePhoto')}
+                testID="remove-visit-photo"
                 onPress={handleRemovePhoto}
-              >
-                <Text className="font-sans-semibold text-red-600">
-                  {t('activityDetail.removePhoto')}
-                </Text>
-              </Pressable>
-            </>
-          ) : null}
+              />
+            ) : null}
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('activityDetail.saveAccessibility')}
-            className="mt-4 items-center rounded-xl bg-serenity-green py-3"
-            disabled={isPending}
-            onPress={handleSaveVisit}
-          >
-            {updateActivity.isPending ? (
-              <ActivityIndicator color={colors.textLight} />
-            ) : (
-              <Text className="font-sans-semibold text-light">{t('common.save')}</Text>
-            )}
-          </Pressable>
-        </>
-      ) : null}
+            <FormActionRow
+              primaryDisabled={isPending || !visitDirty}
+              primaryLabel={t('common.save')}
+              primaryPending={isPending}
+              primaryTestID="activity-save"
+              secondaryLabel={photoPreview ? t('visit.changePhoto') : t('visit.addPhoto')}
+              secondaryTestID="visit-photo"
+              onPrimary={handleSaveVisit}
+              onSecondary={() =>
+                choosePhoto((photo) => {
+                  setPhotoPreview(photo.base64);
+                  setPhotoBase64(photo.base64);
+                  setPhotoMimeType(photo.mimeType);
+                  setRemovePhoto(false);
+                })
+              }
+            />
+          </>
+        ) : null}
 
-      {hasMutationError ? (
-        <Text className="mt-2 font-sans text-sm text-red-600">{t('activityDetail.saveError')}</Text>
-      ) : null}
-    </BottomSheet>
-    <ImagePreview
-      uri={mode === 'view' ? (item.photoUrl ?? '') : (photoPreview ?? '')}
-      visible={fullscreenPhotoVisible}
-      onClose={() => setFullscreenPhotoVisible(false)}
-    />
-  </>
+        {hasMutationError ? (
+          <Text textStyle={type.danger}>{t('activityDetail.saveError')}</Text>
+        ) : null}
+      </ActivityFormSheet>
+      <ImagePreview
+        uri={photoUri}
+        visible={fullscreenPhotoVisible}
+        onClose={() => setFullscreenPhotoVisible(false)}
+      />
+    </>
   );
 }

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 
 import type { ParentId, ParentSummary } from '@/core/domain/parent';
 import { useTranslation } from '@/presentation/hooks/use-translation';
@@ -141,7 +141,7 @@ export function AssistidoPickerField({
               </Text>
             </View>
           </View>
-        ) : (
+        ) : parents.length <= 3 ? (
           <View className="mt-2 flex-row gap-1 rounded-2xl bg-white p-1">
             {parents.map((parent) => {
               const isSelected = parent.id === value;
@@ -169,6 +169,39 @@ export function AssistidoPickerField({
               );
             })}
           </View>
+        ) : (
+          <ScrollView
+            horizontal
+            className="mt-2"
+            contentContainerStyle={{ gap: 8, paddingRight: 4 }}
+            showsHorizontalScrollIndicator={false}
+          >
+            {parents.map((parent) => {
+              const isSelected = parent.id === value;
+              return (
+                <Pressable
+                  key={parent.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('assistidoPicker.selectAccessibility', { name: parent.name })}
+                  accessibilityState={{ selected: isSelected }}
+                  className={`h-14 flex-row items-center gap-2 rounded-2xl px-3 ${
+                    isSelected ? 'bg-serenity-green/15' : 'bg-white'
+                  }`}
+                  onPress={() => onChange(parent.id)}
+                >
+                  <AssistidoPortrait parent={parent} size="sm" />
+                  <Text
+                    className={`font-sans-semibold text-sm ${
+                      isSelected ? 'text-serenity-green' : 'text-mindful-brown'
+                    }`}
+                    numberOfLines={1}
+                  >
+                    {firstName(parent.name)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         )}
         {!displayName && parents.length > 1 && requiredHint ? (
           <Text className="mt-1 font-sans text-xs text-mindful-brown/60">{requiredHint}</Text>
