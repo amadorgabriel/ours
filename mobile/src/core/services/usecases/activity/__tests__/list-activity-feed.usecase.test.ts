@@ -32,6 +32,71 @@ describe('ListActivityFeedUseCase', () => {
     expect(result).toEqual(feed);
   });
 
+  it('maps userPicture from the API onto seen-by picture', async () => {
+    const request = jest.fn().mockResolvedValue({
+      statusCode: 200,
+      data: {
+        items: [
+          {
+            id: 'act-1',
+            type: 'Call',
+            createdAt: '2026-06-18T12:00:00.000Z',
+            userId: 'user-1',
+            userName: 'Ana',
+            seenBy: [
+              {
+                userId: 'user-2',
+                userName: 'Bruno',
+                seenAt: '2026-06-18T12:05:00.000Z',
+                userPicture: 'https://example.com/bruno.jpg',
+              },
+            ],
+          },
+        ],
+        unreadCount: 0,
+      },
+    });
+    const httpClient: IHttpClient = { request };
+    const useCase = new ListActivityFeedUseCase(httpClient);
+
+    const result = await useCase.listFeed();
+
+    expect(result.items[0].seenBy?.[0].picture).toBe('https://example.com/bruno.jpg');
+  });
+
+  it('falls back to userPicture when picture is empty', async () => {
+    const request = jest.fn().mockResolvedValue({
+      statusCode: 200,
+      data: {
+        items: [
+          {
+            id: 'act-1',
+            type: 'Call',
+            createdAt: '2026-06-18T12:00:00.000Z',
+            userId: 'user-1',
+            userName: 'Ana',
+            seenBy: [
+              {
+                userId: 'user-2',
+                userName: 'Bruno',
+                seenAt: '2026-06-18T12:05:00.000Z',
+                picture: '',
+                userPicture: 'https://example.com/bruno.jpg',
+              },
+            ],
+          },
+        ],
+        unreadCount: 0,
+      },
+    });
+    const httpClient: IHttpClient = { request };
+    const useCase = new ListActivityFeedUseCase(httpClient);
+
+    const result = await useCase.listFeed();
+
+    expect(result.items[0].seenBy?.[0].picture).toBe('https://example.com/bruno.jpg');
+  });
+
   it('loads feed with date range params', async () => {
     const feed: ActivityFeedResponse = { items: [], unreadCount: 0 };
     const request = jest.fn().mockResolvedValue({ statusCode: 200, data: feed });

@@ -11,6 +11,7 @@ export type DatePickerFieldProps = {
   accessibilityLabel?: string;
   minimumDate?: Date;
   maximumDate?: Date;
+  allowClear?: boolean;
 };
 
 function formatDisplayDate(isoDate: string): string {
@@ -49,6 +50,7 @@ export function DatePickerField({
   accessibilityLabel,
   minimumDate,
   maximumDate,
+  allowClear = false,
 }: DatePickerFieldProps) {
   const { t } = useTranslation();
   const [showPicker, setShowPicker] = useState(false);
@@ -83,16 +85,28 @@ export function DatePickerField({
   return (
     <View>
       <Text className="font-sans text-sm text-mindful-brown">{label}</Text>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel ?? t('datePicker.selectDate')}
-        className="mt-2 rounded-xl bg-white px-4 py-3"
-        onPress={openPicker}
-      >
-        <Text className="font-sans text-mindful-brown">
-          {value.trim() ? formatDisplayDate(value) : t('datePicker.selectDate')}
-        </Text>
-      </Pressable>
+      <View className="mt-2 flex-row items-center gap-2">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel ?? t('datePicker.selectDate')}
+          className="min-h-12 flex-1 justify-center rounded-xl border border-mindful-brown/20 bg-white px-4 py-3"
+          onPress={openPicker}
+        >
+          <Text className="font-sans text-mindful-brown">
+            {value.trim() ? formatDisplayDate(value) : t('datePicker.selectDate')}
+          </Text>
+        </Pressable>
+        {allowClear && value.trim() ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('datePicker.clearAccessibility')}
+            className="min-h-12 items-center justify-center rounded-xl px-3"
+            onPress={() => onChange('')}
+          >
+            <Text className="font-sans-semibold text-mindful-brown">{t('datePicker.clear')}</Text>
+          </Pressable>
+        ) : null}
+      </View>
 
       {showPicker ? (
         <DateTimePicker

@@ -3,8 +3,8 @@ import {
   ActivityIndicator,
   Keyboard,
   Pressable,
-  RefreshControl,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 
@@ -13,10 +13,9 @@ import { useParent, useUpdateParent } from '@/core/services/usecases/parent/inde
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { relationshipLabel } from '@/presentation/modules/family/relationship-label';
 import { colors } from '@/presentation/styles/tokens';
-import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { AppSheet } from '@/presentation/modules/feed/activity-form-sheet';
 import { EmptyState } from '@/ui/Feedback/EmptyState';
 import { QueryErrorState } from '@/ui/Feedback/QueryErrorState';
-import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
 import { getParentErrorMessage } from '../parents-api-error';
 
@@ -107,22 +106,11 @@ export function ParentDetailSheet({
   }
 
   return (
-    <BottomSheet
+    <AppSheet
+      testID="parent-detail-sheet"
+      title={parent?.name ?? t('common.assistido')}
       visible={visible}
       onClose={handleClose}
-      accessibilityLabel={t('parents.detailAccessibility')}
-      scrollable={!isLoading && !isError && !!parent}
-      refreshControl={
-        !isEditing && !isLoading && !isError && parent ? (
-          <RefreshControl
-            refreshing={isRefetching}
-            tintColor={colors.serenityGreen60}
-            onRefresh={() => {
-              void refetch();
-            }}
-          />
-        ) : undefined
-      }
     >
       {isLoading ? (
         <View className="items-center py-10">
@@ -140,11 +128,26 @@ export function ParentDetailSheet({
         <>
           <View className="flex-row items-start justify-between">
             <View className="flex-1 pr-3">
-              <Text className="font-sans-semibold text-xl text-mindful-brown">{parent.name}</Text>
-              <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
+              <Text className="font-sans text-sm text-mindful-brown/70">
                 {relationshipLabel(parent.relationship)}
               </Text>
             </View>
+            <View className="flex-row">
+            {!isEditing ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('parents.refreshDetailAccessibility')}
+                className="rounded-lg px-3 py-2"
+                disabled={isRefetching}
+                onPress={() => {
+                  void refetch();
+                }}
+              >
+                <Text className="font-sans-semibold text-sm text-serenity-green">
+                  {isRefetching ? t('common.loading') : t('parents.refreshDetail')}
+                </Text>
+              </Pressable>
+            ) : null}
             {isAdmin ? (
               <Pressable
                 accessibilityRole="button"
@@ -165,6 +168,7 @@ export function ParentDetailSheet({
                 </Text>
               </Pressable>
             ) : null}
+            </View>
           </View>
 
           {isEditing ? (
@@ -176,7 +180,7 @@ export function ParentDetailSheet({
                 <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
                   {t('parents.medicalInfoDescription')}
                 </Text>
-                <SheetTextInput
+                <TextInput
                   accessibilityLabel={t('parents.medicalInfoAccessibility')}
                   className="mt-2 min-h-[120px] rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
                   multiline
@@ -195,7 +199,7 @@ export function ParentDetailSheet({
                 <Text className="mt-1 font-sans text-sm text-mindful-brown/70">
                   {t('parents.emergencyBriefingDescription')}
                 </Text>
-                <SheetTextInput
+                <TextInput
                   accessibilityLabel={t('parents.emergencyBriefingAccessibility')}
                   className="mt-2 min-h-[120px] rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
                   multiline
@@ -243,6 +247,6 @@ export function ParentDetailSheet({
           )}
         </>
       )}
-    </BottomSheet>
+    </AppSheet>
   );
 }

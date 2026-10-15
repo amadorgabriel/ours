@@ -21,6 +21,8 @@ export async function pickCompressedVisitPhoto(
     mediaTypes: ['images'] as const,
     quality: 0.8,
     base64: true,
+    allowsEditing: true,
+    aspect: [4, 3] as [number, number],
   };
   const result =
     source === 'camera'

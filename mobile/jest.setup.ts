@@ -1,3 +1,12 @@
+jest.mock('expo-system-ui', () => ({
+  setBackgroundColorAsync: jest.fn(),
+}));
+
+jest.mock('expo-navigation-bar', () => ({
+  setStyle: jest.fn(),
+  NavigationBar: () => null,
+}));
+
 jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageTag: 'pt-BR' }],
 }));
@@ -21,6 +30,19 @@ jest.mock('@react-native-community/datetimepicker', () => {
 });
 
 jest.mock('@gorhom/bottom-sheet');
+
+jest.mock('@expo/ui', () => require('./jest-expo-ui-mock'));
+
+jest.mock('@expo/ui/swift-ui', () => require('./jest-expo-ui-swift-mock'));
+
+jest.mock('@expo/ui/swift-ui/modifiers', () => ({
+  background: () => ({}),
+  frame: () => ({}),
+  padding: () => ({}),
+  presentationDetents: () => ({}),
+  presentationDragIndicator: () => ({}),
+  scrollDismissesKeyboard: () => ({}),
+}));
 
 jest.mock('react-native-keyboard-controller', () => {
   const React = require('react');

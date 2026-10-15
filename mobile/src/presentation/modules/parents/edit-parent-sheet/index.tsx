@@ -4,6 +4,7 @@ import {
   Image,
   Pressable,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -19,9 +20,8 @@ import { useTranslation } from '@/presentation/hooks/use-translation';
 import { useAppAlert } from '@/presentation/providers/alert';
 import { relationshipLabel } from '@/presentation/modules/family/relationship-label';
 import { colors } from '@/presentation/styles/tokens';
-import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { AppSheet } from '@/presentation/modules/feed/activity-form-sheet';
 import { DatePickerField } from '@/ui/Forms/DatePickerField';
-import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
 import { getParentErrorMessage } from '../parents-api-error';
 
@@ -173,15 +173,13 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
   const today = new Date();
 
   return (
-    <BottomSheet
+    <AppSheet
+      description={t('parents.editDescription')}
+      testID="edit-parent-sheet"
+      title={t('parents.editTitle')}
       visible={visible}
       onClose={handleClose}
-      accessibilityLabel={t('parents.editTitle')}
-      scrollable
     >
-      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('parents.editTitle')}</Text>
-      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{t('parents.editDescription')}</Text>
-
       <View className="mt-6 items-center">
         {photoPreview ? (
           <Image
@@ -222,7 +220,7 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
 
       <View className="mt-6">
         <Text className="font-sans text-sm text-mindful-brown">{t('parents.name')}</Text>
-        <SheetTextInput
+        <TextInput
           accessibilityLabel={t('parents.name')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           maxLength={MAX_NAME_LENGTH}
@@ -276,6 +274,6 @@ export function EditParentSheet({ parent, visible, onClose }: EditParentSheetPro
           <Text className="font-sans-semibold text-light">{t('common.save')}</Text>
         )}
       </Pressable>
-    </BottomSheet>
+    </AppSheet>
   );
 }

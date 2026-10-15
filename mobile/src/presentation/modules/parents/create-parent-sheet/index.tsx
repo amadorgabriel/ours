@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Pressable,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 
@@ -11,9 +12,8 @@ import { useCreateParent } from '@/core/services/usecases/parent/index.hooks';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { relationshipLabel } from '@/presentation/modules/family/relationship-label';
 import { colors } from '@/presentation/styles/tokens';
-import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { AppSheet } from '@/presentation/modules/feed/activity-form-sheet';
 import { DatePickerField } from '@/ui/Forms/DatePickerField';
-import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
 import { getParentErrorMessage } from '../parents-api-error';
 
@@ -87,18 +87,16 @@ export function CreateParentSheet({ visible, onClose }: CreateParentSheetProps) 
   const isValid = name.trim().length > 0 && name.trim().length <= MAX_NAME_LENGTH;
 
   return (
-    <BottomSheet
+    <AppSheet
+      description={t('parents.newDescription')}
+      testID="create-parent-sheet"
+      title={t('parents.newTitle')}
       visible={visible}
       onClose={handleClose}
-      accessibilityLabel={t('parents.newAccessibility')}
-      scrollable
     >
-      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('parents.newTitle')}</Text>
-      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{t('parents.newDescription')}</Text>
-
-      <View className="mt-6">
+      <View className="mt-2">
         <Text className="font-sans text-sm text-mindful-brown">{t('parents.name')}</Text>
-        <SheetTextInput
+        <TextInput
           accessibilityLabel={t('parents.nameAccessibility')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           maxLength={MAX_NAME_LENGTH}
@@ -152,6 +150,6 @@ export function CreateParentSheet({ visible, onClose }: CreateParentSheetProps) 
           <Text className="font-sans-semibold text-light">{t('parents.register')}</Text>
         )}
       </Pressable>
-    </BottomSheet>
+    </AppSheet>
   );
 }

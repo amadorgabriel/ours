@@ -6,6 +6,7 @@ export const ptBR = {
     remove: 'Remover',
     save: 'Salvar',
     close: 'Fechar',
+    closeDialog: 'Fechar diálogo',
     error: 'Erro',
     retry: 'Tentar novamente',
     ok: 'OK',
@@ -376,6 +377,8 @@ export const ptBR = {
     cancelEditAccessibility: 'Cancelar edição',
     editDetailAccessibility: 'Editar ficha',
     saveDetailAccessibility: 'Salvar ficha',
+    refreshDetail: 'Atualizar',
+    refreshDetailAccessibility: 'Atualizar ficha',
     medicalInfo: 'Informações médicas',
     medicalInfoDescription: 'Alergias, medicamentos e observações relevantes.',
     medicalInfoAccessibility: 'Informações médicas',
@@ -418,6 +421,8 @@ export const ptBR = {
   },
   datePicker: {
     selectDate: 'Selecionar data',
+    clear: 'Limpar',
+    clearAccessibility: 'Limpar data',
   },
   assistido: {
     title: 'Assistido',

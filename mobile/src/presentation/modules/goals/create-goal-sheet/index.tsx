@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Pressable,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 
@@ -11,12 +12,11 @@ import { useCreateGoal } from '@/core/services/usecases/goal/index.hooks';
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { useAssistido } from '@/presentation/providers/assistido';
 import { colors } from '@/presentation/styles/tokens';
-import { BottomSheet } from '@/ui/Feedback/BottomSheet';
+import { AppSheet } from '@/presentation/modules/feed/activity-form-sheet';
 import {
   AssistidoPickerField,
   resolveInitialFormParentId,
 } from '@/ui/Forms/AssistidoPickerField';
-import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
 
 import { getGoalErrorMessage } from '../goals-api-error';
 
@@ -75,17 +75,13 @@ export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
     parsedAmount >= MIN_TARGET_AMOUNT;
 
   return (
-    <BottomSheet
+    <AppSheet
+      description={t('goals.createDescription')}
+      testID="create-goal-sheet"
+      title={t('goals.newGoal')}
       visible={visible}
       onClose={handleClose}
-      accessibilityLabel={t('goals.newGoal')}
-      scrollable
     >
-      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('goals.newGoal')}</Text>
-      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">
-        {t('goals.createDescription')}
-      </Text>
-
       <View className="mt-6">
         <AssistidoPickerField
           allowAll
@@ -98,7 +94,7 @@ export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
 
       <View className="mt-4">
         <Text className="font-sans text-sm text-mindful-brown">{t('goals.titleLabel')}</Text>
-        <SheetTextInput
+        <TextInput
           accessibilityLabel={t('goals.titleAccessibility')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           maxLength={MAX_TITLE_LENGTH}
@@ -111,7 +107,7 @@ export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
 
       <View className="mt-4">
         <Text className="font-sans text-sm text-mindful-brown">{t('goals.targetAmount')}</Text>
-        <SheetTextInput
+        <TextInput
           accessibilityLabel={t('goals.targetAmountAccessibility')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           keyboardType="decimal-pad"
@@ -144,6 +140,6 @@ export function CreateGoalSheet({ visible, onClose }: CreateGoalSheetProps) {
           <Text className="font-sans-semibold text-light">{t('goals.createGoal')}</Text>
         )}
       </Pressable>
-    </BottomSheet>
+    </AppSheet>
   );
 }

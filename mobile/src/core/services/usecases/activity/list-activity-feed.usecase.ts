@@ -1,4 +1,4 @@
-import type { ActivityFeedParams, ActivityFeedResponse } from '@/core/domain/activity';
+import type { ActivityFeedItem, ActivityFeedParams, ActivityFeedResponse, ActivitySeenBy } from '@/core/domain/activity';
 import type { IActivity } from '@/core/domain/activity/index.contract';
 import type { IHttpClient } from '@/core/infra/http/index.types';
 
@@ -19,6 +19,28 @@ export class ListActivityFeedUseCase implements Pick<IActivity, 'listFeed'> {
       queryParams,
     });
 
-    return response.data;
+    return {
+      ...response.data,
+      items: response.data.items.map(normalizeFeedItem),
+    };
   }
+}
+
+function normalizeFeedItem(item: ActivityFeedItem): ActivityFeedItem {
+  if (!item.seenBy?.length) {
+    return item;
+  }
+
+  return {
+    ...item,
+    seenBy: item.seenBy.map((viewer) => {
+      const raw = viewer as ActivitySeenBy & { userPicture?: string };
+      return {
+        userId: raw.userId,
+        userName: raw.userName,
+        seenAt: raw.seenAt,
+        picture: raw.picture || raw.userPicture,
+      };
+    }),
+  };
 }

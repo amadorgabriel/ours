@@ -1,29 +1,20 @@
+import { Text } from '@expo/ui';
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
 
 import type { ParentId } from '@/core/domain/parent';
 import { useRegisterCall } from '@/core/services/usecases/activity/index.hooks';
 import { useTranslation } from '@/presentation/hooks/use-translation';
+import { AssistidoField } from '@/presentation/modules/feed/assistido-field';
+import { ActivityFormSheet } from '@/presentation/modules/feed/activity-form-sheet';
+import { FormActionRow, NotesField } from '@/presentation/modules/feed/form-controls';
 import { useAssistido } from '@/presentation/providers/assistido';
-import { colors } from '@/presentation/styles/tokens';
-import { BottomSheet } from '@/ui/Feedback/BottomSheet';
-import {
-  AssistidoPickerField,
-  resolveInitialFormParentId,
-} from '@/ui/Forms/AssistidoPickerField';
-import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
+import { type } from '@/presentation/styles/tokens';
+import { resolveInitialFormParentId } from '@/ui/Forms/AssistidoPickerField';
 
 type CallNowSheetProps = {
   visible: boolean;
   onClose: () => void;
 };
-
-const MAX_NOTES_LENGTH = 500;
 
 export function CallNowSheet({ visible, onClose }: CallNowSheetProps) {
   const { t } = useTranslation();
@@ -49,10 +40,11 @@ export function CallNowSheet({ visible, onClose }: CallNowSheetProps) {
       return;
     }
 
+    const trimmed = notes.trim();
     registerCall.mutate(
       {
         parentId: formParentId,
-        notes: notes.trim() || undefined,
+        notes: trimmed || undefined,
       },
       {
         onSuccess: () => {
@@ -65,62 +57,39 @@ export function CallNowSheet({ visible, onClose }: CallNowSheetProps) {
   const canSubmit = Boolean(formParentId) && !registerCall.isPending;
 
   return (
-    <BottomSheet
+    <ActivityFormSheet
+      description={t('call.description')}
+      testID="call-sheet"
+      title={t('call.title')}
       visible={visible}
       onClose={handleClose}
-      accessibilityLabel={t('call.sheetAccessibility')}
-      scrollable
     >
-      <Text className="font-sans-semibold text-xl text-mindful-brown">{t('call.title')}</Text>
-      <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{t('call.description')}</Text>
+      <AssistidoField
+        label={t('common.assistido')}
+        parents={parents}
+        value={formParentId}
+        onChange={setFormParentId}
+      />
 
-      <View className="mt-6">
-        <AssistidoPickerField
-          inline
-          parents={parents}
-          requiredHint={t('assistidoPicker.requiredHint')}
-          value={formParentId}
-          onChange={setFormParentId}
-        />
-      </View>
-
-      <View className="mt-4">
-        <Text className="font-sans text-sm text-mindful-brown">{t('call.notes')}</Text>
-        <SheetTextInput
-          accessibilityLabel={t('call.notesAccessibility')}
-          className="mt-2 min-h-[96px] rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
-          maxLength={MAX_NOTES_LENGTH}
-          multiline
-          placeholder={t('call.notesPlaceholder')}
-          placeholderTextColor={colors.mindfulBrown60}
-          textAlignVertical="top"
-          value={notes}
-          onChangeText={setNotes}
-        />
-        <Text className="mt-1 text-right font-sans text-xs text-mindful-brown/50">
-          {notes.length}/{MAX_NOTES_LENGTH}
-        </Text>
-      </View>
+      <NotesField
+        label={t('call.notes')}
+        placeholder={t('call.notesPlaceholder')}
+        testID="call-notes"
+        value={notes}
+        onChangeText={setNotes}
+      />
 
       {registerCall.isError ? (
-        <Text className="mt-2 font-sans text-sm text-red-600">
-          {t('errors.activity.registerCallFailed')}
-        </Text>
+        <Text textStyle={type.danger}>{t('errors.activity.registerCallFailed')}</Text>
       ) : null}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('call.sheetAccessibility')}
-        className={`mt-4 items-center rounded-xl py-3 ${canSubmit ? 'bg-serenity-green' : 'bg-mindful-brown/30'}`}
-        disabled={!canSubmit}
-        onPress={handleSubmit}
-      >
-        {registerCall.isPending ? (
-          <ActivityIndicator color={colors.textLight} />
-        ) : (
-          <Text className="font-sans-semibold text-light">{t('common.register')}</Text>
-        )}
-      </Pressable>
-    </BottomSheet>
+      <FormActionRow
+        primaryDisabled={!canSubmit}
+        primaryLabel={t('common.register')}
+        primaryPending={registerCall.isPending}
+        primaryTestID="register-call"
+        onPrimary={handleSubmit}
+      />
+    </ActivityFormSheet>
   );
 }

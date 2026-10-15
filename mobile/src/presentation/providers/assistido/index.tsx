@@ -150,3 +150,7 @@ export function useAssistido(): AssistidoContextValue {
 
   return context;
 }
+
+export function useOptionalAssistido(): AssistidoContextValue | null {
+  return useContext(AssistidoContext);
+}

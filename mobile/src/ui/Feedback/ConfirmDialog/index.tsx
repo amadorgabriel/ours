@@ -1,5 +1,7 @@
 import { Modal, Pressable, Text, View } from 'react-native';
 
+import { useTranslation } from '@/presentation/hooks/use-translation';
+
 export type ConfirmDialogButton = {
   text: string;
   style?: 'default' | 'cancel' | 'destructive';
@@ -22,6 +24,8 @@ export function ConfirmDialog({
   buttons,
   onRequestClose,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation();
+
   if (!visible) {
     return null;
   }
@@ -37,47 +41,59 @@ export function ConfirmDialog({
       onRequestClose={onRequestClose}
       accessibilityViewIsModal
     >
-      <View className="flex-1 items-center justify-center bg-black/40 px-6">
-        <View className="w-full max-w-sm rounded-2xl bg-cream p-6">
-          <Text className="font-sans-semibold text-lg text-mindful-brown">{title}</Text>
-          {message ? (
-            <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{message}</Text>
-          ) : null}
-
-          <View className="mt-6 flex-row justify-end gap-3">
-            {cancelButton ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={cancelButton.accessibilityLabel ?? cancelButton.text}
-                className="min-h-[44px] items-center justify-center rounded-xl px-4"
-                onPress={() => {
-                  cancelButton.onPress?.();
-                  onRequestClose();
-                }}
-              >
-                <Text className="font-sans-semibold text-mindful-brown">{cancelButton.text}</Text>
-              </Pressable>
+      <View className="flex-1 bg-black/40">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('common.closeDialog')}
+          className="absolute inset-0"
+          onPress={onRequestClose}
+        />
+        <View className="flex-1 items-center justify-center px-6" pointerEvents="box-none">
+          <View className="w-full max-w-sm rounded-2xl bg-cream p-6">
+            <Text className="font-sans-semibold text-lg text-mindful-brown">{title}</Text>
+            {message ? (
+              <Text className="mt-2 font-sans text-sm text-mindful-brown/80">{message}</Text>
             ) : null}
-            {actionButtons.map((button, index) => (
-              <Pressable
-                key={`${button.style ?? 'default'}-${button.text}-${index}`}
-                accessibilityRole="button"
-                accessibilityLabel={button.accessibilityLabel ?? button.text}
-                className="min-h-[44px] items-center justify-center rounded-xl px-4"
-                onPress={() => {
-                  button.onPress?.();
-                  onRequestClose();
-                }}
-              >
-                <Text
-                  className={`font-sans-semibold ${
-                    button.style === 'destructive' ? 'text-red-600' : 'text-serenity-green'
-                  }`}
+
+            <View className="mt-6 flex-row gap-3">
+              {cancelButton ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={cancelButton.accessibilityLabel ?? cancelButton.text}
+                  className="min-h-12 flex-1 items-center justify-center rounded-full border border-mindful-brown/30 px-4"
+                  onPress={() => {
+                    cancelButton.onPress?.();
+                    onRequestClose();
+                  }}
                 >
-                  {button.text}
-                </Text>
-              </Pressable>
-            ))}
+                  <Text className="font-sans-semibold text-mindful-brown">{cancelButton.text}</Text>
+                </Pressable>
+              ) : null}
+              {actionButtons.map((button, index) => (
+                <Pressable
+                  key={`${button.style ?? 'default'}-${button.text}-${index}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={button.accessibilityLabel ?? button.text}
+                  className={`min-h-12 flex-1 items-center justify-center rounded-full px-4 ${
+                    button.style === 'destructive'
+                      ? 'border border-red-600'
+                      : 'bg-serenity-green'
+                  }`}
+                  onPress={() => {
+                    button.onPress?.();
+                    onRequestClose();
+                  }}
+                >
+                  <Text
+                    className={`font-sans-semibold ${
+                      button.style === 'destructive' ? 'text-red-600' : 'text-light'
+                    }`}
+                  >
+                    {button.text}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         </View>
       </View>

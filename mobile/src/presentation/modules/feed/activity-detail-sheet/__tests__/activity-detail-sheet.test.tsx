@@ -1,4 +1,4 @@
-import { Text, TextInput } from 'react-native';
+import { Text } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
 import type { ActivityFeedItem } from '@/core/domain/activity';
@@ -72,12 +72,8 @@ describe('ActivityDetailSheet', () => {
       );
     });
 
-    const editButton = tree.root.find(
-      (node) => node.props.accessibilityLabel === 'Editar atividade'
-    );
-    const deleteButton = tree.root.find(
-      (node) => node.props.accessibilityLabel === 'Excluir atividade'
-    );
+    const editButton = tree.root.find((node) => node.props.testID === 'activity-edit');
+    const deleteButton = tree.root.find((node) => node.props.testID === 'activity-delete');
 
     expect(editButton).toBeDefined();
     expect(deleteButton).toBeDefined();
@@ -93,23 +89,17 @@ describe('ActivityDetailSheet', () => {
     });
 
     act(() => {
-      tree.root
-        .find((node) => node.props.accessibilityLabel === 'Editar atividade')
-        .props.onPress();
+      tree.root.find((node) => node.props.testID === 'activity-edit').props.onPress();
     });
 
-    const notesInput = tree.root.find(
-      (node) => node.type === TextInput && node.props.accessibilityLabel === 'Notas da ligação'
-    );
+    const notesInput = tree.root.find((node) => node.props.testID === 'call-notes');
 
     act(() => {
       notesInput.props.onChangeText('Nota atualizada');
     });
 
     act(() => {
-      tree.root
-        .find((node) => node.props.accessibilityLabel === 'Salvar alterações')
-        .props.onPress();
+      tree.root.find((node) => node.props.testID === 'activity-save').props.onPress();
     });
 
     expect(mockUpdateMutate).toHaveBeenCalledWith(
@@ -131,9 +121,7 @@ describe('ActivityDetailSheet', () => {
     });
 
     act(() => {
-      tree.root
-        .find((node) => node.props.accessibilityLabel === 'Excluir atividade')
-        .props.onPress();
+      tree.root.find((node) => node.props.testID === 'activity-delete').props.onPress();
     });
 
     expect(mockAlert).toHaveBeenCalledWith(

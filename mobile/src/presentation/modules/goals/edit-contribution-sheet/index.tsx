@@ -4,6 +4,7 @@ import {
   Pressable,
   Switch,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 
@@ -12,8 +13,7 @@ import { useUpdateGoalContribution } from '@/core/services/usecases/goal/index.h
 import { useTranslation } from '@/presentation/hooks/use-translation';
 import { useAppAlert } from '@/presentation/providers/alert';
 import { colors } from '@/presentation/styles/tokens';
-import { BottomSheet } from '@/ui/Feedback/BottomSheet';
-import { SheetTextInput } from '@/ui/Forms/SheetTextInput';
+import { AppSheet } from '@/presentation/modules/feed/activity-form-sheet';
 
 import { getContributionErrorMessage } from '../goals-api-error';
 
@@ -85,19 +85,15 @@ export function EditContributionSheet({
   const isValid = !Number.isNaN(parsedAmount) && parsedAmount >= MIN_AMOUNT;
 
   return (
-    <BottomSheet
+    <AppSheet
+      testID="edit-contribution-sheet"
+      title={t('goals.editContribution')}
       visible={visible}
       onClose={handleClose}
-      accessibilityLabel={t('goals.editContribution')}
-      scrollable
     >
-      <Text className="font-sans-semibold text-xl text-mindful-brown">
-        {t('goals.editContribution')}
-      </Text>
-
       <View className="mt-6">
         <Text className="font-sans text-sm text-mindful-brown">{t('goals.amount')}</Text>
-        <SheetTextInput
+        <TextInput
           accessibilityLabel={t('goals.amountAccessibility')}
           className="mt-2 rounded-xl bg-white px-4 py-3 font-sans text-mindful-brown"
           keyboardType="decimal-pad"
@@ -146,6 +142,6 @@ export function EditContributionSheet({
           )}
         </Pressable>
       </View>
-    </BottomSheet>
+    </AppSheet>
   );
 }

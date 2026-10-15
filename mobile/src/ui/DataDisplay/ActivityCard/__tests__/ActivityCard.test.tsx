@@ -81,6 +81,32 @@ describe('ActivityCard', () => {
     expect(json).toContain('Visto');
   });
 
+  it('renders the API userPicture field as the seen-by avatar', () => {
+    const item = {
+      id: 'act-3b',
+      type: 'Call',
+      createdAt: new Date().toISOString(),
+      userId: 'user-1',
+      userName: 'Ana',
+      seenBy: [
+        {
+          userId: 'user-2',
+          userName: 'Bruno',
+          seenAt: new Date().toISOString(),
+          userPicture: 'https://example.com/bruno-api.jpg',
+        },
+      ],
+    } as ActivityFeedItem;
+
+    let tree!: renderer.ReactTestRenderer;
+
+    act(() => {
+      tree = renderer.create(<ActivityCard item={item} />);
+    });
+
+    expect(JSON.stringify(tree.toJSON())).toContain('https://example.com/bruno-api.jpg');
+  });
+
   it('calls onPhotoPress when visit photo is pressed', () => {
     const onPhotoPress = jest.fn();
     const item: ActivityFeedItem = {
