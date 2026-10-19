@@ -3,8 +3,10 @@
 .keys/
 
 # Cursor
-.cursor
-.agents
+.cursor/*
+!.cursor/skills/
+.agents/*
+!.agents/.skill-lock.json
 
 # Git
 .git
