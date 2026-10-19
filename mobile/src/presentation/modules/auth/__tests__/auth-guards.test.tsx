@@ -7,6 +7,7 @@ const mockReplace = jest.fn();
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
+  useGlobalSearchParams: () => ({}),
 }));
 
 jest.mock('@/presentation/providers/auth', () => ({

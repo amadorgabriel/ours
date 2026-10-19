@@ -6,7 +6,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, type Href } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 
 import { useEffect, useState } from 'react';
 
@@ -68,6 +68,8 @@ function getLoginErrorDetail(error: unknown): string {
 export function LoginScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { invite } = useLocalSearchParams<{ invite?: string | string[] }>();
+  const inviteCode = typeof invite === 'string' ? invite : undefined;
   const insets = useSafeAreaInsets();
 
   const { setFamilyId } = useFamily();
@@ -100,7 +102,7 @@ export function LoginScreen() {
       {
         onSuccess: (session) => {
           applyActiveFamilyFromSession(session, setFamilyId);
-          router.replace(resolvePostLoginRoute(session.familyCount) as Href);
+          router.replace(resolvePostLoginRoute(session.familyCount, inviteCode) as Href);
         },
         onError: (error) => reportError(error),
         onSettled: () => setSigningIn(false),

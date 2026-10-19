@@ -19,6 +19,10 @@ describe('auth-redirect', () => {
     it('routes to family select when multiple families', () => {
       expect(resolvePostLoginRoute(2)).toBe('/(app)/families/select');
     });
+
+    it('invite wins over an existing family', () => {
+      expect(resolvePostLoginRoute(1, 'AB12CD')).toBe('/(auth)/onboarding?invite=AB12CD');
+    });
   });
 
   describe('getAuthGuardRedirect', () => {
