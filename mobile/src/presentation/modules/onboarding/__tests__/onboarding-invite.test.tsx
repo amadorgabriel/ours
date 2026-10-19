@@ -1,6 +1,10 @@
 import { Text } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
+jest.mock('@expo/vector-icons', () => ({
+  Ionicons: () => null,
+}));
+
 import { OnboardingScreen } from '@/presentation/modules/family/onboarding';
 
 const mockJoinMutate = jest.fn();
@@ -78,5 +82,9 @@ describe('onboarding invite', () => {
       { inviteCode: 'AB12CD' },
       expect.objectContaining({ onSuccess: expect.any(Function) })
     );
+
+    act(() => {
+      tree.unmount();
+    });
   });
 });
