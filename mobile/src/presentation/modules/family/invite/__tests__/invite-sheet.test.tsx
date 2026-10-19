@@ -1,6 +1,16 @@
 import renderer, { act } from 'react-test-renderer';
+import { Share } from 'react-native';
 
 import { HttpClientError } from '@/core/infra/http/http-error';
+
+jest.mock('react-native-reanimated', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: { View, createAnimatedComponent: (component: unknown) => component },
+    createAnimatedComponent: (component: unknown) => component,
+  };
+});
 
 import { InviteSheet } from '../index';
 
@@ -56,12 +66,12 @@ describe('InviteSheet', () => {
     const json = JSON.stringify(tree.toJSON());
 
     expect(json).toContain('Convidar familiar');
-    expect(json).toContain('Gerar código');
+    expect(json).toContain('Por link');
   });
 
   it('calls createInvite mutate when generate is pressed', () => {
     const tree = renderInviteSheet();
-    const generateButton = tree.root.findByProps({ accessibilityLabel: 'Gerar código' });
+    const generateButton = tree.root.findByProps({ accessibilityLabel: 'Por link' });
 
     act(() => {
       generateButton.props.onPress();
@@ -79,7 +89,7 @@ describe('InviteSheet', () => {
     });
 
     const tree = renderInviteSheet();
-    const generateButton = tree.root.findByProps({ accessibilityLabel: 'Gerar código' });
+    const generateButton = tree.root.findByProps({ accessibilityLabel: 'Por link' });
 
     act(() => {
       generateButton.props.onPress();
@@ -107,6 +117,105 @@ describe('InviteSheet', () => {
     const json = JSON.stringify(tree.toJSON());
 
     expect(json).toContain('Selecione uma família ativa antes de gerar o convite.');
-    expect(json).not.toContain('Gerar código');
+    expect(json).not.toContain('Por link');
+  });
+
+  it('shows link and email options', () => {
+    const tree = renderInviteSheet();
+    const json = JSON.stringify(tree.toJSON());
+
+    expect(json).toContain('Convidar familiar');
+    expect(json).toContain('Por link');
+    expect(json).toContain('Por e-mail');
+  });
+
+  it('share message includes the join url and the code', async () => {
+    process.env.EXPO_PUBLIC_INVITE_BASE_URL = 'https://exemplo.vercel.app';
+    const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction, activityType: null });
+    mockMutate.mockImplementation((_payload, options) => {
+      options?.onSuccess?.({
+        inviteCode: 'AB12CD',
+        expiresAt: '2026-06-19T15:30:00.000Z',
+      });
+    });
+
+    const tree = renderInviteSheet();
+
+    act(() => {
+      tree.root.findByProps({ accessibilityLabel: 'Por link' }).props.onPress();
+    });
+
+    await act(async () => {
+      tree.root.findByProps({ accessibilityLabel: 'Compartilhar' }).props.onPress();
+    });
+
+    expect(share).toHaveBeenCalledWith({
+      message: expect.stringContaining('https://exemplo.vercel.app/join/AB12CD'),
+    });
+    expect(share.mock.calls[0]?.[0]?.message).toContain('AB12CD');
+    share.mockRestore();
+    delete process.env.EXPO_PUBLIC_INVITE_BASE_URL;
+  });
+
+  it('link option skips invitedEmail', () => {
+    const tree = renderInviteSheet();
+
+    act(() => {
+      tree.root.findByProps({ accessibilityLabel: 'Por link' }).props.onPress();
+    });
+
+    expect(mockMutate).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
+    expect(mockMutate.mock.calls[0]?.[0]).not.toHaveProperty('invitedEmail');
+  });
+
+  it('email option posts ana@exemplo.com', () => {
+    const tree = renderInviteSheet();
+
+    act(() => {
+      tree.root.findByProps({ accessibilityLabel: 'Por e-mail' }).props.onPress();
+    });
+    act(() => {
+      tree.root.findByProps({ accessibilityLabel: 'E-mail do familiar' }).props.onChangeText('ana@exemplo.com');
+    });
+    act(() => {
+      tree.root.findByProps({ accessibilityLabel: 'Enviar e-mail' }).props.onPress();
+    });
+
+    expect(mockMutate).toHaveBeenCalledWith(
+      { invitedEmail: 'ana@exemplo.com' },
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
+  });
+
+  it('rejects an email without an at sign', () => {
+    const tree = renderInviteSheet();
+
+    act(() => {
+      tree.root.findByProps({ accessibilityLabel: 'Por e-mail' }).props.onPress();
+    });
+    act(() => {
+      tree.root.findByProps({ accessibilityLabel: 'E-mail do familiar' }).props.onChangeText('sem-arroba');
+    });
+    act(() => {
+      tree.root.findByProps({ accessibilityLabel: 'Enviar e-mail' }).props.onPress();
+    });
+
+    expect(JSON.stringify(tree.toJSON())).toContain('Informe um e-mail válido.');
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
+
+  it('502 still shows the invite code', () => {
+    const tree = renderInviteSheet({
+      isError: true,
+      error: new HttpClientError('Bad Gateway', {
+        statusCode: 502,
+        data: { inviteCode: 'AB12CD' },
+      }),
+    });
+
+    expect(JSON.stringify(tree.toJSON())).toContain('AB12CD');
   });
 });
