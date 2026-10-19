@@ -216,6 +216,18 @@ describe('InviteSheet', () => {
       }),
     });
 
-    expect(JSON.stringify(tree.toJSON())).toContain('AB12CD');
+    const json = JSON.stringify(tree.toJSON());
+    expect(json).toContain('AB12CD');
+    expect(json).toContain('Não foi possível enviar o e-mail. Compartilhe o código ou o link abaixo.');
+    expect(json).not.toContain('Não foi possível gerar o convite. Tente novamente.');
+  });
+
+  it('keeps the generic invite error when the response has no code', () => {
+    const tree = renderInviteSheet({
+      isError: true,
+      error: new HttpClientError('Bad Gateway', { statusCode: 502 }),
+    });
+
+    expect(JSON.stringify(tree.toJSON())).toContain('Não foi possível gerar o convite. Tente novamente.');
   });
 });

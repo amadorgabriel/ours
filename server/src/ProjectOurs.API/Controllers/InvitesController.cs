@@ -55,7 +55,7 @@ public sealed class InvitesController(
             }
             catch (InviteDeliveryException ex)
             {
-                logger.LogError(ex, "Brevo rejected invite {InviteCode} for family {FamilyId}.", invite.InviteCode, familyId);
+                logger.LogError(ex, "Invite email delivery failed for family {FamilyId}.", familyId);
                 return StatusCode(StatusCodes.Status502BadGateway, invite);
             }
 

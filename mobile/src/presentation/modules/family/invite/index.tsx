@@ -220,9 +220,9 @@ export function InviteSheet({ visible, onClose }: InviteSheetProps) {
 
       {shownInvite ? (
         <View className="mt-6">
-          {createInvite.isError ? (
+          {createInvite.isError && !invite ? (
             <Text className="mb-4 font-sans text-sm text-red-600">
-              {getFamilyErrorMessage(createInvite.error, 'invite')}
+              {t('invite.emailDeliveryFailed')}
             </Text>
           ) : null}
           <Text className="font-sans text-sm text-mindful-brown">{t('invite.codeLabel')}</Text>

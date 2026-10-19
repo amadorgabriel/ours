@@ -37,10 +37,26 @@ public sealed class BrevoInviteSender(
         request.Headers.TryAddWithoutValidation("api-key", brevo.ApiKey);
         request.Content = JsonContent.Create(payload);
 
-        var response = await httpClient.SendAsync(request, cancellationToken);
-        if ((int)response.StatusCode != 201)
+        HttpResponseMessage response;
+        try
         {
-            throw new InviteDeliveryException($"Brevo returned {(int)response.StatusCode}.");
+            response = await httpClient.SendAsync(request, cancellationToken);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new InviteDeliveryException("Brevo request failed.", ex);
+        }
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new InviteDeliveryException("Brevo request timed out.", ex);
+        }
+
+        using (response)
+        {
+            if ((int)response.StatusCode != 201)
+            {
+                throw new InviteDeliveryException($"Brevo returned {(int)response.StatusCode}.");
+            }
         }
     }
 }

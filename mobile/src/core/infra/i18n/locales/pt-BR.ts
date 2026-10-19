@@ -401,6 +401,7 @@ export const ptBR = {
     emailAccessibility: 'E-mail do familiar',
     sendEmail: 'Enviar e-mail',
     invalidEmail: 'Informe um e-mail válido.',
+    emailDeliveryFailed: 'Não foi possível enviar o e-mail. Compartilhe o código ou o link abaixo.',
     codeLabel: 'Código de convite',
     validUntil: 'Válido até {{date}}',
     copy: 'Copiar',

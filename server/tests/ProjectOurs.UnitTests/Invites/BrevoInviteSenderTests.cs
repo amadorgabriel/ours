@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using ProjectOurs.Application.Family;
 using ProjectOurs.Infrastructure.Invites;
 using Xunit;
 
@@ -24,15 +25,10 @@ public sealed class BrevoInviteSenderTests
     public async Task PostsSmtpEmailWithJoinLink()
     {
         const string apiKey = "chave-de-teste";
-        Environment.SetEnvironmentVariable("BREVO_API_KEY", apiKey);
-        Environment.SetEnvironmentVariable("BREVO_SENDER_EMAIL", "remetente@exemplo.com");
+        const string senderEmail = "remetente@exemplo.com";
 
         var handler = new RecordingHandler(HttpStatusCode.Created);
-        var sender = CreateSender(
-            handler,
-            Environment.GetEnvironmentVariable("BREVO_API_KEY")!,
-            Environment.GetEnvironmentVariable("BREVO_SENDER_EMAIL")!,
-            "https://exemplo.vercel.app");
+        var sender = CreateSender(handler, apiKey, senderEmail, "https://exemplo.vercel.app");
 
         await sender.SendAsync("ana@exemplo.com", "AB12CD");
 
@@ -43,9 +39,7 @@ public sealed class BrevoInviteSenderTests
 
         var body = handler.Body ?? string.Empty;
         using var document = JsonDocument.Parse(body);
-        Assert.Equal(
-            Environment.GetEnvironmentVariable("BREVO_SENDER_EMAIL"),
-            document.RootElement.GetProperty("sender").GetProperty("email").GetString());
+        Assert.Equal(senderEmail, document.RootElement.GetProperty("sender").GetProperty("email").GetString());
         Assert.Equal("ana@exemplo.com", document.RootElement.GetProperty("to")[0].GetProperty("email").GetString());
         Assert.Contains("https://exemplo.vercel.app/join/AB12CD", body);
         Assert.DoesNotContain("ours.app", body);
@@ -53,8 +47,41 @@ public sealed class BrevoInviteSenderTests
         Assert.DoesNotContain("resend", body, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task WrapsTransportFailureAsDeliveryException()
+    {
+        var handler = new ThrowingHandler(new HttpRequestException("dns"));
+        var sender = CreateSender(handler);
+
+        var ex = await Assert.ThrowsAsync<InviteDeliveryException>(() => sender.SendAsync("ana@exemplo.com", "AB12CD"));
+
+        Assert.IsType<HttpRequestException>(ex.InnerException);
+    }
+
+    [Fact]
+    public async Task WrapsTimeoutAsDeliveryException()
+    {
+        var handler = new ThrowingHandler(new TaskCanceledException("timeout"));
+        var sender = CreateSender(handler);
+
+        var ex = await Assert.ThrowsAsync<InviteDeliveryException>(() => sender.SendAsync("ana@exemplo.com", "AB12CD"));
+
+        Assert.IsType<TaskCanceledException>(ex.InnerException);
+    }
+
+    [Fact]
+    public async Task PropagatesCallerCancellation()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        var sender = CreateSender(new RecordingHandler());
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            sender.SendAsync("ana@exemplo.com", "AB12CD", cts.Token));
+    }
+
     private static BrevoInviteSender CreateSender(
-        RecordingHandler handler,
+        HttpMessageHandler handler,
         string apiKey = "chave-de-teste",
         string senderEmail = "remetente@exemplo.com",
         string baseUrl = "https://exemplo.vercel.app")
@@ -83,6 +110,14 @@ public sealed class BrevoInviteSenderTests
             Request = request;
             Body = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
             return new HttpResponseMessage(_status);
+        }
+    }
+
+    private sealed class ThrowingHandler(Exception exception) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return Task.FromException<HttpResponseMessage>(exception);
         }
     }
 }

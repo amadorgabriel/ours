@@ -10,7 +10,7 @@
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",
     "test": "echo \"No tests configured\"",
-    "test:run": "echo \"No tests configured\"",
+    "test:run": "node --test src/app/join/join-landing.test.mjs",
     "test:ui": "echo \"No tests configured\"",
     "pre-commit:checks": "lint-staged && npm run lint && npm run type-check",
     "pre-push:checks": "npm run build && npm run lint && npm run type-check",

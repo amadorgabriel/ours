@@ -10,4 +10,8 @@ public sealed class InviteDeliveryException : Exception
     public InviteDeliveryException(string message) : base(message)
     {
     }
+
+    public InviteDeliveryException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }
