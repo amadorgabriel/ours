@@ -1,6 +1,15 @@
 import { Text } from 'react-native';
 import renderer, { act } from 'react-test-renderer';
 
+jest.mock('react-native-reanimated', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: { View, createAnimatedComponent: (component: unknown) => component },
+    createAnimatedComponent: (component: unknown) => component,
+  };
+});
+
 import { ProfileScreen } from '../index';
 
 const mockReplace = jest.fn();
@@ -217,7 +226,8 @@ describe('ProfileScreen', () => {
     });
 
     const text = getAllText(tree);
-    expect(text).toContain('Gerar código');
+    expect(text).toContain('Por link');
+    expect(text).toContain('Por e-mail');
   });
 
   it('shows parents admin section with create CTA when list is empty (MS-50)', () => {

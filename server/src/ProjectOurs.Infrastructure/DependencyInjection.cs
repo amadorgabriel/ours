@@ -12,6 +12,7 @@ using ProjectOurs.Application.Parents;
 using ProjectOurs.Infrastructure.Auth;
 using ProjectOurs.Application.Abstractions.Media;
 using ProjectOurs.Infrastructure.Media;
+using ProjectOurs.Infrastructure.Invites;
 using ProjectOurs.Infrastructure.Options;
 using ProjectOurs.Infrastructure.Persistence;
 
@@ -32,6 +33,20 @@ public static class DependencyInjection
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.Configure<GoogleAuthOptions>(configuration.GetSection(GoogleAuthOptions.SectionName));
+        services.AddOptions<BrevoOptions>()
+            .Bind(configuration.GetSection(BrevoOptions.SectionName))
+            .PostConfigure(options =>
+            {
+                options.ApiKey = FirstConfigured(options.ApiKey, Environment.GetEnvironmentVariable("BREVO_API_KEY"));
+                options.SenderEmail = FirstConfigured(options.SenderEmail, Environment.GetEnvironmentVariable("BREVO_SENDER_EMAIL"));
+            });
+        services.AddOptions<InviteLinkOptions>()
+            .Bind(configuration.GetSection(InviteLinkOptions.SectionName))
+            .PostConfigure(options =>
+            {
+                options.BaseUrl = FirstConfigured(options.BaseUrl, Environment.GetEnvironmentVariable("INVITE_BASE_URL"));
+            });
+        services.AddHttpClient<IInviteEmailSender, BrevoInviteSender>();
 
         services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IUserRepository, UserRepository>();
@@ -54,5 +69,15 @@ public static class DependencyInjection
         services.AddScoped<DeviceService>();
 
         return services;
+    }
+
+    private static string FirstConfigured(string current, string? fromEnvironment)
+    {
+        if (!string.IsNullOrWhiteSpace(current))
+        {
+            return current;
+        }
+
+        return fromEnvironment?.Trim() ?? string.Empty;
     }
 }

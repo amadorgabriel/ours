@@ -1,13 +1,14 @@
 import Link from 'next/link';
 
+import { joinLanding } from '../join-landing.mjs';
+
 type JoinPageProps = {
   params: Promise<{ code: string }>;
 };
 
 export default async function JoinPage({ params }: JoinPageProps) {
   const { code } = await params;
-  const inviteCode = code.trim().toUpperCase();
-  const deepLink = `projectours://join/${inviteCode}`;
+  const { inviteCode, href: deepLink } = joinLanding(code);
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center bg-[#FCF8F4] px-6 py-12 text-center">

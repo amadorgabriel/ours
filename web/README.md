@@ -24,7 +24,7 @@ Copie `.env.example` para `.env.local` e preencha. Nunca commite segredos.
 | `npm run lint:fix`   | ESLint com correção automática              |
 | `npm run type-check` | `tsc --noEmit`                              |
 | `npm run test`       | Vitest (watch)                              |
-| `npm run test:run`   | Vitest uma vez (CI / pre-push)              |
+| `npm run test:run`   | Prova da página `/join` com `node --test`   |
 | `npm run test:ui`    | Vitest UI no browser (playground de testes) |
 
 ## Husky (monorepo)

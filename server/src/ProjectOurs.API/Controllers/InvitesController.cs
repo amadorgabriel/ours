@@ -11,6 +11,7 @@ namespace ProjectOurs.API.Controllers;
 [Authorize]
 public sealed class InvitesController(
     FamilyService familyService,
+    IInviteEmailSender inviteEmailSender,
     IAntiforgery antiforgery,
     ILogger<InvitesController> logger) : ControllerBase
 {
@@ -47,6 +48,17 @@ public sealed class InvitesController(
                 familyId,
                 request.InvitedEmail,
                 cancellationToken);
+
+            try
+            {
+                await inviteEmailSender.SendAsync(request.InvitedEmail, invite.InviteCode, cancellationToken);
+            }
+            catch (InviteDeliveryException ex)
+            {
+                logger.LogError(ex, "Invite email delivery failed for family {FamilyId}.", familyId);
+                return StatusCode(StatusCodes.Status502BadGateway, invite);
+            }
+
             return Ok(invite);
         }
         catch (FamilyForbiddenException ex)

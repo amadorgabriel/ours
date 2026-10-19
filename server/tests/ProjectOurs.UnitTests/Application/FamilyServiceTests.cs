@@ -151,6 +151,29 @@ public sealed class FamilyServiceTests
     }
 
     [Fact]
+    public async Task CreateInvite_WithEmail_StoresInvitedEmail()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        FamilyInvite? stored = null;
+
+        _families
+            .Setup(x => x.GetMembershipAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FamilyMembership { UserId = userId, FamilyId = familyId, Role = FamilyRole.Admin });
+        _codeGenerator.Setup(x => x.Generate()).Returns("AB12CD");
+        _families
+            .Setup(x => x.AddInviteAsync(It.IsAny<FamilyInvite>(), It.IsAny<CancellationToken>()))
+            .Callback<FamilyInvite, CancellationToken>((invite, _) => stored = invite)
+            .Returns(Task.CompletedTask);
+
+        await _sut.CreateInviteAsync(userId, familyId, "ana@exemplo.com");
+
+        Assert.NotNull(stored);
+        Assert.Equal("ana@exemplo.com", stored!.InvitedEmail);
+        Assert.Equal(InviteStatus.Pending, stored.Status);
+    }
+
+    [Fact]
     public async Task JoinWithCode_WithValidCode_ReturnsJoinResponse()
     {
         var userId = Guid.NewGuid();
@@ -180,6 +203,38 @@ public sealed class FamilyServiceTests
         Assert.Equal(familyId.ToString(), result.FamilyId);
         Assert.Equal("Silva", result.FamilyName);
         Assert.Equal("Member", result.Role);
+    }
+
+    [Fact]
+    public async Task Join_IgnoresInvitedEmail()
+    {
+        var userId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var invite = new FamilyInvite
+        {
+            Id = Guid.NewGuid(),
+            FamilyId = familyId,
+            InviteCode = "AB12CD",
+            InvitedEmail = "ana@exemplo.com",
+            ExpiresAt = DateTimeOffset.UtcNow.AddHours(1),
+            Status = InviteStatus.Pending,
+            Family = new Domain.Entities.Family { Id = familyId, Name = "Silva" },
+        };
+
+        _families
+            .Setup(x => x.GetInviteByCodeWithFamilyAsync("AB12CD", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(invite);
+        _families
+            .Setup(x => x.MembershipExistsAsync(userId, familyId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _families
+            .Setup(x => x.AcceptInviteAndAddMembershipAsync(invite, It.IsAny<FamilyMembership>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await _sut.JoinWithCodeAsync(userId, "AB12CD");
+
+        Assert.Equal("Member", result.Role);
+        Assert.Equal("ana@exemplo.com", invite.InvitedEmail);
     }
 
     [Fact]

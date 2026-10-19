@@ -17,6 +17,7 @@ jest.mock('react-native-safe-area-context', () => ({
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
+  useLocalSearchParams: () => ({}),
 }));
 
 jest.mock('@/core/infra/auth/google-signin-config', () => ({

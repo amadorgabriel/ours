@@ -7,13 +7,20 @@ export const mobileRoutes = {
 
 export type PostLoginRoute =
   | typeof mobileRoutes.onboarding
+  | `${typeof mobileRoutes.onboarding}?invite=${string}`
   | typeof mobileRoutes.home
   | typeof mobileRoutes.familiesSelect;
 
-export function resolvePostLoginRoute(familyCount: number): PostLoginRoute {
+export function resolvePostLoginRoute(familyCount: number, inviteCode?: string | null): PostLoginRoute {
   if (familyCount < 0) {
     throw new Error('familyCount must be non-negative');
   }
+
+  const code = inviteCode?.trim();
+  if (code) {
+    return `${mobileRoutes.onboarding}?invite=${code.toUpperCase()}`;
+  }
+
   if (familyCount === 0) return mobileRoutes.onboarding;
   if (familyCount === 1) return mobileRoutes.home;
   return mobileRoutes.familiesSelect;
@@ -43,9 +50,11 @@ export function getAuthGuardRedirect(
 export function getGuestGuardRedirect(
   isSessionLoading: boolean,
   isAuthenticated: boolean,
-  familyCount: number | undefined
+  familyCount: number | undefined,
+  inviteCode?: string | null
 ): PostLoginRoute | null {
   if (isSessionLoading || !isAuthenticated || familyCount === undefined) return null;
+  if (inviteCode?.trim()) return null;
   return resolvePostLoginRoute(familyCount);
 }
 

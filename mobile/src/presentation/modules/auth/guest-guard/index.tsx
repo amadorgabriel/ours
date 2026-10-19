@@ -1,4 +1,4 @@
-import { useRouter, type Href } from 'expo-router';
+import { useGlobalSearchParams, useRouter, type Href } from 'expo-router';
 import { useEffect, type ReactNode } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 
@@ -15,12 +15,15 @@ type GuestGuardProps = {
 export function GuestGuard({ children }: GuestGuardProps) {
   const { t } = useTranslation();
   const { isAuthenticated, isSessionLoading, session } = useAuth();
+  const { invite } = useGlobalSearchParams<{ invite?: string | string[] }>();
   const router = useRouter();
+  const inviteCode = typeof invite === 'string' ? invite : undefined;
 
   const redirectTo = getGuestGuardRedirect(
     isSessionLoading,
     isAuthenticated,
-    session?.familyCount
+    session?.familyCount,
+    inviteCode
   );
 
   useEffect(() => {
@@ -39,7 +42,7 @@ export function GuestGuard({ children }: GuestGuardProps) {
   }
 
   if (isAuthenticated) {
-    if (session?.familyCount === 0) {
+    if (session?.familyCount === 0 || inviteCode?.trim()) {
       return children;
     }
     return null;
