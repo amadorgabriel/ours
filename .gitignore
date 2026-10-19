@@ -2,11 +2,11 @@
 .specs/
 .keys/
 
-# Cursor
-.cursor/*
-!.cursor/skills/
-.agents/*
-!.agents/.skill-lock.json
+# AI agent tooling (local only - skills are installed per machine)
+.cursor
+.agents
+.claude
+.windsurf
 
 # Git
 .git
