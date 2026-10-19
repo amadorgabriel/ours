@@ -23,6 +23,14 @@ App para cuidado colaborativo de pais entre irmãos — feed unificado, metas fi
 
 ## Desenvolvimento
 
+Web, API e Metro do development build (login Google no navegador e no aparelho), no computador ou no Cloud Agent:
+
+```bash
+bash .cursor/skills/run-dev-stack/scripts/up.sh
+```
+
+O script detecta o runtime, ajusta IP ou túnel e grava os `.env.local`. Detalhes: [`.cursor/skills/run-dev-stack/SKILL.md`](.cursor/skills/run-dev-stack/SKILL.md).
+
 ```bash
 # Web (admin PWA)
 cd web && npm install && npm run dev

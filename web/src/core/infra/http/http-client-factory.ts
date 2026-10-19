@@ -8,7 +8,8 @@ export class HttpClientFactory {
 
   static create(): IHttpClient {
     if (!this.instance) {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? '/api';
+      const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
+      const baseUrl = configured ? configured : '/api';
       this.instance = new HttpClient(baseUrl);
     }
     return this.instance;
